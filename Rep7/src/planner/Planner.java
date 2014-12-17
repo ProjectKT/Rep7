@@ -11,13 +11,17 @@ public class Planner {
 	ArrayList<Object> operators;
 	Random rand;
 	ArrayList<Object> plan;
-
+	int timer;  //タイムタグを追加するたびに加算
+	HashMap<Object,Integer> timeTag = new HashMap<Object,Integer>();  //タイムタグ
+	
+	
 	public static void main(String argv[]) {
 		(new Planner()).start();
 	}
 
 	Planner() {
 		rand = new Random();
+		timer = 0;
 	}
 
 	public void start() {
@@ -66,11 +70,14 @@ public class Planner {
 				// System.out.println("tmpPoint: "+tmpPoint);
 				if (tmpPoint != -1) {
 					theGoalList.remove(0);
+					System.out.println("チェック CurrentState");
 					System.out.println(theCurrentState);
+					System.out.println("チェック timeTag");
+					System.out.println(timeTag);
 					if (planning(theGoalList, theCurrentState, theBinding)) {
 						// System.out.println("Success !");
 						return true;
-					} else {
+					} else {//失敗したとき
 						cPoint = tmpPoint;
 						// System.out.println("Fail::"+cPoint);
 						theGoalList.add(0, aGoal);
@@ -84,6 +91,7 @@ public class Planner {
 						theCurrentState.clear();
 						for (int i = 0; i < orgState.size(); i++) {
 							theCurrentState.add(orgState.get(i));
+							
 						}
 					}
 				} else {
@@ -142,12 +150,24 @@ public class Planner {
 				if ((new Unifier()).unify(theGoal, (String) addList.get(j), theBinding)) {
 					Operator newOperator = anOperator.instantiate(theBinding);
 					List<Object> newGoals = (List<Object>) newOperator.getIfList();
+					System.out.println("新しいオペレーター");
 					System.out.println(newOperator.name);
 					if (planning(newGoals, theCurrentState, theBinding)) {
 						System.out.println(newOperator.name);
 						plan.add(newOperator);
+						
+						
+						//Add,Deleteリストを保存しておく  timeTagに利用
+						List<Object> addTemp = newOperator.getAddList();
+						List<Object> delTemp = newOperator.getDeleteList();
+						
+						//現在の状態を遷移させる
 						theCurrentState = newOperator
 								.applyState(theCurrentState);
+						
+						//timeTagの更新
+						applyTimeTag(addTemp,delTemp);
+						
 						return i + 1;
 					} else {
 						// 失敗したら元に戻す．
@@ -197,6 +217,13 @@ public class Planner {
 		initialState.add("ontable B");
 		initialState.add("ontable C");
 		initialState.add("handEmpty");
+		
+		for(Object obj: initialState){
+			timeTag.put(obj, 0);
+		}
+		
+		timer++;
+		
 		return initialState;
 	}
 
@@ -278,6 +305,25 @@ public class Planner {
 		Operator operator4 = new Operator(name4, ifList4, addList4, deleteList4);
 		operators.add(operator4);
 	}
+	
+	/**
+	 *    timeTagの更新
+	 *    
+	 * @param add	オペレーターによって加えた状態
+	 * @param del	オペレーターによって削除した状態
+	 */
+	void applyTimeTag(List<Object> add,List<Object> del){
+		
+		for(Object objAdd: add){
+			timeTag.put(objAdd, timer);
+		}
+		
+		for(Object objDel: del){
+			timeTag.remove(objDel);
+		}
+		
+		timer++;
+	}
 }
 
 class Operator {
@@ -315,9 +361,10 @@ class Operator {
 	public List<Object> applyState(List<Object> theState) {
 		for (int i = 0; i < addList.size(); i++) {
 			theState.add(addList.get(i));
+			
 		}
 		for (int i = 0; i < deleteList.size(); i++) {
-			theState.add(deleteList.get(i));
+			theState.remove(deleteList.get(i));
 		}
 		return theState;
 	}
