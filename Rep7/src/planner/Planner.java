@@ -202,8 +202,8 @@ public class Planner {
 
 	private ArrayList<Object> initGoalList() {
 		ArrayList<Object> goalList = new ArrayList<Object>();
-		goalList.add("B on C");
 		goalList.add("A on B");
+		goalList.add("B on C");
 		return goalList;
 	}
 
