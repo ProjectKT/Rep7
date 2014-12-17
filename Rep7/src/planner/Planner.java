@@ -1,16 +1,15 @@
 package planner;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.StringTokenizer;
 
 public class Planner {
-	ArrayList<Object> operators;
+	ArrayList<Operator> operators;
 	Random rand;
-	ArrayList<Object> plan;
+	ArrayList<Operator> plan;
 
 	public static void main(String argv[]) {
 		(new Planner()).start();
@@ -22,11 +21,11 @@ public class Planner {
 
 	public void start() {
 		initOperators();
-		ArrayList<Object> goalList = initGoalList();
-		ArrayList<Object> initialState = initInitialState();
+		ArrayList<String> goalList = initGoalList();
+		ArrayList<String> initialState = initInitialState();
 
-		HashMap<Object,Object> theBinding = new HashMap<Object,Object>();
-		plan = new ArrayList<Object>();
+		HashMap<String,String> theBinding = new HashMap<String,String>();
+		plan = new ArrayList<Operator>();
 		planning(goalList, initialState, theBinding);
 
 		System.out.println("***** This is a plan! *****");
@@ -36,7 +35,7 @@ public class Planner {
 		}
 	}
 
-	private boolean planning(List<Object> theGoalList, List<Object> theCurrentState, HashMap<Object,Object> theBinding) {
+	private boolean planning(List<String> theGoalList, List<String> theCurrentState, HashMap<String,String> theBinding) {
 		System.out.println("*** GOALS ***" + theGoalList);
 		if (theGoalList.size() == 1) {
 			String aGoal = (String) theGoalList.get(0);
@@ -51,13 +50,13 @@ public class Planner {
 			while (cPoint < operators.size()) {
 				// System.out.println("cPoint:"+cPoint);
 				// Store original binding
-				HashMap<Object,Object> orgBinding = new HashMap<Object,Object>();
-				for (Iterator<Object> it = theBinding.keySet().iterator(); it.hasNext();) {
+				HashMap<String,String> orgBinding = new HashMap<String,String>();
+				for (Iterator<String> it = theBinding.keySet().iterator(); it.hasNext();) {
 					String key = (String) it.next();
 					String value = (String) theBinding.get(key);
 					orgBinding.put(key, value);
 				}
-				List<Object> orgState = new ArrayList<Object>();
+				List<String> orgState = new ArrayList<String>();
 				for (int i = 0; i < theCurrentState.size(); i++) {
 					orgState.add(theCurrentState.get(i));
 				}
@@ -76,7 +75,7 @@ public class Planner {
 						theGoalList.add(0, aGoal);
 
 						theBinding.clear();
-						for (Iterator<Object> it = orgBinding.keySet().iterator(); it.hasNext();) {
+						for (Iterator<String> it = orgBinding.keySet().iterator(); it.hasNext();) {
 							String key = (String) it.next();
 							String value = (String) orgBinding.get(key);
 							theBinding.put(key, value);
@@ -88,7 +87,7 @@ public class Planner {
 					}
 				} else {
 					theBinding.clear();
-					for (Iterator<Object> it = orgBinding.keySet().iterator(); it.hasNext();) {
+					for (Iterator<String> it = orgBinding.keySet().iterator(); it.hasNext();) {
 						String key = (String) it.next();
 						String value = (String) orgBinding.get(key);
 						theBinding.put(key, value);
@@ -104,7 +103,7 @@ public class Planner {
 		}
 	}
 
-	private int planningAGoal(String theGoal, List<Object> theCurrentState, HashMap<Object,Object> theBinding, int cPoint) {
+	private int planningAGoal(String theGoal, List<String> theCurrentState, HashMap<String,String> theBinding, int cPoint) {
 		System.out.println("**" + theGoal);
 		int size = theCurrentState.size();
 		for (int i = 0; i < size; i++) {
@@ -122,26 +121,26 @@ public class Planner {
 		for (int i = cPoint; i < operators.size(); i++) {
 			Operator anOperator = rename((Operator) operators.get(i));
 			// 現在のCurrent state, Binding, planをbackup
-			HashMap<Object,Object> orgBinding = new HashMap<Object,Object>();
-			for (Iterator<Object> it = theBinding.keySet().iterator(); it.hasNext();) {
+			HashMap<String,String> orgBinding = new HashMap<String,String>();
+			for (Iterator<String> it = theBinding.keySet().iterator(); it.hasNext();) {
 				String key = (String) it.next();
 				String value = (String) theBinding.get(key);
 				orgBinding.put(key, value);
 			}
-			List<Object> orgState = new ArrayList<Object>();
+			List<String> orgState = new ArrayList<String>();
 			for (int j = 0; j < theCurrentState.size(); j++) {
 				orgState.add(theCurrentState.get(j));
 			}
-			List<Object> orgPlan = new ArrayList<Object>();
+			List<Operator> orgPlan = new ArrayList<Operator>();
 			for (int j = 0; j < plan.size(); j++) {
 				orgPlan.add(plan.get(j));
 			}
 
-			List<Object> addList = (List<Object>) anOperator.getAddList();
+			List<String> addList = (List<String>) anOperator.getAddList();
 			for (int j = 0; j < addList.size(); j++) {
 				if ((new Unifier()).unify(theGoal, (String) addList.get(j), theBinding)) {
 					Operator newOperator = anOperator.instantiate(theBinding);
-					List<Object> newGoals = (List<Object>) newOperator.getIfList();
+					List<String> newGoals = (List<String>) newOperator.getIfList();
 					System.out.println(newOperator.name);
 					if (planning(newGoals, theCurrentState, theBinding)) {
 						System.out.println(newOperator.name);
@@ -152,7 +151,7 @@ public class Planner {
 					} else {
 						// 失敗したら元に戻す．
 						theBinding.clear();
-						for (Iterator<Object> it = orgBinding.keySet().iterator(); it.hasNext();) {
+						for (Iterator<String> it = orgBinding.keySet().iterator(); it.hasNext();) {
 							String key = (String) it.next();
 							String value = (String) orgBinding.get(key);
 							theBinding.put(key, value);
@@ -180,15 +179,15 @@ public class Planner {
 		return newOperator;
 	}
 
-	private ArrayList<Object> initGoalList() {
-		ArrayList<Object> goalList = new ArrayList<Object>();
+	private ArrayList<String> initGoalList() {
+		ArrayList<String> goalList = new ArrayList<String>();
 		goalList.add("B on C");
 		goalList.add("A on B");
 		return goalList;
 	}
 
-	private ArrayList<Object> initInitialState() {
-		ArrayList<Object> initialState = new ArrayList<Object>();
+	private ArrayList<String> initInitialState() {
+		ArrayList<String> initialState = new ArrayList<String>();
 		initialState.add("clear A");
 		initialState.add("clear B");
 		initialState.add("clear C");
@@ -201,22 +200,22 @@ public class Planner {
 	}
 
 	private void initOperators() {
-		operators = new ArrayList<Object>();
+		operators = new ArrayList<Operator>();
 
 		// OPERATOR 1
 		// / NAME
 		String name1 = new String("Place ?x on ?y");
 		// / IF
-		ArrayList<Object> ifList1 = new ArrayList<Object>();
+		ArrayList<String> ifList1 = new ArrayList<String>();
 		ifList1.add(new String("clear ?y"));
 		ifList1.add(new String("holding ?x"));
 		// / ADD-LIST
-		ArrayList<Object> addList1 = new ArrayList<Object>();
+		ArrayList<String> addList1 = new ArrayList<String>();
 		addList1.add(new String("?x on ?y"));
 		addList1.add(new String("clear ?x"));
 		addList1.add(new String("handEmpty"));
 		// / DELETE-LIST
-		ArrayList<Object> deleteList1 = new ArrayList<Object>();
+		ArrayList<String> deleteList1 = new ArrayList<String>();
 		deleteList1.add(new String("clear ?y"));
 		deleteList1.add(new String("holding ?x"));
 		Operator operator1 = new Operator(name1, ifList1, addList1, deleteList1);
@@ -226,16 +225,16 @@ public class Planner {
 		// / NAME
 		String name2 = new String("remove ?x from on top ?y");
 		// / IF
-		List<Object> ifList2 = new ArrayList<Object>();
+		List<String> ifList2 = new ArrayList<String>();
 		ifList2.add(new String("?x on ?y"));
 		ifList2.add(new String("clear ?x"));
 		ifList2.add(new String("handEmpty"));
 		// / ADD-LIST
-		ArrayList<Object> addList2 = new ArrayList<Object>();
+		ArrayList<String> addList2 = new ArrayList<String>();
 		addList2.add(new String("clear ?y"));
 		addList2.add(new String("holding ?x"));
 		// / DELETE-LIST
-		ArrayList<Object> deleteList2 = new ArrayList<Object>();
+		ArrayList<String> deleteList2 = new ArrayList<String>();
 		deleteList2.add(new String("?x on ?y"));
 		deleteList2.add(new String("clear ?x"));
 		deleteList2.add(new String("handEmpty"));
@@ -246,15 +245,15 @@ public class Planner {
 		// / NAME
 		String name3 = new String("pick up ?x from the table");
 		// / IF
-		ArrayList<Object> ifList3 = new ArrayList<Object>();
+		ArrayList<String> ifList3 = new ArrayList<String>();
 		ifList3.add(new String("ontable ?x"));
 		ifList3.add(new String("clear ?x"));
 		ifList3.add(new String("handEmpty"));
 		// / ADD-LIST
-		ArrayList<Object> addList3 = new ArrayList<Object>();
+		ArrayList<String> addList3 = new ArrayList<String>();
 		addList3.add(new String("holding ?x"));
 		// / DELETE-LIST
-		ArrayList<Object> deleteList3 = new ArrayList<Object>();
+		ArrayList<String> deleteList3 = new ArrayList<String>();
 		deleteList3.add(new String("ontable ?x"));
 		deleteList3.add(new String("clear ?x"));
 		deleteList3.add(new String("handEmpty"));
@@ -265,186 +264,18 @@ public class Planner {
 		// / NAME
 		String name4 = new String("put ?x down on the table");
 		// / IF
-		ArrayList<Object> ifList4 = new ArrayList<Object>();
+		ArrayList<String> ifList4 = new ArrayList<String>();
 		ifList4.add(new String("holding ?x"));
 		// / ADD-LIST
-		ArrayList<Object> addList4 = new ArrayList<Object>();
+		ArrayList<String> addList4 = new ArrayList<String>();
 		addList4.add(new String("ontable ?x"));
 		addList4.add(new String("clear ?x"));
 		addList4.add(new String("handEmpty"));
 		// / DELETE-LIST
-		ArrayList<Object> deleteList4 = new ArrayList<Object>();
+		ArrayList<String> deleteList4 = new ArrayList<String>();
 		deleteList4.add(new String("holding ?x"));
 		Operator operator4 = new Operator(name4, ifList4, addList4, deleteList4);
 		operators.add(operator4);
-	}
-}
-
-class Operator {
-	String name;
-	List<Object> ifList;
-	List<Object> addList;
-	List<Object> deleteList;
-
-	Operator(String theName, List<Object> theIfList, List<Object> theAddList,
-			List<Object> theDeleteList) {
-		name = theName;
-		ifList = theIfList;
-		addList = theAddList;
-		deleteList = theDeleteList;
-	}
-
-	public List<Object> getAddList() {
-		return addList;
-	}
-
-	public List<Object> getDeleteList() {
-		return deleteList;
-	}
-
-	public List<Object> getIfList() {
-		return ifList;
-	}
-
-	public String toString() {
-		String result = "NAME: " + name + "\n" + "IF :" + ifList + "\n"
-				+ "ADD:" + addList + "\n" + "DELETE:" + deleteList;
-		return result;
-	}
-
-	public List<Object> applyState(List<Object> theState) {
-		for (int i = 0; i < addList.size(); i++) {
-			theState.add(addList.get(i));
-		}
-		for (int i = 0; i < deleteList.size(); i++) {
-			theState.add(deleteList.get(i));
-		}
-		return theState;
-	}
-
-	public Operator getRenamedOperator(int uniqueNum) {
-		List<Object> vars = new ArrayList<Object>();
-		// IfListの変数を集める
-		for (int i = 0; i < ifList.size(); i++) {
-			String anIf = (String) ifList.get(i);
-			vars = getVars(anIf, vars);
-		}
-		// addListの変数を集める
-		for (int i = 0; i < addList.size(); i++) {
-			String anAdd = (String) addList.get(i);
-			vars = getVars(anAdd, vars);
-		}
-		// deleteListの変数を集める
-		for (int i = 0; i < deleteList.size(); i++) {
-			String aDelete = (String) deleteList.get(i);
-			vars = getVars(aDelete, vars);
-		}
-		Hashtable renamedVarsTable = makeRenamedVarsTable(vars, uniqueNum);
-
-		// 新しいIfListを作る
-		List<Object> newIfList = new ArrayList<Object>();
-		for (int i = 0; i < ifList.size(); i++) {
-			String newAnIf = renameVars((String) ifList.get(i), renamedVarsTable);
-			newIfList.add(newAnIf);
-		}
-		// 新しいaddListを作る
-		List<Object> newAddList = new ArrayList<Object>();
-		for (int i = 0; i < addList.size(); i++) {
-			String newAnAdd = renameVars((String) addList.get(i), renamedVarsTable);
-			newAddList.add(newAnAdd);
-		}
-		// 新しいdeleteListを作る
-		List<Object> newDeleteList = new ArrayList<Object>();
-		for (int i = 0; i < deleteList.size(); i++) {
-			String newADelete = renameVars((String) deleteList.get(i), renamedVarsTable);
-			newDeleteList.add(newADelete);
-		}
-		// 新しいnameを作る
-		String newName = renameVars(name, renamedVarsTable);
-
-		return new Operator(newName, newIfList, newAddList, newDeleteList);
-	}
-
-	private List<Object> getVars(String thePattern, List<Object> vars) {
-		StringTokenizer st = new StringTokenizer(thePattern);
-		for (int i = 0; i < st.countTokens();) {
-			String tmp = st.nextToken();
-			if (var(tmp)) {
-				vars.add(tmp);
-			}
-		}
-		return vars;
-	}
-
-	private Hashtable makeRenamedVarsTable(List<Object> vars, int uniqueNum) {
-		Hashtable result = new Hashtable();
-		for (int i = 0; i < vars.size(); i++) {
-			String newVar = (String) vars.get(i) + uniqueNum;
-			result.put((String) vars.get(i), newVar);
-		}
-		return result;
-	}
-
-	private String renameVars(String thePattern, Hashtable renamedVarsTable) {
-		String result = new String();
-		StringTokenizer st = new StringTokenizer(thePattern);
-		for (int i = 0; i < st.countTokens();) {
-			String tmp = st.nextToken();
-			if (var(tmp)) {
-				result = result + " " + (String) renamedVarsTable.get(tmp);
-			} else {
-				result = result + " " + tmp;
-			}
-		}
-		return result.trim();
-	}
-
-	public Operator instantiate(HashMap<Object,Object> theBinding) {
-		// name を具体化
-		String newName = instantiateString(name, theBinding);
-		// ifList を具体化
-		List<Object> newIfList = new ArrayList<Object>();
-		for (int i = 0; i < ifList.size(); i++) {
-			String newIf = instantiateString((String) ifList.get(i), theBinding);
-			newIfList.add(newIf);
-		}
-		// addList を具体化
-		List<Object> newAddList = new ArrayList<Object>();
-		for (int i = 0; i < addList.size(); i++) {
-			String newAdd = instantiateString((String) addList.get(i), theBinding);
-			newAddList.add(newAdd);
-		}
-		// deleteListを具体化
-		List<Object> newDeleteList = new ArrayList<Object>();
-		for (int i = 0; i < deleteList.size(); i++) {
-			String newDelete = instantiateString((String) deleteList.get(i), theBinding);
-			newDeleteList.add(newDelete);
-		}
-		return new Operator(newName, newIfList, newAddList, newDeleteList);
-	}
-
-	private String instantiateString(String thePattern, HashMap<Object,Object> theBinding) {
-		String result = new String();
-		StringTokenizer st = new StringTokenizer(thePattern);
-		for (int i = 0; i < st.countTokens();) {
-			String tmp = st.nextToken();
-			if (var(tmp)) {
-				String newString = (String) theBinding.get(tmp);
-				if (newString == null) {
-					result = result + " " + tmp;
-				} else {
-					result = result + " " + newString;
-				}
-			} else {
-				result = result + " " + tmp;
-			}
-		}
-		return result.trim();
-	}
-
-	private boolean var(String str1) {
-		// 先頭が ? なら変数
-		return str1.startsWith("?");
 	}
 }
 
@@ -453,15 +284,15 @@ class Unifier {
 	String buffer1[];
 	StringTokenizer st2;
 	String buffer2[];
-	HashMap<Object,Object> vars;
+	HashMap<String,String> vars;
 
 	Unifier() {
 		// vars = new Hashtable();
 	}
 
-	public boolean unify(String string1, String string2, HashMap<Object,Object> theBindings) {
-		HashMap<Object,Object> orgBindings = new HashMap<Object,Object>();
-		for (Iterator<Object> it = theBindings.keySet().iterator(); it.hasNext();) {
+	public boolean unify(String string1, String string2, HashMap<String,String> theBindings) {
+		HashMap<String,String> orgBindings = new HashMap<String,String>();
+		for (Iterator<String> it = theBindings.keySet().iterator(); it.hasNext();) {
 			String key = (String) it.next();
 			String value = (String) theBindings.get(key);
 			orgBindings.put(key, value);
@@ -472,7 +303,7 @@ class Unifier {
 		} else {
 			// 失敗したら元に戻す．
 			theBindings.clear();
-			for (Iterator<Object> it = orgBindings.keySet().iterator(); it.hasNext();) {
+			for (Iterator<String> it = orgBindings.keySet().iterator(); it.hasNext();) {
 				String key = (String) it.next();
 				String value = (String) orgBindings.get(key);
 				theBindings.put(key, value);
@@ -505,7 +336,7 @@ class Unifier {
 
 		// 初期値としてバインディングが与えられていたら
 		if (this.vars.size() != 0) {
-			for (Iterator<Object> it = vars.keySet().iterator(); it.hasNext();) {
+			for (Iterator<String> it = vars.keySet().iterator(); it.hasNext();) {
 				String key = (String) it.next();
 				String value = (String) vars.get(key);
 				replaceBuffer(key, value);
@@ -562,7 +393,7 @@ class Unifier {
 	}
 
 	void replaceBindings(String preString, String postString) {
-		for (Iterator<Object> it = vars.keySet().iterator(); it.hasNext();) {
+		for (Iterator<String> it = vars.keySet().iterator(); it.hasNext();) {
 			String key = (String) it.next();
 			if (preString.equals(vars.get(key))) {
 				vars.put(key, postString);
