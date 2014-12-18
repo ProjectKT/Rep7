@@ -22,6 +22,7 @@ public class Planner {
 	Planner() {
 		rand = new Random();
 		timer = 0;
+		
 	}
 
 	public void start() {
@@ -202,8 +203,8 @@ public class Planner {
 
 	private ArrayList<Object> initGoalList() {
 		ArrayList<Object> goalList = new ArrayList<Object>();
-		goalList.add("A on B");
 		goalList.add("B on C");
+		goalList.add("A on B");
 		return goalList;
 	}
 
