@@ -61,6 +61,20 @@ public class SampleGUI extends JFrame{
 		group.add(rdbtnmntmNewRadioItem);
 		group.add(rdbtnmntmNewRadioItem_1);
 		
+		JMenu mnNewMenu_1 = new JMenu("State");
+		menuBar.add(mnNewMenu_1);
+		
+		JRadioButtonMenuItem rdbtnmntmNewRadioItem_2 = new JRadioButtonMenuItem("Graphics");
+		rdbtnmntmNewRadioItem_2.setSelected(true);
+		mnNewMenu_1.add(rdbtnmntmNewRadioItem_2);
+		
+		JRadioButtonMenuItem rdbtnmntmNewRadioItem_3 = new JRadioButtonMenuItem("Text");
+		mnNewMenu_1.add(rdbtnmntmNewRadioItem_3);
+		
+		ButtonGroup group2 = new ButtonGroup();
+		group2.add(rdbtnmntmNewRadioItem_2);
+		group2.add(rdbtnmntmNewRadioItem_3);
+		
 		JPanel panel = new JPanel();
 		getContentPane().add(panel, BorderLayout.CENTER);
 		panel.setLayout(new BorderLayout(0, 0));

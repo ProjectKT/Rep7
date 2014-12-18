@@ -1,5 +1,6 @@
 package planner;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -8,7 +9,7 @@ import java.util.Random;
 import java.util.StringTokenizer;
 
 public class Planner {
-	ArrayList<Object> operators;
+	ArrayList<Operator> operators;
 	Random rand;
 	ArrayList<Object> plan;
 	int timer;  //タイムタグを追加するたびに加算
@@ -123,11 +124,20 @@ public class Planner {
 			}
 		}
 
+		/*
 		int randInt = Math.abs(rand.nextInt()) % operators.size();
 		Operator op = (Operator) operators.get(randInt);
 		operators.remove(randInt);
 		operators.add(op);
+		 */
 
+		//以下LEX戦略のソート
+		for(Operator ope: operators){
+			ope.setTimes(timeTag);
+		}
+		Collections.sort(operators, new LEXComparator());
+		
+		
 		for (int i = cPoint; i < operators.size(); i++) {
 			Operator anOperator = rename((Operator) operators.get(i));
 			// 現在のCurrent state, Binding, planをbackup
@@ -197,6 +207,7 @@ public class Planner {
 
 	private Operator rename(Operator theOperator) {
 		Operator newOperator = theOperator.getRenamedOperator(uniqueNum);
+		//System.out.println("!!!"+newOperator);
 		uniqueNum = uniqueNum + 1;
 		return newOperator;
 	}
@@ -220,16 +231,18 @@ public class Planner {
 		initialState.add("handEmpty");
 		
 		for(Object obj: initialState){
-			timeTag.put(obj, 0);
+			System.out.println((String)obj);
+			System.out.println(quaryTrans((String)obj));
+			timeTag.put(quaryTrans((String)obj), 0);
 		}
-		
+		System.out.println(timeTag);
 		timer++;
 		
 		return initialState;
 	}
 
 	private void initOperators() {
-		operators = new ArrayList<Object>();
+		operators = new ArrayList<Operator>();
 
 		// OPERATOR 1
 		// / NAME
@@ -316,7 +329,7 @@ public class Planner {
 	void applyTimeTag(List<Object> add,List<Object> del){
 		
 		for(Object objAdd: add){
-			timeTag.put(objAdd, timer);
+			timeTag.put(quaryTrans((String)objAdd), timer);
 		}
 		
 		for(Object objDel: del){
@@ -325,6 +338,23 @@ public class Planner {
 		
 		timer++;
 	}
+	
+	private String quaryTrans(String quary){
+		if(quary.contains("clear")){
+			return "clear";
+		}else if(quary.contains("holding")){
+			return "holding";
+		}else if(quary.contains("ontable")){
+			return "ontable";
+		}else if(quary.contains("on")){
+			return "on";
+		}else if(quary.contains("handEmpty")){
+			return "handEmpty";
+		}else if(quary.contains("holding")){
+			return "holding";
+		}
+		return null;
+	}
 }
 
 class Operator {
@@ -332,6 +362,7 @@ class Operator {
 	List<Object> ifList;
 	List<Object> addList;
 	List<Object> deleteList;
+	List<Integer> times = new ArrayList<Integer>();
 
 	Operator(String theName, List<Object> theIfList, List<Object> theAddList,
 			List<Object> theDeleteList) {
@@ -493,6 +524,42 @@ class Operator {
 	private boolean var(String str1) {
 		// 先頭が ? なら変数
 		return str1.startsWith("?");
+	}
+	
+
+	public void setTimes(HashMap<Object, Integer> timeTag){
+		times.clear();
+		String trans;
+		for(int i = 0; i< ifList.size(); i++){
+			trans = quaryTrans((String)ifList.get(i));
+			System.out.println(trans);
+			if(timeTag.get(trans) == null){
+				times.add(1000);
+			}else{
+			times.add(timeTag.get(trans));
+			}
+			System.out.println(ifList.get(i));
+		}
+		System.out.println(times);
+		Collections.sort(times);
+		System.out.println(times);
+	}
+	
+	private String quaryTrans(String quary){
+		if(quary.equals("clear ?x")||quary.equals("clear ?y")){
+			return "clear";
+		}else if(quary.equals("holding ?x")){
+			return "holding";
+		}else if(quary.equals("?x on ?y")){
+			return "on";
+		}else if(quary.equals("handEmpty")){
+			return "handEmpty";
+		}else if(quary.equals("ontable ?x")){
+			return "ontable";
+		}else if(quary.equals("holding ?x")){
+			return "holding";
+		}
+		return null;
 	}
 }
 
