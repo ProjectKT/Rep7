@@ -1,5 +1,5 @@
 package planner;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -120,45 +120,62 @@ public class Planner {
 		for (int i = 0; i < size; i++) {
 			String aState = (String) theCurrentState.get(i);
 			if ((new Unifier()).unify(theGoal, aState, theBinding)) {
+				System.out.println("unifier = 0");
 				return 0;
 			}
 		}
 
-		/*
+		
 		int randInt = Math.abs(rand.nextInt()) % operators.size();
 		Operator op = (Operator) operators.get(randInt);
 		operators.remove(randInt);
 		operators.add(op);
-		 */
+		
 
+		//きよ案
+		//具体化でなやんでる。
+		//sortOpe(theGoal,theBinding,theCurrentState);
+		
+		
+		//幸汰案
 		//以下LEX戦略のソート
+
+		/*
 		for(Operator ope: operators){
 			ope.setTimes(timeTag);
 		}
 		Collections.sort(operators, new LEXComparator());
-		
+		*/
 		
 		for (int i = cPoint; i < operators.size(); i++) {
 			Operator anOperator = rename((Operator) operators.get(i));
-			// 現在のCurrent state, Binding, planをbackup
+
+			
+			//現在のBindingのバックアップ
 			HashMap<Object,Object> orgBinding = new HashMap<Object,Object>();
 			for (Iterator<Object> it = theBinding.keySet().iterator(); it.hasNext();) {
 				String key = (String) it.next();
 				String value = (String) theBinding.get(key);
 				orgBinding.put(key, value);
 			}
+			
+			//現在のCurrent stateをバックアップ
 			List<Object> orgState = new ArrayList<Object>();
 			for (int j = 0; j < theCurrentState.size(); j++) {
 				orgState.add(theCurrentState.get(j));
 			}
+			
+			//現在のplanをバックアップ
 			List<Object> orgPlan = new ArrayList<Object>();
 			for (int j = 0; j < plan.size(); j++) {
 				orgPlan.add(plan.get(j));
 			}
 
+			
 			List<Object> addList = (List<Object>) anOperator.getAddList();
 			for (int j = 0; j < addList.size(); j++) {
 				if ((new Unifier()).unify(theGoal, (String) addList.get(j), theBinding)) {
+					//オペレーターの変数を具体化
 					Operator newOperator = anOperator.instantiate(theBinding);
 					List<Object> newGoals = (List<Object>) newOperator.getIfList();
 					System.out.println("新しいオペレーター");
@@ -233,7 +250,7 @@ public class Planner {
 		for(Object obj: initialState){
 			System.out.println((String)obj);
 			System.out.println(quaryTrans((String)obj));
-			timeTag.put(quaryTrans((String)obj), 0);
+			timeTag.put(obj, 0);
 		}
 		System.out.println(timeTag);
 		timer++;
@@ -329,7 +346,7 @@ public class Planner {
 	void applyTimeTag(List<Object> add,List<Object> del){
 		
 		for(Object objAdd: add){
-			timeTag.put(quaryTrans((String)objAdd), timer);
+			timeTag.put(objAdd, timer);
 		}
 		
 		for(Object objDel: del){
@@ -338,6 +355,70 @@ public class Planner {
 		
 		timer++;
 	}
+	
+	void sortOpe(String theGoal, HashMap<Object,Object> theBinding, List<Object> theCurrentState){
+		
+		//各オペレーターの具体化
+		
+		//詰んでます。
+		
+		
+		//ここから適応できる具体化したオペレーターの優先順位決定
+		
+		int maxOpe = 0;
+		int maxTagNum = 0;
+		
+		ArrayList<ArrayList<Integer>> tagNum = new ArrayList<ArrayList<Integer>>();
+		
+		
+		//各オペレーターのタイムタグを格納したリストのリストを作成（ソート済み）
+		for(int i = 0; i < cloneOpe.size();i++){
+			int j;
+			ArrayList<Integer> sorted = new ArrayList<Integer>();
+			for(j = 0; j <cloneOpe.get(i).getIfList().size();j++){
+				sorted.add(timeTag.get(cloneOpe.get(i).getIfList().get(j)));
+			}
+			
+			if(j > maxTagNum){
+				maxTagNum = j;
+				maxOpe = i;
+			}
+			System.out.println(sorted);
+			Collections.sort(sorted);
+			Collections.reverse(sorted);
+			
+			tagNum.add(sorted);
+		}
+		
+		ArrayList<Integer> temp = new ArrayList<Integer>();
+		temp = tagNum.get(maxOpe);
+
+		for(int i = 0; i < cloneOpe.size();i++){
+			if(i != maxOpe){
+				int frag = 0;
+				if(temp.get(0) == tagNum.get(i).get(0)){
+					int toNum = tagNum.get(i).size();
+					for(int j = 1; (j < temp.size())&&(j < toNum);j++){
+						if(temp.get(j) < tagNum.get(i).get(j)){
+							frag = 1;
+						}
+					}
+				}else if(temp.get(0) < tagNum.get(i).get(0)){
+					frag = 1;
+				}
+				if(frag == 1){
+					temp = tagNum.get(i);
+					maxOpe = i;
+				}
+			}
+		}
+		
+		Operator tempOp = operators.get(maxOpe);
+		operators.remove(maxOpe);
+		operators.add(0,tempOp);
+		
+	}
+	
 	
 	private String quaryTrans(String quary){
 		if(quary.contains("clear")){
