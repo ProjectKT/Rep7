@@ -18,8 +18,10 @@ import java.awt.SystemColor;
 import java.awt.Toolkit;
 
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JTextField;
 
 public class SampleGUI extends JFrame{
+	private JTextField textField;
 
 	// コンストラクタ
 	public SampleGUI() {
@@ -73,17 +75,12 @@ public class SampleGUI extends JFrame{
 		JPanel panel_1 = new JPanel();
 		tabbedPane.addTab("New tab", null, panel_1, null);
 		
+		textField = new JTextField();
+		panel_1.add(textField);
+		textField.setColumns(10);
+		
 		JPanel panel_2 = new JPanel();
 		tabbedPane.addTab("New tab", null, panel_2, null);
-		
-		JPanel panel_3 = new JPanel();
-		tabbedPane.addTab("New tab", null, panel_3, null);
-		
-		JTabbedPane tabbedPane_1 = new JTabbedPane(JTabbedPane.TOP);
-		panel.add(tabbedPane_1, BorderLayout.CENTER);
-		
-		JPanel panel_4 = new JPanel();
-		tabbedPane_1.addTab("New tab", null, panel_4, null);
 		
 		JTabbedPane tabbedPane_2 = new JTabbedPane(JTabbedPane.TOP);
 		tabbedPane_2.setPreferredSize(new Dimension(200, 100));
@@ -98,6 +95,9 @@ public class SampleGUI extends JFrame{
 		
 		JPanel panel_6 = new JPanel();
 		tabbedPane_3.addTab("New tab", null, panel_6, null);
+		
+		JPanel panel_4 = new JPanel();
+		panel.add(panel_4, BorderLayout.CENTER);
 		
 	}
 	

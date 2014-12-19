@@ -1,5 +1,7 @@
 package planner;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -8,7 +10,7 @@ import java.util.Random;
 import java.util.StringTokenizer;
 
 public class Planner {
-	ArrayList<Object> operators;
+	ArrayList<Operator> operators;
 	Random rand;
 	ArrayList<Object> plan;
 	int timer;  //タイムタグを追加するたびに加算
@@ -122,14 +124,14 @@ public class Planner {
 				return 0;
 			}
 		}
-
-		int randInt = Math.abs(rand.nextInt()) % operators.size();
-		Operator op = (Operator) operators.get(randInt);
-		operators.remove(randInt);
-		operators.add(op);
+		for(int i= 0;i<operators.size();i++){
+			System.out.println(operators.get(i).getPriority());
+		}
+		Collections.sort(operators,new PriComparator());
 
 		for (int i = cPoint; i < operators.size(); i++) {
 			Operator anOperator = rename((Operator) operators.get(i));
+			operators.get(i).incrementPriority();
 			// 現在のCurrent state, Binding, planをbackup
 			HashMap<Object,Object> orgBinding = new HashMap<Object,Object>();
 			for (Iterator<Object> it = theBinding.keySet().iterator(); it.hasNext();) {
@@ -148,6 +150,7 @@ public class Planner {
 
 			List<Object> addList = (List<Object>) anOperator.getAddList();
 			for (int j = 0; j < addList.size(); j++) {
+				
 				if ((new Unifier()).unify(theGoal, (String) addList.get(j), theBinding)) {
 					Operator newOperator = anOperator.instantiate(theBinding);
 					List<Object> newGoals = (List<Object>) newOperator.getIfList();
@@ -229,7 +232,7 @@ public class Planner {
 	}
 
 	private void initOperators() {
-		operators = new ArrayList<Object>();
+		operators = new ArrayList<Operator>();
 
 		// OPERATOR 1
 		// / NAME
@@ -332,6 +335,7 @@ class Operator {
 	List<Object> ifList;
 	List<Object> addList;
 	List<Object> deleteList;
+	private int Priority;
 
 	Operator(String theName, List<Object> theIfList, List<Object> theAddList,
 			List<Object> theDeleteList) {
@@ -339,6 +343,7 @@ class Operator {
 		ifList = theIfList;
 		addList = theAddList;
 		deleteList = theDeleteList;
+		Priority = 0;
 	}
 
 	public List<Object> getAddList() {
@@ -353,6 +358,18 @@ class Operator {
 		return ifList;
 	}
 
+	public void incrementPriority(){
+		Priority++;
+	}
+	
+	public int getPriority(){
+		return Priority;
+	}
+	
+	public void resetPriority(){
+		Priority = 0;
+	}
+	
 	public String toString() {
 		String result = "NAME: " + name + "\n" + "IF :" + ifList + "\n"
 				+ "ADD:" + addList + "\n" + "DELETE:" + deleteList;
@@ -624,3 +641,36 @@ class Unifier {
 	}
 
 }
+
+//Comparator実装クラス  
+class PriComparator implements Comparator<Operator> {  
+  public static final int ASC = 1;    //昇順  
+  public static final int DESC = -1;    //降順  
+  private int sort = ASC;    //デフォルトは昇順  
+    
+  public PriComparator() {  
+        
+  }  
+    
+  /** 
+   * @param sort  StringComparator.ASC | StringComparator.DESC。昇順や降順を指定します。 
+   */  
+  public PriComparator(int sort) {  
+      this.sort = sort;  
+  }  
+    
+  public int compare(Operator arg0, Operator arg1) {  
+	  
+      if (arg0.getPriority() == arg1.getPriority()) {  
+          return 0;   // arg0 = arg1  
+      } else if (arg0.getPriority() > arg1.getPriority()) {  
+          return 1 * sort;   // arg1 > arg2  
+      } else {  
+          return -1 * sort;  // arg1 < arg2  
+      }  
+        
+  }
+
+
+    
+}  
