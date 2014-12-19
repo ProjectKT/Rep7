@@ -8,13 +8,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 
 public class Planner {
 	ArrayList<Operator> operators;
-	Random rand;
 	ArrayList<Object> plan;
-	int timer;  //タイムタグを追加するたびに加算
-	HashMap<Object,Integer> timeTag = new HashMap<Object,Integer>();  //タイムタグ
 	
 	
 	public static void main(String argv[]) {
@@ -22,8 +20,6 @@ public class Planner {
 	}
 
 	Planner() {
-		rand = new Random();
-		timer = 0;
 		
 	}
 
@@ -75,8 +71,6 @@ public class Planner {
 					theGoalList.remove(0);
 					System.out.println("チェック CurrentState");
 					System.out.println(theCurrentState);
-					System.out.println("チェック timeTag");
-					System.out.println(timeTag);
 					if (planning(theGoalList, theCurrentState, theBinding)) {
 						// System.out.println("Success !");
 						return true;
@@ -169,8 +163,6 @@ public class Planner {
 						theCurrentState = newOperator
 								.applyState(theCurrentState);
 						
-						//timeTagの更新
-						applyTimeTag(addTemp,delTemp);
 						
 						return i + 1;
 					} else {
@@ -206,27 +198,19 @@ public class Planner {
 
 	private ArrayList<Object> initGoalList() {
 		ArrayList<Object> goalList = new ArrayList<Object>();
-		goalList.add("B on C");
 		goalList.add("A on B");
 		return goalList;
 	}
 
 	private ArrayList<Object> initInitialState() {
 		ArrayList<Object> initialState = new ArrayList<Object>();
-		initialState.add("clear A");
+		initialState.add("C on A");
 		initialState.add("clear B");
 		initialState.add("clear C");
 
 		initialState.add("ontable A");
 		initialState.add("ontable B");
-		initialState.add("ontable C");
 		initialState.add("handEmpty");
-		
-		for(Object obj: initialState){
-			timeTag.put(obj, 0);
-		}
-		
-		timer++;
 		
 		return initialState;
 	}
@@ -310,24 +294,7 @@ public class Planner {
 		operators.add(operator4);
 	}
 	
-	/**
-	 *    timeTagの更新
-	 *    
-	 * @param add	オペレーターによって加えた状態
-	 * @param del	オペレーターによって削除した状態
-	 */
-	void applyTimeTag(List<Object> add,List<Object> del){
-		
-		for(Object objAdd: add){
-			timeTag.put(objAdd, timer);
-		}
-		
-		for(Object objDel: del){
-			timeTag.remove(objDel);
-		}
-		
-		timer++;
-	}
+
 }
 
 class Operator {
@@ -377,13 +344,29 @@ class Operator {
 	}
 
 	public List<Object> applyState(List<Object> theState) {
+		TreeSet<Integer> removes = new TreeSet<Integer>(); 
+
 		for (int i = 0; i < addList.size(); i++) {
 			theState.add(addList.get(i));
-			
+			System.out.println("add : "+addList.get(i));
 		}
 		for (int i = 0; i < deleteList.size(); i++) {
-			theState.remove(deleteList.get(i));
+			theState.add(deleteList.get(i));
+			System.out.println("delete : "+deleteList.get(i));
 		}
+		for(int i = 0; i<theState.size(); i++){
+			for(int j = i+1;j<theState.size();j++){
+				if(theState.get(i).toString().equals(theState.get(j).toString())){
+					removes.add(i);
+					removes.add(j);
+				}
+			}
+		}
+		System.out.println("before"+theState);
+		for(Integer i:removes){
+			theState.remove(i);
+		}
+		System.out.println("aftore"+theState);
 		return theState;
 	}
 
@@ -521,7 +504,7 @@ class Unifier {
 	HashMap<Object,Object> vars;
 
 	Unifier() {
-		// vars = new Hashtable();
+		 vars = new HashMap<Object,Object>();
 	}
 
 	public boolean unify(String string1, String string2, HashMap<Object,Object> theBindings) {
