@@ -20,8 +20,18 @@ import java.awt.Toolkit;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JTextField;
 
+import java.awt.GridLayout;
+
+import javax.swing.BoxLayout;
+import javax.swing.border.BevelBorder;
+
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
+import java.awt.FlowLayout;
+import javax.swing.JTextArea;
+
 public class SampleGUI extends JFrame{
-	private JTextField textField;
 
 	// コンストラクタ
 	public SampleGUI() {
@@ -74,10 +84,7 @@ public class SampleGUI extends JFrame{
 		
 		JPanel panel_1 = new JPanel();
 		tabbedPane.addTab("New tab", null, panel_1, null);
-		
-		textField = new JTextField();
-		panel_1.add(textField);
-		textField.setColumns(10);
+		panel_1.setLayout(null);
 		
 		JPanel panel_2 = new JPanel();
 		tabbedPane.addTab("New tab", null, panel_2, null);
@@ -96,9 +103,33 @@ public class SampleGUI extends JFrame{
 		JPanel panel_6 = new JPanel();
 		tabbedPane_3.addTab("New tab", null, panel_6, null);
 		
-		JPanel panel_4 = new JPanel();
-		panel.add(panel_4, BorderLayout.CENTER);
+		JTabbedPane tabbedPane_1 = new JTabbedPane(JTabbedPane.TOP);
+		panel.add(tabbedPane_1, BorderLayout.CENTER);
 		
+		JPanel panel_3 = new JPanel();
+		tabbedPane_1.addTab("New tab", null, panel_3, null);
+		panel_3.setLayout(new GridLayout(2, 0, 0, 0));
+		
+		JPanel panel_4 = new JPanel();
+		panel_3.add(panel_4);
+		
+		JPanel panel_7 = new JPanel();
+		panel_3.add(panel_7);
+		panel_7.setLayout(new GridLayout(0, 2, 0, 0));
+		
+		JPanel panel_8 = new JPanel();
+		panel_7.add(panel_8);
+		
+		JPanel panel_9 = new JPanel();
+		panel_7.add(panel_9);
+		
+		BevelBorder border4 = new BevelBorder(BevelBorder.RAISED);
+		BevelBorder border8 = new BevelBorder(BevelBorder.RAISED);
+		BevelBorder border9 = new BevelBorder(BevelBorder.RAISED);
+		
+		panel_4.setBorder(border4);
+		panel_8.setBorder(border8);
+		panel_9.setBorder(border9);
 	}
 	
 	private void loadData(){
@@ -111,5 +142,4 @@ public class SampleGUI extends JFrame{
 		SampleGUI gui = new SampleGUI();
 		gui.setVisible(true);
 	}
-	
 }
