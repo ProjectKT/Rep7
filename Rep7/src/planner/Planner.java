@@ -122,6 +122,8 @@ public class Planner {
 			String aState = (String) theCurrentState.get(i);
 			if ((new Unifier()).unify(theGoal, aState, theBinding)) {
 				System.out.println("CurrentStateに対象があり.");
+				System.out.println("Success after astate:" +aState);
+				System.out.println(theBinding);
 				return 0;
 			}
 		}
@@ -185,16 +187,39 @@ public class Planner {
 						System.out.println(newOperator.name);
 						plan.add(newOperator);
 						
+
 						
 						//Add,Deleteリストを保存しておく  timeTagに利用
 						List<Object> addTemp = newOperator.getAddList();
 						List<Object> delTemp = newOperator.getDeleteList();
+	
+						System.out.println(addTemp);
+						System.out.println(delTemp);
+						
+						for(int k = 0 ; k < addTemp.size();k++){
+							addTemp.set(k,instantiation((String)addTemp.get(k),theBinding));
+						}
+
+						for(int k = 0 ; k < delTemp.size();k++){
+							delTemp.set(k,instantiation((String)delTemp.get(k),theBinding));
+						}
+						
+						
+						System.out.println("\nadd");
+						System.out.println(addTemp);
+						System.out.println("del");
+						System.out.println(delTemp);
+						
+						System.out.println("\nbefore");
+						System.out.println(theCurrentState);
 						
 						//現在の状態を遷移させる
 						theCurrentState = newOperator
 								.applyState(theCurrentState);
 						System.out.println("after");
 						System.out.println(theCurrentState);
+						System.out.println("Binding");
+						System.out.println(theBinding);
 						//timeTagの更新
 						applyTimeTag(addTemp,delTemp);
 						
@@ -240,12 +265,22 @@ public class Planner {
 
 	private ArrayList<Object> initInitialState() {
 		ArrayList<Object> initialState = new ArrayList<Object>();
+		/*
 		initialState.add("clear A");
 		initialState.add("clear B");
 		initialState.add("clear C");
 
 		initialState.add("ontable A");
 		initialState.add("ontable B");
+		initialState.add("ontable C");
+		initialState.add("handEmpty");
+		*/
+		
+		initialState.add("clear B");
+		initialState.add("clear C");
+		
+		initialState.add("B on A");
+		initialState.add("ontable A");
 		initialState.add("ontable C");
 		initialState.add("handEmpty");
 		
@@ -456,6 +491,30 @@ public class Planner {
 			return "holding";
 		}
 		return null;
+	}
+	
+	private boolean var(String str1) {
+		// 先頭が ? なら変数
+		return str1.startsWith("?");
+	}
+	
+	public Object instantiation(String thePattern, HashMap<Object,Object> theBinding) {
+		String result = new String();
+		StringTokenizer st = new StringTokenizer(thePattern);
+		for (int i = 0; i < st.countTokens();) {
+			String tmp = st.nextToken();
+			if (var(tmp)) {
+				String newString = (String) theBinding.get(tmp);
+				if (newString == null) {
+					result = result + " " + tmp;
+				} else {
+					result = result + " " + newString;
+				}
+			} else {
+				result = result + " " + tmp;
+			}
+		}
+		return result.trim();
 	}
 }
 
@@ -735,9 +794,32 @@ class Unifier {
 			}
 		}
 
-		return true;
+		// 重複のチェック　A　on Aとかダメ
+		if((checkOverlap(buffer1))&&(checkOverlap(buffer2))){	
+
+			return true;
+		}
+		else{
+			
+			return false;
+		}
+		
+		//return true;
 	}
 
+	boolean checkOverlap(String buf[]){
+		
+		for(int i = 0 ; i < buf.length;i++){
+			for(int j = i + 1 ; j < buf.length;j++){
+				if(tokenMatching(buf[i],buf[j])){
+					return false;
+				}
+			}
+		}
+		
+		return true;
+	}
+	
 	boolean tokenMatching(String token1, String token2) {
 		if (token1.equals(token2))
 			return true;
