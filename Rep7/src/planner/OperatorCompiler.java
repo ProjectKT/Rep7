@@ -38,7 +38,7 @@ public class OperatorCompiler {
 								ifList = new ArrayList<String>();
 								safeNextToken();
 								while (!"then".equalsIgnoreCase(st.sval)) {
-									if ("rule".equalsIgnoreCase(st.sval) || "if".equalsIgnoreCase(st.sval)) {
+									if ("operator".equalsIgnoreCase(st.sval) || "if".equalsIgnoreCase(st.sval)) {
 										throw new IllegalEndException(st.getCurrentPosition() - st.sval.length() - 1);
 									}
 									ifList.add(st.sval);
@@ -50,8 +50,10 @@ public class OperatorCompiler {
 									nextToken = safeNextToken();
 									while (!"operator".equalsIgnoreCase(st.sval) && nextToken != StreamTokenizer.TT_EOF) {
 										if ("add".equalsIgnoreCase(st.sval)) {
+											safeNextToken();
 											addList.add(st.sval);
 										} else if ("delete".equalsIgnoreCase(st.sval)) {
+											safeNextToken();
 											deleteList.add(st.sval);
 										} else {
 											throw new IllegalEndException(st.getCurrentPosition() - st.sval.length() - 1);
@@ -68,7 +70,7 @@ public class OperatorCompiler {
 							throw new IllegalTokenException(st.sval);
 						}
 						Operator op = new Operator(name, ifList, addList, deleteList);
-						Segment seg = new Segment(charArray, offset, st.getCurrentPosition() - offset - 1);
+						Segment seg = new Segment(charArray, offset, st.getCurrentPosition() - offset);
 						result.operators.put(op, seg);
 						break;
 					default:
@@ -137,11 +139,10 @@ public class OperatorCompiler {
 	
 	public static void main(String[] args) {
 		String s = ""
-				+ "rule 	\"Z1\" "
+				+ "operator 	\"Z1\" "
 				+ "if 	\"?x has hair\" "
-				+ "then 	\"?x is a mammal\"";
+				+ "then 	add \"?x is a mammal\"\n delete \"?x has hair\"";
 		
 		System.out.println(new OperatorCompiler().compile(s));
-		System.out.println(s.charAt(50));
 	}
 }
