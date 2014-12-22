@@ -33,7 +33,7 @@ public class Planner {
 
 		HashMap<Object,Object> theBinding = new HashMap<Object,Object>();
 		plan = new ArrayList<Object>();
-		planning(goalList, initialState, theBinding);
+		planning(goalList, initialState, theBinding,0);
 
 		System.out.println("***** This is a plan! *****");
 		for (int i = 0; i < plan.size(); i++) {
@@ -42,11 +42,12 @@ public class Planner {
 		}
 	}
 
-	private boolean planning(List<Object> theGoalList, List<Object> theCurrentState, HashMap<Object,Object> theBinding) {
+	private boolean planning(List<Object> theGoalList, List<Object> theCurrentState, HashMap<Object,Object> theBinding,int n) {
+		System.out.println("再帰:"+n);
 		System.out.println("*** GOALS ***" + theGoalList);
 		if (theGoalList.size() == 1) {
 			String aGoal = (String) theGoalList.get(0);
-			if (planningAGoal(aGoal, theCurrentState, theBinding, 0) != -1) {
+			if (planningAGoal(aGoal, theCurrentState, theBinding, 0,n) != -1) {
 				return true;
 			} else {
 				return false;
@@ -68,7 +69,7 @@ public class Planner {
 					orgState.add(theCurrentState.get(i));
 				}
 
-				int tmpPoint = planningAGoal(aGoal, theCurrentState, theBinding, cPoint);
+				int tmpPoint = planningAGoal(aGoal, theCurrentState, theBinding, cPoint,n);
 				// System.out.println("tmpPoint: "+tmpPoint);
 				if (tmpPoint != -1) {
 					theGoalList.remove(0);
@@ -76,12 +77,12 @@ public class Planner {
 					System.out.println(theCurrentState);
 					System.out.println("チェック timeTag");
 					System.out.println(timeTag);
-					if (planning(theGoalList, theCurrentState, theBinding)) {
-						// System.out.println("Success !");
+					if (planning(theGoalList, theCurrentState, theBinding,n+1)) {
+						 System.out.println("Success !");
 						return true;
 					} else {//失敗したとき
 						cPoint = tmpPoint;
-						// System.out.println("Fail::"+cPoint);
+						 System.out.println("Fail::"+cPoint);
 						theGoalList.add(0, aGoal);
 
 						theBinding.clear();
@@ -114,13 +115,13 @@ public class Planner {
 		}
 	}
 
-	private int planningAGoal(String theGoal, List<Object> theCurrentState, HashMap<Object,Object> theBinding, int cPoint) {
+	private int planningAGoal(String theGoal, List<Object> theCurrentState, HashMap<Object,Object> theBinding, int cPoint,int n) {
 		System.out.println("**" + theGoal);
 		int size = theCurrentState.size();
 		for (int i = 0; i < size; i++) {
 			String aState = (String) theCurrentState.get(i);
 			if ((new Unifier()).unify(theGoal, aState, theBinding)) {
-				System.out.println("unifier = 0");
+				System.out.println("CurrentStateに対象があり.");
 				return 0;
 			}
 		}
@@ -179,8 +180,8 @@ public class Planner {
 					Operator newOperator = anOperator.instantiate(theBinding);
 					List<Object> newGoals = (List<Object>) newOperator.getIfList();
 					System.out.println("新しいオペレーター");
-					System.out.println(newOperator.name);
-					if (planning(newGoals, theCurrentState, theBinding)) {
+					System.out.println(newOperator.toString());
+					if (planning(newGoals, theCurrentState, theBinding,n+1)) {
 						System.out.println(newOperator.name);
 						plan.add(newOperator);
 						
@@ -192,7 +193,8 @@ public class Planner {
 						//現在の状態を遷移させる
 						theCurrentState = newOperator
 								.applyState(theCurrentState);
-						
+						System.out.println("after");
+						System.out.println(theCurrentState);
 						//timeTagの更新
 						applyTimeTag(addTemp,delTemp);
 						
@@ -248,8 +250,6 @@ public class Planner {
 		initialState.add("handEmpty");
 		
 		for(Object obj: initialState){
-			System.out.println((String)obj);
-			System.out.println(quaryTrans((String)obj));
 			timeTag.put(obj, 0);
 		}
 		System.out.println(timeTag);
@@ -362,6 +362,26 @@ public class Planner {
 		
 		//詰んでます。
 		
+		String tempGoal = ""+theGoal;
+		HashMap<Object,Object> tempBd = new HashMap<Object,Object>();
+		tempBd.putAll(theBinding);
+		ArrayList<Object> tempState = new ArrayList<Object>();
+		tempState.addAll(theCurrentState);
+		ArrayList<Operator> cloneOpe = new ArrayList<Operator>();
+		cloneOpe.addAll(operators);
+		
+		
+		//(new Unifier()).unify(theGoal, (String) addList.get(j), theBinding)
+
+
+		
+		for(int i = 0; i< cloneOpe.size();i++){
+			System.out.println(cloneOpe.get(0).instantiate(theBinding).toString());
+			cloneOpe.add(cloneOpe.get(0).instantiate(theBinding));
+			cloneOpe.remove(0);
+		}
+		
+		//System.out.println(cloneOpe.toString());
 		
 		//ここから適応できる具体化したオペレーターの優先順位決定
 		
@@ -370,6 +390,7 @@ public class Planner {
 		
 		ArrayList<ArrayList<Integer>> tagNum = new ArrayList<ArrayList<Integer>>();
 		
+		/*
 		
 		//各オペレーターのタイムタグを格納したリストのリストを作成（ソート済み）
 		for(int i = 0; i < cloneOpe.size();i++){
@@ -416,7 +437,7 @@ public class Planner {
 		Operator tempOp = operators.get(maxOpe);
 		operators.remove(maxOpe);
 		operators.add(0,tempOp);
-		
+		*/
 	}
 	
 	
