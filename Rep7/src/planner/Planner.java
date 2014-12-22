@@ -1,4 +1,5 @@
 package planner;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -13,14 +14,13 @@ import java.util.TreeSet;
 public class Planner {
 	ArrayList<Operator> operators;
 	ArrayList<Object> plan;
-	
-	
+
 	public static void main(String argv[]) {
 		(new Planner()).start();
 	}
 
 	Planner() {
-		
+
 	}
 
 	public void start() {
@@ -28,7 +28,7 @@ public class Planner {
 		ArrayList<Object> goalList = initGoalList();
 		ArrayList<Object> initialState = initInitialState();
 
-		HashMap<Object,Object> theBinding = new HashMap<Object,Object>();
+		HashMap<Object, Object> theBinding = new HashMap<Object, Object>();
 		plan = new ArrayList<Object>();
 		planning(goalList, initialState, theBinding);
 
@@ -39,8 +39,10 @@ public class Planner {
 		}
 	}
 
-	private boolean planning(List<Object> theGoalList, List<Object> theCurrentState, HashMap<Object,Object> theBinding) {
-		System.out.println("*** GOALS ***" + theGoalList);
+	private boolean planning(List<Object> theGoalList,
+			List<Object> theCurrentState, HashMap<Object, Object> theBinding) {
+		System.out.println("*** GOALS ***!!" + theGoalList);
+		// ゴールまたはサブゴールを処理
 		if (theGoalList.size() == 1) {
 			String aGoal = (String) theGoalList.get(0);
 			if (planningAGoal(aGoal, theCurrentState, theBinding, 0) != -1) {
@@ -54,8 +56,9 @@ public class Planner {
 			while (cPoint < operators.size()) {
 				// System.out.println("cPoint:"+cPoint);
 				// Store original binding
-				HashMap<Object,Object> orgBinding = new HashMap<Object,Object>();
-				for (Iterator<Object> it = theBinding.keySet().iterator(); it.hasNext();) {
+				HashMap<Object, Object> orgBinding = new HashMap<Object, Object>();
+				for (Iterator<Object> it = theBinding.keySet().iterator(); it
+						.hasNext();) {
 					String key = (String) it.next();
 					String value = (String) theBinding.get(key);
 					orgBinding.put(key, value);
@@ -65,7 +68,8 @@ public class Planner {
 					orgState.add(theCurrentState.get(i));
 				}
 
-				int tmpPoint = planningAGoal(aGoal, theCurrentState, theBinding, cPoint);
+				int tmpPoint = planningAGoal(aGoal, theCurrentState,
+						theBinding, cPoint);
 				// System.out.println("tmpPoint: "+tmpPoint);
 				if (tmpPoint != -1) {
 					theGoalList.remove(0);
@@ -74,13 +78,14 @@ public class Planner {
 					if (planning(theGoalList, theCurrentState, theBinding)) {
 						// System.out.println("Success !");
 						return true;
-					} else {//失敗したとき
+					} else {// 失敗したとき
 						cPoint = tmpPoint;
 						// System.out.println("Fail::"+cPoint);
 						theGoalList.add(0, aGoal);
 
 						theBinding.clear();
-						for (Iterator<Object> it = orgBinding.keySet().iterator(); it.hasNext();) {
+						for (Iterator<Object> it = orgBinding.keySet()
+								.iterator(); it.hasNext();) {
 							String key = (String) it.next();
 							String value = (String) orgBinding.get(key);
 							theBinding.put(key, value);
@@ -88,12 +93,13 @@ public class Planner {
 						theCurrentState.clear();
 						for (int i = 0; i < orgState.size(); i++) {
 							theCurrentState.add(orgState.get(i));
-							
+
 						}
 					}
 				} else {
 					theBinding.clear();
-					for (Iterator<Object> it = orgBinding.keySet().iterator(); it.hasNext();) {
+					for (Iterator<Object> it = orgBinding.keySet().iterator(); it
+							.hasNext();) {
 						String key = (String) it.next();
 						String value = (String) orgBinding.get(key);
 						theBinding.put(key, value);
@@ -109,26 +115,32 @@ public class Planner {
 		}
 	}
 
-	private int planningAGoal(String theGoal, List<Object> theCurrentState, HashMap<Object,Object> theBinding, int cPoint) {
-		System.out.println("**" + theGoal);
+	private int planningAGoal(String theGoal, List<Object> theCurrentState,
+			HashMap<Object, Object> theBinding, int cPoint) {
+		System.out.println("**??" + theGoal);
 		int size = theCurrentState.size();
+		// 全部ユニファイできたらおｋ
 		for (int i = 0; i < size; i++) {
 			String aState = (String) theCurrentState.get(i);
 			if ((new Unifier()).unify(theGoal, aState, theBinding)) {
 				return 0;
 			}
 		}
-		for(int i= 0;i<operators.size();i++){
+
+		for (int i = 0; i < operators.size(); i++) {
 			System.out.println(operators.get(i).getPriority());
 		}
-		Collections.sort(operators,new PriComparator());
+		// ここで優先度でオペレータをソート
+		Collections.sort(operators, new PriComparator());
 
 		for (int i = cPoint; i < operators.size(); i++) {
 			Operator anOperator = rename((Operator) operators.get(i));
+			// オペレータ使用の際優先度を更新
 			operators.get(i).incrementPriority();
 			// 現在のCurrent state, Binding, planをbackup
-			HashMap<Object,Object> orgBinding = new HashMap<Object,Object>();
-			for (Iterator<Object> it = theBinding.keySet().iterator(); it.hasNext();) {
+			HashMap<Object, Object> orgBinding = new HashMap<Object, Object>();
+			for (Iterator<Object> it = theBinding.keySet().iterator(); it
+					.hasNext();) {
 				String key = (String) it.next();
 				String value = (String) theBinding.get(key);
 				orgBinding.put(key, value);
@@ -142,48 +154,55 @@ public class Planner {
 				orgPlan.add(plan.get(j));
 			}
 
+
+			// オペレータのaddlistを見る
 			List<Object> addList = (List<Object>) anOperator.getAddList();
-			for (int j = 0; j < addList.size(); j++) {
-				
-				if ((new Unifier()).unify(theGoal, (String) addList.get(j), theBinding)) {
-					Operator newOperator = anOperator.instantiate(theBinding);
-					List<Object> newGoals = (List<Object>) newOperator.getIfList();
-					System.out.println("新しいオペレーター");
-					System.out.println(newOperator.name);
-					if (planning(newGoals, theCurrentState, theBinding)) {
+				for (int j = 0; j < addList.size(); j++) {
+
+					if ((new Unifier()).unify(theGoal, (String) addList.get(j),
+							theBinding)) {
+						Operator newOperator = anOperator
+								.instantiate(theBinding);
+						List<Object> newGoals = (List<Object>) newOperator
+								.getIfList();
+						System.out.println("新しいオペレーター");
 						System.out.println(newOperator.name);
-						plan.add(newOperator);
-						
-						
-						//Add,Deleteリストを保存しておく  timeTagに利用
-						List<Object> addTemp = newOperator.getAddList();
-						List<Object> delTemp = newOperator.getDeleteList();
-						
-						//現在の状態を遷移させる
-						theCurrentState = newOperator
-								.applyState(theCurrentState);
-						
-						
-						return i + 1;
-					} else {
-						// 失敗したら元に戻す．
-						theBinding.clear();
-						for (Iterator<Object> it = orgBinding.keySet().iterator(); it.hasNext();) {
-							String key = (String) it.next();
-							String value = (String) orgBinding.get(key);
-							theBinding.put(key, value);
-						}
-						theCurrentState.clear();
-						for (int k = 0; k < orgState.size(); k++) {
-							theCurrentState.add(orgState.get(k));
-						}
-						plan.clear();
-						for (int k = 0; k < orgPlan.size(); k++) {
-							plan.add(orgPlan.get(k));
+						if (planning(newGoals, theCurrentState, theBinding)) {
+							System.out.println(newOperator.name);
+							plan.add(newOperator);
+
+							System.out.println("theBinding" + theBinding);
+							System.out.println("theCurrentState"
+									+ theCurrentState);
+							// 現在の状態を遷移させる
+							theCurrentState = newOperator.applyState(
+									theCurrentState, theBinding);
+							System.out.println("theCurrentState"
+									+ theCurrentState);
+
+							return i + 1;
+						} else {
+							System.out.println("失敗");
+							// 失敗したら元に戻す．
+							theBinding.clear();
+							for (Iterator<Object> it = orgBinding.keySet()
+									.iterator(); it.hasNext();) {
+								String key = (String) it.next();
+								String value = (String) orgBinding.get(key);
+								theBinding.put(key, value);
+							}
+							theCurrentState.clear();
+							for (int k = 0; k < orgState.size(); k++) {
+								theCurrentState.add(orgState.get(k));
+							}
+							plan.clear();
+							for (int k = 0; k < orgPlan.size(); k++) {
+								plan.add(orgPlan.get(k));
+							}
 						}
 					}
 				}
-			}
+			
 		}
 		return -1;
 	}
@@ -211,7 +230,7 @@ public class Planner {
 		initialState.add("ontable A");
 		initialState.add("ontable B");
 		initialState.add("handEmpty");
-		
+
 		return initialState;
 	}
 
@@ -293,7 +312,6 @@ public class Planner {
 		Operator operator4 = new Operator(name4, ifList4, addList4, deleteList4);
 		operators.add(operator4);
 	}
-	
 
 }
 
@@ -325,48 +343,46 @@ class Operator {
 		return ifList;
 	}
 
-	public void incrementPriority(){
+	public void incrementPriority() {
 		Priority++;
 	}
-	
-	public int getPriority(){
+
+	public int getPriority() {
 		return Priority;
 	}
-	
-	public void resetPriority(){
+
+	public void resetPriority() {
 		Priority = 0;
 	}
-	
+
 	public String toString() {
 		String result = "NAME: " + name + "\n" + "IF :" + ifList + "\n"
 				+ "ADD:" + addList + "\n" + "DELETE:" + deleteList;
 		return result;
 	}
 
-	public List<Object> applyState(List<Object> theState) {
-		TreeSet<Integer> removes = new TreeSet<Integer>(); 
+	public List<Object> applyState(List<Object> theState,
+			HashMap<Object, Object> theBinding) {
 
 		for (int i = 0; i < addList.size(); i++) {
-			theState.add(addList.get(i));
-			System.out.println("add : "+addList.get(i));
+			if (addList.get(i).toString().contains("?")) {
+				theState.add(instantiateString((String) addList.get(i),
+						theBinding));
+			} else {
+				theState.add(addList.get(i));
+			}
+			System.out.println("add : " + addList.get(i));
 		}
 		for (int i = 0; i < deleteList.size(); i++) {
-			theState.add(deleteList.get(i));
-			System.out.println("delete : "+deleteList.get(i));
-		}
-		for(int i = 0; i<theState.size(); i++){
-			for(int j = i+1;j<theState.size();j++){
-				if(theState.get(i).toString().equals(theState.get(j).toString())){
-					removes.add(i);
-					removes.add(j);
-				}
+			if (deleteList.get(i).toString().contains("?")) {
+				theState.remove(instantiateString((String) deleteList.get(i),
+						theBinding));
+			} else {
+				theState.remove(deleteList.get(i));
 			}
+			System.out.println("delete : " + deleteList.get(i));
 		}
-		System.out.println("before"+theState);
-		for(Integer i:removes){
-			theState.remove(i);
-		}
-		System.out.println("aftore"+theState);
+
 		return theState;
 	}
 
@@ -392,19 +408,22 @@ class Operator {
 		// 新しいIfListを作る
 		List<Object> newIfList = new ArrayList<Object>();
 		for (int i = 0; i < ifList.size(); i++) {
-			String newAnIf = renameVars((String) ifList.get(i), renamedVarsTable);
+			String newAnIf = renameVars((String) ifList.get(i),
+					renamedVarsTable);
 			newIfList.add(newAnIf);
 		}
 		// 新しいaddListを作る
 		List<Object> newAddList = new ArrayList<Object>();
 		for (int i = 0; i < addList.size(); i++) {
-			String newAnAdd = renameVars((String) addList.get(i), renamedVarsTable);
+			String newAnAdd = renameVars((String) addList.get(i),
+					renamedVarsTable);
 			newAddList.add(newAnAdd);
 		}
 		// 新しいdeleteListを作る
 		List<Object> newDeleteList = new ArrayList<Object>();
 		for (int i = 0; i < deleteList.size(); i++) {
-			String newADelete = renameVars((String) deleteList.get(i), renamedVarsTable);
+			String newADelete = renameVars((String) deleteList.get(i),
+					renamedVarsTable);
 			newDeleteList.add(newADelete);
 		}
 		// 新しいnameを作る
@@ -447,7 +466,7 @@ class Operator {
 		return result.trim();
 	}
 
-	public Operator instantiate(HashMap<Object,Object> theBinding) {
+	public Operator instantiate(HashMap<Object, Object> theBinding) {
 		// name を具体化
 		String newName = instantiateString(name, theBinding);
 		// ifList を具体化
@@ -459,19 +478,22 @@ class Operator {
 		// addList を具体化
 		List<Object> newAddList = new ArrayList<Object>();
 		for (int i = 0; i < addList.size(); i++) {
-			String newAdd = instantiateString((String) addList.get(i), theBinding);
+			String newAdd = instantiateString((String) addList.get(i),
+					theBinding);
 			newAddList.add(newAdd);
 		}
 		// deleteListを具体化
 		List<Object> newDeleteList = new ArrayList<Object>();
 		for (int i = 0; i < deleteList.size(); i++) {
-			String newDelete = instantiateString((String) deleteList.get(i), theBinding);
+			String newDelete = instantiateString((String) deleteList.get(i),
+					theBinding);
 			newDeleteList.add(newDelete);
 		}
 		return new Operator(newName, newIfList, newAddList, newDeleteList);
 	}
 
-	private String instantiateString(String thePattern, HashMap<Object,Object> theBinding) {
+	private String instantiateString(String thePattern,
+			HashMap<Object, Object> theBinding) {
 		String result = new String();
 		StringTokenizer st = new StringTokenizer(thePattern);
 		for (int i = 0; i < st.countTokens();) {
@@ -501,15 +523,17 @@ class Unifier {
 	String buffer1[];
 	StringTokenizer st2;
 	String buffer2[];
-	HashMap<Object,Object> vars;
+	HashMap<Object, Object> vars;
 
 	Unifier() {
-		 vars = new HashMap<Object,Object>();
+		vars = new HashMap<Object, Object>();
 	}
 
-	public boolean unify(String string1, String string2, HashMap<Object,Object> theBindings) {
-		HashMap<Object,Object> orgBindings = new HashMap<Object,Object>();
-		for (Iterator<Object> it = theBindings.keySet().iterator(); it.hasNext();) {
+	public boolean unify(String string1, String string2,
+			HashMap<Object, Object> theBindings) {
+		HashMap<Object, Object> orgBindings = new HashMap<Object, Object>();
+		for (Iterator<Object> it = theBindings.keySet().iterator(); it
+				.hasNext();) {
 			String key = (String) it.next();
 			String value = (String) theBindings.get(key);
 			orgBindings.put(key, value);
@@ -520,7 +544,8 @@ class Unifier {
 		} else {
 			// 失敗したら元に戻す．
 			theBindings.clear();
-			for (Iterator<Object> it = orgBindings.keySet().iterator(); it.hasNext();) {
+			for (Iterator<Object> it = orgBindings.keySet().iterator(); it
+					.hasNext();) {
 				String key = (String) it.next();
 				String value = (String) orgBindings.get(key);
 				theBindings.put(key, value);
@@ -625,35 +650,34 @@ class Unifier {
 
 }
 
-//Comparator実装クラス  
-class PriComparator implements Comparator<Operator> {  
-  public static final int ASC = 1;    //昇順  
-  public static final int DESC = -1;    //降順  
-  private int sort = ASC;    //デフォルトは昇順  
-    
-  public PriComparator() {  
-        
-  }  
-    
-  /** 
-   * @param sort  StringComparator.ASC | StringComparator.DESC。昇順や降順を指定します。 
-   */  
-  public PriComparator(int sort) {  
-      this.sort = sort;  
-  }  
-    
-  public int compare(Operator arg0, Operator arg1) {  
-	  
-      if (arg0.getPriority() == arg1.getPriority()) {  
-          return 0;   // arg0 = arg1  
-      } else if (arg0.getPriority() > arg1.getPriority()) {  
-          return 1 * sort;   // arg1 > arg2  
-      } else {  
-          return -1 * sort;  // arg1 < arg2  
-      }  
-        
-  }
+// Comparator実装クラス
+class PriComparator implements Comparator<Operator> {
+	public static final int ASC = 1; // 昇順
+	public static final int DESC = -1; // 降順
+	private int sort = ASC; // デフォルトは昇順
 
+	public PriComparator() {
 
-    
-}  
+	}
+
+	/**
+	 * @param sort
+	 *            StringComparator.ASC | StringComparator.DESC。昇順や降順を指定します。
+	 */
+	public PriComparator(int sort) {
+		this.sort = sort;
+	}
+
+	public int compare(Operator arg0, Operator arg1) {
+
+		if (arg0.getPriority() == arg1.getPriority()) {
+			return 0; // arg0 = arg1
+		} else if (arg0.getPriority() > arg1.getPriority()) {
+			return 1 * sort; // arg1 > arg2
+		} else {
+			return -1 * sort; // arg1 < arg2
+		}
+
+	}
+
+}
