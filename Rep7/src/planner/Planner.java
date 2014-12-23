@@ -436,7 +436,7 @@ public class Planner {
 	}
 }
 
-class Unifier {
+ class Unifier {
 	StringTokenizer st1;
 	String buffer1[];
 	StringTokenizer st2;

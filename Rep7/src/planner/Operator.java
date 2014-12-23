@@ -10,12 +10,12 @@ import java.util.StringTokenizer;
  * オペレータ
  */
 public class Operator {
-	String name;
+	public String name;
 	List<String> ifList;
 	List<String> addList;
 	List<String> deleteList;
 
-	Operator(String theName, List<String> theIfList, List<String> theAddList, List<String> theDeleteList) {
+	public Operator(String theName, List<String> theIfList, List<String> theAddList, List<String> theDeleteList) {
 		name = theName;
 		ifList = theIfList;
 		addList = theAddList;
