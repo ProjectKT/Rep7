@@ -50,6 +50,9 @@ public class Planner {
 				return false;
 			}
 		} else {
+			
+			theCurrentState = sortState(theCurrentState);
+			
 			String aGoal = (String) theGoalList.get(0);
 			int cPoint = 0;
 			while (cPoint < operators.size()) {
@@ -184,8 +187,8 @@ public class Planner {
 						
 						
 						//Add,Deleteリストを保存しておく  timeTagに利用
-						List<Object> addTemp = newOperator.getAddList();
-						List<Object> delTemp = newOperator.getDeleteList();
+						List<String> addTemp = newOperator.getAddList();
+						List<String> delTemp = newOperator.getDeleteList();
 						
 						//現在の状態を遷移させる
 						theCurrentState = newOperator
@@ -341,7 +344,7 @@ public class Planner {
 	 * @param add	オペレーターによって加えた状態
 	 * @param del	オペレーターによって削除した状態
 	 */
-	void applyTimeTag(List<Object> add,List<Object> del){
+	void applyTimeTag(List<String> add,List<String> del){
 		
 		for(Object objAdd: add){
 			timeTag.put(objAdd, timer);
@@ -354,70 +357,12 @@ public class Planner {
 		timer++;
 	}
 	
-	void sortOpe(String theGoal, HashMap<Object,Object> theBinding, List<Object> theCurrentState){
-		
-		//各オペレーターの具体化
-		
-		//詰んでます。
+	private List<String> sortState(){
 		
 		
-		//ここから適応できる具体化したオペレーターの優先順位決定
-		
-		int maxOpe = 0;
-		int maxTagNum = 0;
-		
-		ArrayList<ArrayList<Integer>> tagNum = new ArrayList<ArrayList<Integer>>();
-		
-		
-		//各オペレーターのタイムタグを格納したリストのリストを作成（ソート済み）
-		for(int i = 0; i < cloneOpe.size();i++){
-			int j;
-			ArrayList<Integer> sorted = new ArrayList<Integer>();
-			for(j = 0; j <cloneOpe.get(i).getIfList().size();j++){
-				sorted.add(timeTag.get(cloneOpe.get(i).getIfList().get(j)));
-			}
-			
-			if(j > maxTagNum){
-				maxTagNum = j;
-				maxOpe = i;
-			}
-			System.out.println(sorted);
-			Collections.sort(sorted);
-			Collections.reverse(sorted);
-			
-			tagNum.add(sorted);
-		}
-		
-		ArrayList<Integer> temp = new ArrayList<Integer>();
-		temp = tagNum.get(maxOpe);
-
-		for(int i = 0; i < cloneOpe.size();i++){
-			if(i != maxOpe){
-				int frag = 0;
-				if(temp.get(0) == tagNum.get(i).get(0)){
-					int toNum = tagNum.get(i).size();
-					for(int j = 1; (j < temp.size())&&(j < toNum);j++){
-						if(temp.get(j) < tagNum.get(i).get(j)){
-							frag = 1;
-						}
-					}
-				}else if(temp.get(0) < tagNum.get(i).get(0)){
-					frag = 1;
-				}
-				if(frag == 1){
-					temp = tagNum.get(i);
-					maxOpe = i;
-				}
-			}
-		}
-		
-		Operator tempOp = operators.get(maxOpe);
-		operators.remove(maxOpe);
-		operators.add(0,tempOp);
 		
 	}
-	
-	
+
 	private String quaryTrans(String quary){
 		if(quary.contains("clear")){
 			return "clear";
