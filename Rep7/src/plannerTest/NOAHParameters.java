@@ -48,4 +48,7 @@ public class NOAHParameters {
 	public ArrayList<String> getGoalState(){
 		return goalState;
 	}
+	
+	public Operator getOperator(String element){
+	}
 }

@@ -23,6 +23,7 @@ public class NOAHThread implements Runnable{
 	//担当するゴール状態についてプランを展開する
 	private void goalExploder(String goal){
 		System.out.println(goal);
+		ArrayList<Operator> operators = nPara.getOparator(goal);
 	}
 
 }
