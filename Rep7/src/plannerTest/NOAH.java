@@ -276,7 +276,9 @@ public class NOAH {
 				((JointJ)subPlan.get(i+1).getForward()).addforward(subPlan.get(i));
 		}
 				
-
+			subPlan.get(subPlan.size() - 1).changeback(j.getback());
+			j.getback().changeforward(subPlan.get(subPlan.size() - 1));
+			js.remove(0);
 	}
 
 	/**
