@@ -246,6 +246,8 @@ public class NOAH {
 		plan = newplan;
 	}
 
+	Node headNode;
+	
 	/**
 	 * 干渉を探し順序付けを行う
 	 */
@@ -256,20 +258,25 @@ public class NOAH {
 		ArrayList<Node> list = j.getforward();
 		ArrayList<Node> subPlan = new ArrayList<Node>();
 		Pattern p = Pattern.compile("Place (.*) on (.*)");
-		// 媒介
-		Node mediation = new Node("mediation", 0, null, null);
+		System.out.println("syu");
 		while (subPlan.size() != list.size()) {
+			System.out.println("subPlan"+subPlan.size()+"list"+list.size());
 			for (Node node : list) {
 				Matcher m = p.matcher(node.getNodeName());
 				if (m.find()) {
 					if (!under.contains(m.group(1))) {
 						under.remove(m.group(2));
+						
+						if(!subPlan.contains(node)){
 						subPlan.add(0, node);
+						}
 					}
 				}
 			}
 
 		}
+		
+		headNode = subPlan.get(0);
 		
 		for(int i = 0; i < subPlan.size() - 1; i++){
 				subPlan.get(i).changeback(subPlan.get(i+1).getForward());
@@ -286,6 +293,25 @@ public class NOAH {
 	 */
 	public void checkLengthy() {
 
+		ArrayList<String> clearList = new ArrayList<String>();
+		Node node = headNode;
+		
+		do{
+			System.out.println(clearList);
+			System.out.println("in");
+			if(clearList.contains(( (JointJ) node.getForward() ).getforward().get(1).getNodeName())){
+				System.out.println("in");
+				((JointJ)( (JointJ) node.getForward() ).getforward().get(1).getBack()).removeforward(( (JointJ) node.getForward() ).getforward().get(1));
+				((JointS)( (JointJ) node.getForward() ).getforward().get(1).getForward()).removeback(( (JointJ) node.getForward() ).getforward().get(1));
+			}
+			clearList.add(( (JointJ) node.getForward() ).getforward().get(0).getNodeName());
+			System.out.println(node.getBack().getClass().toString());
+			if(node.getBack().getClass().toString().equals("class plannerTest.Node")){
+				break;
+			}else{
+			node = ((JointJ) node.getBack()).getback();
+			}
+		}while(true);
 	}
 
 	/**
@@ -296,6 +322,7 @@ public class NOAH {
 		printState();
 
 		checkInterference();
+		checkLengthy();
 		printState();
 	}
 
