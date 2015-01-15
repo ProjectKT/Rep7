@@ -29,6 +29,9 @@ public class Planner {
 		ArrayList<String> goalList = initGoalList();
 		ArrayList<String> initialState = initInitialState();
 
+		System.out.println("initState"+initialState);
+		
+		
 		HashMap<String,String> theBinding = new HashMap<String,String>();
 		plan = new ArrayList<Operator>();
 		planning(goalList, initialState, theBinding);
@@ -41,6 +44,10 @@ public class Planner {
 	}
 
 	private boolean planning(List<String> theGoalList, List<String> theCurrentState, HashMap<String,String> theBinding) {
+		
+		
+		//theGoalList = sortState(theGoalList);
+		
 		System.out.println("*** GOALS ***" + theGoalList);
 		if (theGoalList.size() == 1) {
 			String aGoal = (String) theGoalList.get(0);
@@ -77,6 +84,8 @@ public class Planner {
 					System.out.println(theCurrentState);
 					System.out.println("チェック timeTag");
 					System.out.println(timeTag);
+					System.out.println("チェック binding");
+					System.out.println(theBinding);
 					if (planning(theGoalList, theCurrentState, theBinding)) {
 						// System.out.println("Success !");
 						return true;
@@ -121,7 +130,7 @@ public class Planner {
 		for (int i = 0; i < size; i++) {
 			String aState = (String) theCurrentState.get(i);
 			if ((new Unifier()).unify(theGoal, aState, theBinding)) {
-				System.out.println("unifier = 0");
+				System.out.println("unifier = 0 , astate = "+aState);
 				return 0;
 			}
 		}
@@ -182,8 +191,9 @@ public class Planner {
 					System.out.println("新しいオペレーター");
 					System.out.println(newOperator.name);
 					if (planning(newGoals, theCurrentState, theBinding)) {
-						System.out.println(newOperator.name);
+						System.out.println("applyOpe  "+newOperator.name);
 						plan.add(newOperator);
+						
 						
 						
 						//Add,Deleteリストを保存しておく  timeTagに利用
@@ -232,13 +242,17 @@ public class Planner {
 
 	private ArrayList<String> initGoalList() {
 		ArrayList<String> goalList = new ArrayList<String>();
+		goalList.add("ontable C");
 		goalList.add("B on C");
 		goalList.add("A on B");
+		goalList.add("clear A");
+		goalList.add("handEmpty");
 		return goalList;
 	}
 
 	private ArrayList<String> initInitialState() {
 		ArrayList<String> initialState = new ArrayList<String>();
+		/*
 		initialState.add("clear A");
 		initialState.add("clear B");
 		initialState.add("clear C");
@@ -247,6 +261,14 @@ public class Planner {
 		initialState.add("ontable B");
 		initialState.add("ontable C");
 		initialState.add("handEmpty");
+		*/
+		
+		initialState.add("ontable A");
+		initialState.add("C on A");
+		initialState.add("B on C");
+		initialState.add("clear B");
+		initialState.add("handEmpty");
+		
 		
 		for(Object obj: initialState){
 			System.out.println((String)obj);
@@ -357,10 +379,25 @@ public class Planner {
 		timer++;
 	}
 	
-	private List<String> sortState(){
+	/*
+	private List<String> sortGoalList(List<String> goalList){
+		ArrayList<>
+	}
+	*/
+	private List<String> sortState(List<String> state){
 		
+		ArrayList<String> result = new ArrayList<String>();
 		
+		for(String str: state){
+			if(quaryTrans(str).equals("on")){
+				result.add(0, str);
+			}
+			else{
+				result.add(str);
+			}
+		}
 		
+		return result;
 	}
 
 	private String quaryTrans(String quary){
@@ -451,6 +488,29 @@ public class Planner {
 			}
 		}
 
+
+		//変更箇所
+		
+		// 重複のチェック　A　on Aとかダメ
+		if((checkOverlap(buffer1))&&(checkOverlap(buffer2))){
+			return true;
+		}
+		else{
+			return false;
+		}
+		//return true;
+		  
+
+	}
+	
+	boolean checkOverlap(String buf[]){
+		for(int i = 0 ; i < buf.length;i++){
+			for(int j = i + 1 ; j < buf.length;j++){
+				if(tokenMatching(buf[i],buf[j])){
+					return false;
+				}
+			}
+		}
 		return true;
 	}
 

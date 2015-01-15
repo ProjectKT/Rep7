@@ -45,7 +45,7 @@ public class Operator {
 			theState.add(addList.get(i));
 		}
 		for (int i = 0; i < deleteList.size(); i++) {
-			theState.add(deleteList.get(i));
+			theState.remove(deleteList.get(i));
 		}
 		return theState;
 	}
