@@ -1,31 +1,43 @@
 package plannerTest;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import planner.Operator;
 
 public class NOAH {
-	
+
 	NOAHParameters nPara;
 	NOAHPlan nPlan;
-	
-	public static void main(String args[]){
-		(new NOAH()).planning();
+
+	ArrayList<Node> plan = new ArrayList<Node>();
+	int nodecount = 1;
+	// ノードの結合情報
+	ArrayList<JointS> ss = new ArrayList<JointS>();
+	ArrayList<JointJ> js = new ArrayList<JointJ>();
+
+	ArrayList<String> under = new ArrayList<String>();
+
+	public static void main(String args[]) {
+		(new NOAH()).initialplanning();
 	}
-	
-	//初期状態、目標状態の指定がない場合のコンストラクタ
-	NOAH(){
-		nPara = new NOAHParameters(initOperators(),initGoalState(),initCurrentState());
+
+	// 初期状態、目標状態の指定がない場合のコンストラクタ
+	NOAH() {
+		nPara = new NOAHParameters(initOperators(), initGoalState(),
+				initCurrentState());
 		nPlan = new NOAHPlan();
 	}
-	
-	//初期状態、目標状態が指定されている場合のコンストラクタ
-	NOAH(ArrayList<String> goalState, ArrayList<String> initialState){
-		nPara = new NOAHParameters(initOperators(),goalState,initialState);
+
+	// 初期状態、目標状態が指定されている場合のコンストラクタ
+	NOAH(ArrayList<String> goalState, ArrayList<String> initialState) {
+		nPara = new NOAHParameters(initOperators(), goalState, initialState);
 		nPlan = new NOAHPlan();
 	}
-	
+
 	/**
 	 * オペレーターを初期化
 	 */
@@ -106,12 +118,13 @@ public class NOAH {
 		deleteList4.add(new String("holding ?x"));
 		Operator operator4 = new Operator(name4, ifList4, addList4, deleteList4);
 		operators.add(operator4);
-		
+
 		return operators;
 	}
-	
+
 	/**
 	 * 目標状態を初期化
+	 * 
 	 * @return
 	 */
 	private ArrayList<String> initGoalState() {
@@ -120,69 +133,234 @@ public class NOAH {
 		goalList.add("A on B");
 		return goalList;
 	}
-	
+
 	/**
 	 * 初期状態を初期化
+	 * 
 	 * @return
 	 */
 	private ArrayList<String> initCurrentState() {
 		ArrayList<String> initialState = new ArrayList<String>();
-		initialState.add("clear A");
 		initialState.add("clear B");
 		initialState.add("clear C");
 
-		initialState.add("ontable A");
-		initialState.add("ontable B");
-		initialState.add("ontable C");
-		initialState.add("handEmpty");
-		
+		initialState.add("C on A");
 		return initialState;
 	}
-	
+
 	/**
 	 * 現在状態をセット
+	 * 
 	 * @param State
 	 */
-	public void setCurrentState(ArrayList<String> State){
+	public void setCurrentState(ArrayList<String> State) {
 		nPara.setCurrentState(State);
 	}
-	
+
 	/**
 	 * 目標状態をセット
+	 * 
 	 * @param GoalList
 	 */
-	public void setGoalState(ArrayList<String> GoalList){
+	public void setGoalState(ArrayList<String> GoalList) {
 		nPara.setGoalState(GoalList);
 	}
-	
-	public ArrayList<String> getCurrentState(){
+
+	public ArrayList<String> getCurrentState() {
 		return nPara.getCurrentState();
 	}
-	
-	public ArrayList<String> getGoalState(){
+
+	public ArrayList<String> getGoalState() {
 		return nPara.getGoalState();
 	}
-	
+
 	/**
 	 * 現在状態から目標状態への道筋をNOAH(Nets Of Action Hierarchies)で求める
+	 * 
 	 */
-	public void planning(){
+	public void initialplanning() {
 		ArrayList<String> goalState = nPara.getGoalState();
-		
-		//与えられたゴール状態の数だけの対応するThreadを作る
+
+		// スタート、ゴールの登録
+		JointS s = new JointS();
+		s.changeforward("Start");
+		JointJ j = new JointJ();
+		Node goal = new Node("Goal", 0, j, null);
+		j.changeback(goal);
+		// ノードの登録
+		for (String str : goalState) {
+			Node newNode = new Node(str, nodecount++, s, j);
+			plan.add(newNode);
+			s.addback(newNode);
+			j.addforward(newNode);
+		}
+		ss.add(s);
+		js.add(j);
+		planning();
+
+	}
+
+	/**
+	 * プランを展開する
+	 */
+	public void expandplan() {
+		ArrayList<Node> newplan = new ArrayList<Node>();
+		for (Node node : plan) {
+			if (node.getNodeName().contains("on")) {
+				JointS s = new JointS();
+				s.changeforward(node.getForward());
+				ss.add(s);
+				JointJ j = new JointJ();
+				js.add(j);
+
+				ss.get(0).removeback(node);
+				ss.get(0).addback(s);
+
+				js.get(0).removeforward(node);
+
+				Pattern p = Pattern.compile("(.*) on (.*)");
+				Matcher m = p.matcher(node.getNodeName());
+				if (m.find()) {
+					under.add(m.group(2));
+					Node newNode1 = new Node("Clear " + m.group(1),
+							nodecount++, s, j);
+					s.addback(newNode1);
+					j.addforward(newNode1);
+					Node newNode2 = new Node("Clear " + m.group(2),
+							nodecount++, s, j);
+					s.addback(newNode2);
+					j.addforward(newNode2);
+					Node newNode3 = new Node("Place " + m.group(1) + " on "
+							+ m.group(2), nodecount++, j, node.getBack());
+					j.changeback(newNode3);
+					js.get(0).addforward(newNode3);
+
+					newplan.add(newNode1);
+					newplan.add(newNode2);
+					newplan.add(newNode3);
+				}
+
+			}
+		}
+		plan.clear();
+		plan = newplan;
+	}
+
+	/**
+	 * 干渉を探し順序付けを行う
+	 */
+	public void checkInterference() {
+		System.out.println(under);
+		// 今回注目する干渉
+		JointJ j = js.get(0);
+		ArrayList<Node> list = j.getforward();
+		Pattern p = Pattern.compile("Place (.*) on (.*)");
+		// 媒介
+		Node mediation = new Node("mediation", 0, null, null);
+		for (Node node : list) {
+			Matcher m = p.matcher(node.getNodeName());
+			if (m.find()) {
+				if (!under.contains(m.group(1))) {
+					under.remove(m.group(2));
+					// 上に位置する動作を後回しにする
+					/*
+					if (!j.getback().getNodeName().equals("mediation")) {
+						node.changeback(j.getback());
+						j.getback().changeforward(node);
+					} else {
+						node.changeback(mediation.getBack());
+						((JointJ) mediation.getBack()).addforward(node);
+					}
+					// 注目する干渉からnodeを消す
+					j.removeforward(node);
+					// 注目する干渉の干渉先をmediationにする
+					j.changeback(mediation);
+					// mediationをいじる
+					mediation.changeback(node.getForward());
+					mediation.changeforward(j);
+					*/
+				}
+			}
+		}
+
+	}
+
+	/**
+	 * 冗長を探しグラフの変形を行う
+	 */
+	public void checkLengthy() {
+
+	}
+
+	/**
+	 * 干渉の残数ｊと冗長の総数sを無くす
+	 */
+	public void planning() {
+		expandplan();
+		printState();
+
+		checkInterference();
+		printState();
+	}
+
+	public void printState() {
+		for (JointS joint : ss) {
+			System.out.println(joint.getforward());
+
+			Iterator it = joint.getback();
+			while (it.hasNext()) {
+				System.out.println(it.next());
+			}
+			System.out.println("");
+		}
+
+		for (JointJ joint2 : js) {
+			Iterator it = joint2.getforward().iterator();
+			while (it.hasNext()) {
+				System.out.println(it.next());
+			}
+
+			System.out.println(joint2.getback());
+
+			System.out.println("");
+		}
+
+		for (Node node : plan) {
+			System.out
+					.println(node.getNodeName() + "  " + node.getNodeNumber());
+		}
+	}
+
+	/**
+	 * 現在状態から目標状態への道筋をNOAH(Nets Of Action Hierarchies)で求める
+	 * multithreadを使おうとしたがよくわからなくなったので放棄
+	 */
+	public void planningMultiThread() {
+		ArrayList<String> goalState = nPara.getGoalState();
+
+		// 与えられたゴール状態の数だけの対応するThreadを作る
 		NOAHThread[] nt = new NOAHThread[goalState.size()];
 		Thread[] t = new Thread[goalState.size()];
-		
+
 		int count = 0;
-		for(String str: goalState){
+		for (String str : goalState) {
 			nPlan.addPlan(str);
-			nt[count] = new NOAHThread(str,nPara,nPlan);
+			nt[count] = new NOAHThread(str, nPara, nPlan);
 			t[count] = new Thread(nt[count]);
 			count++;
 		}
-		
-		for(int i = 0; i<count; i++){
+
+		for (int i = 0; i < count; i++) {
 			t[i].start();
 		}
+
+		for (int i = 0; i < count; i++) {
+			try {
+				t[i].join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+
 	}
 }
