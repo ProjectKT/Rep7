@@ -5,6 +5,7 @@ import javax.swing.JFrame;
 import java.awt.BorderLayout;
 
 import javax.swing.ButtonGroup;
+import javax.swing.JButton;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 
@@ -86,25 +87,44 @@ public class SampleGUI extends JFrame implements ActionListener{
 		
 		//グラフィックで表示する
 		JPanel card1 = new JPanel();
-		card1.setLayout(new BorderLayout());
-		JPanel p1 = new JPanel();//初期状態のエリア
-		JPanel p2 = new JPanel();//目標状態のエリア
+		card1.setLayout(new GridLayout());
+		JPanel start1 = new JPanel();//初期状態のエリア
+		JPanel goal1 = new JPanel();//目標状態のエリア
 		JTabbedPane tab1 = new JTabbedPane();
-		tab1.add("start",p1);
-		tab1.add("goal",p2);
+		tab1.add("start",start1);
+		tab1.add("goal",goal1);
 		card1.add(tab1);
 		
 		
 		//テキストで表示する
 		JPanel card2 = new JPanel();
-		card2.setLayout(new BorderLayout());
-		JPanel tabPanel = new JPanel();
-		JTextArea ta1 = new JTextArea("aaa");//初期状態のエリア
-		JTextArea ta2 = new JTextArea("bbb");//目標状態のエリア
+		card2.setLayout(new GridLayout(1,4));
+		JTextArea start2 = new JTextArea("aaa");//初期状態のエリア
+		JTextArea goal2 = new JTextArea("bbb");//目標状態のエリア
+		JTextArea answer2 = new JTextArea("ccc");//解答のエリア
 		JTabbedPane tab2 = new JTabbedPane();
-		tab2.add("start",ta1);
-		tab2.add("goal",ta2);
-		card2.add(tab2);
+		JTabbedPane tab3 = new JTabbedPane();
+		JTabbedPane tab4 = new JTabbedPane();
+		tab2.add("start",start2);
+		tab3.add("goal",goal2);
+		tab4.add("answer",answer2);
+		JPanel panel1 = new JPanel();
+		JPanel panel2 = new JPanel();
+		JPanel panel3 = new JPanel();
+		JPanel panel4 = new JPanel();
+		JButton button = new JButton("OK");
+		panel1.add(tab2);
+		panel1.add(tab3);
+		panel1.setLayout(new GridLayout());
+		panel2.add(panel3);
+		panel2.add(panel4);
+		panel2.setLayout(new GridLayout());
+		panel3.add(button);
+		panel4.add(tab4);
+		panel4.setLayout(new GridLayout());
+		
+		card2.add(panel1);
+		card2.add(panel2);
 		
 		panel.setLayout(layout);
 		
