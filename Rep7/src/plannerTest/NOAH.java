@@ -254,34 +254,28 @@ public class NOAH {
 		// 今回注目する干渉
 		JointJ j = js.get(0);
 		ArrayList<Node> list = j.getforward();
+		ArrayList<Node> subPlan = new ArrayList<Node>();
 		Pattern p = Pattern.compile("Place (.*) on (.*)");
 		// 媒介
 		Node mediation = new Node("mediation", 0, null, null);
-		for (Node node : list) {
-			Matcher m = p.matcher(node.getNodeName());
-			if (m.find()) {
-				if (!under.contains(m.group(1))) {
-					under.remove(m.group(2));
-					// 上に位置する動作を後回しにする
-					/*
-					if (!j.getback().getNodeName().equals("mediation")) {
-						node.changeback(j.getback());
-						j.getback().changeforward(node);
-					} else {
-						node.changeback(mediation.getBack());
-						((JointJ) mediation.getBack()).addforward(node);
+		while (subPlan.size() != list.size()) {
+			for (Node node : list) {
+				Matcher m = p.matcher(node.getNodeName());
+				if (m.find()) {
+					if (!under.contains(m.group(1))) {
+						under.remove(m.group(2));
+						subPlan.add(0, node);
 					}
-					// 注目する干渉からnodeを消す
-					j.removeforward(node);
-					// 注目する干渉の干渉先をmediationにする
-					j.changeback(mediation);
-					// mediationをいじる
-					mediation.changeback(node.getForward());
-					mediation.changeforward(j);
-					*/
 				}
 			}
+
 		}
+		
+		for(int i = 0; i < subPlan.size() - 1; i++){
+				subPlan.get(i).changeback(subPlan.get(i+1).getForward());
+				((JointJ)subPlan.get(i+1).getForward()).addforward(subPlan.get(i));
+		}
+				
 
 	}
 
