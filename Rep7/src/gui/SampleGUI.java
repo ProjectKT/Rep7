@@ -25,14 +25,18 @@ import java.awt.GridLayout;
 import javax.swing.BoxLayout;
 import javax.swing.border.BevelBorder;
 
+import java.awt.CardLayout;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.FlowLayout;
+
 import javax.swing.JTextArea;
 import javax.swing.JLabel;
 
-public class SampleGUI extends JFrame{
+import java.awt.event.*;
+
+public class SampleGUI extends JFrame implements ActionListener{
 
 	// コンストラクタ
 	public SampleGUI() {
@@ -44,7 +48,8 @@ public class SampleGUI extends JFrame{
 		//set();
 		setVisible(true);
 	}
-	
+	JPanel panel = new JPanel();
+	CardLayout layout = new CardLayout();
 	// 初期化
 	private void initialize() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -60,109 +65,69 @@ public class SampleGUI extends JFrame{
 		mnFile.setForeground(Color.RED);
 		menuBar.add(mnFile);
 		
-		JMenu mnNewMenu = new JMenu("Query");
-		menuBar.add(mnNewMenu);
-		
-		JRadioButtonMenuItem rdbtnmntmNewRadioItem = new JRadioButtonMenuItem("Voise");
-		mnNewMenu.add(rdbtnmntmNewRadioItem);
-		
-		JRadioButtonMenuItem rdbtnmntmNewRadioItem_1 = new JRadioButtonMenuItem("Text");
-		mnNewMenu.add(rdbtnmntmNewRadioItem_1);
-		rdbtnmntmNewRadioItem_1.setSelected(true);
-		
-		ButtonGroup group = new ButtonGroup();
-		group.add(rdbtnmntmNewRadioItem);
-		group.add(rdbtnmntmNewRadioItem_1);
-		
 		JMenu mnNewMenu_1 = new JMenu("State");
 		menuBar.add(mnNewMenu_1);
 		
 		JRadioButtonMenuItem rdbtnmntmNewRadioItem_2 = new JRadioButtonMenuItem("Graphics");
 		rdbtnmntmNewRadioItem_2.setSelected(true);
 		mnNewMenu_1.add(rdbtnmntmNewRadioItem_2);
+		rdbtnmntmNewRadioItem_2.addActionListener(this);
+		rdbtnmntmNewRadioItem_2.setActionCommand("graphics");
+		
 		
 		JRadioButtonMenuItem rdbtnmntmNewRadioItem_3 = new JRadioButtonMenuItem("Text");
 		mnNewMenu_1.add(rdbtnmntmNewRadioItem_3);
+		rdbtnmntmNewRadioItem_3.addActionListener(this);
+		rdbtnmntmNewRadioItem_3.setActionCommand("text");
 		
 		ButtonGroup group2 = new ButtonGroup();
 		group2.add(rdbtnmntmNewRadioItem_2);
 		group2.add(rdbtnmntmNewRadioItem_3);
 		
-		JPanel panel = new JPanel();
-		getContentPane().add(panel, BorderLayout.CENTER);
-		panel.setLayout(new BorderLayout(0, 0));
+		//グラフィックで表示する
+		JPanel card1 = new JPanel();
+		card1.setLayout(new BorderLayout());
+		JPanel p1 = new JPanel();//初期状態のエリア
+		JPanel p2 = new JPanel();//目標状態のエリア
+		JTabbedPane tab1 = new JTabbedPane();
+		tab1.add("start",p1);
+		tab1.add("goal",p2);
+		card1.add(tab1);
 		
-		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
-		tabbedPane.setPreferredSize(new Dimension(200, 100));
-		panel.add(tabbedPane, BorderLayout.WEST);
 		
-		JPanel panel_1 = new JPanel();
-		tabbedPane.addTab("初期状態", null, panel_1, null);
-		panel_1.setLayout(new BorderLayout(0, 0));
+		//テキストで表示する
+		JPanel card2 = new JPanel();
+		card2.setLayout(new BorderLayout());
+		JPanel tabPanel = new JPanel();
+		JTextArea ta1 = new JTextArea("aaa");//初期状態のエリア
+		JTextArea ta2 = new JTextArea("bbb");//目標状態のエリア
+		JTabbedPane tab2 = new JTabbedPane();
+		tab2.add("start",ta1);
+		tab2.add("goal",ta2);
+		card2.add(tab2);
 		
-		JTextArea textArea = new JTextArea();
-		panel_1.add(textArea, BorderLayout.CENTER);
+		panel.setLayout(layout);
 		
-		JPanel panel_2 = new JPanel();
-		tabbedPane.addTab("目標状態", null, panel_2, null);
-		panel_2.setLayout(new BorderLayout(0, 0));
+		panel.add(card1);
+		panel.add(card2);
 		
-		JTextArea textArea_2 = new JTextArea();
-		panel_2.add(textArea_2, BorderLayout.CENTER);
-		
-		JTabbedPane tabbedPane_2 = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane_2.setPreferredSize(new Dimension(200, 100));
-		panel.add(tabbedPane_2, BorderLayout.EAST);
-		
-		JPanel panel_5 = new JPanel();
-		tabbedPane_2.addTab("New tab", null, panel_5, null);
-		panel_5.setLayout(new BorderLayout(0, 0));
-		
-		JTextArea textArea_1 = new JTextArea();
-		panel_5.add(textArea_1, BorderLayout.CENTER);
-		
-		JTabbedPane tabbedPane_3 = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane_3.setPreferredSize(new Dimension(150, 200));
-		panel.add(tabbedPane_3, BorderLayout.SOUTH);
-		
-		JPanel panel_6 = new JPanel();
-		tabbedPane_3.addTab("New tab", null, panel_6, null);
-		
-		JTabbedPane tabbedPane_1 = new JTabbedPane(JTabbedPane.TOP);
-		panel.add(tabbedPane_1, BorderLayout.CENTER);
-		
-		JPanel panel_3 = new JPanel();
-		tabbedPane_1.addTab("New tab", null, panel_3, null);
-		panel_3.setLayout(new GridLayout(2, 0, 0, 0));
-		
-		JPanel panel_4 = new JPanel();
-		panel_3.add(panel_4);
-		
-		JPanel panel_7 = new JPanel();
-		panel_3.add(panel_7);
-		panel_7.setLayout(new GridLayout(0, 2, 0, 0));
-		
-		JPanel panel_8 = new JPanel();
-		panel_7.add(panel_8);
-		
-		JPanel panel_9 = new JPanel();
-		panel_7.add(panel_9);
+		getContentPane().add(panel,BorderLayout.CENTER);
 		
 		BevelBorder border4 = new BevelBorder(BevelBorder.RAISED);
 		BevelBorder border8 = new BevelBorder(BevelBorder.RAISED);
 		BevelBorder border9 = new BevelBorder(BevelBorder.RAISED);
-		
-		panel_4.setBorder(border4);
-		panel_8.setBorder(border8);
-		
-		JLabel label = new JLabel("初期状態");
-		panel_8.add(label);
-		panel_9.setBorder(border9);
-		
-		JLabel label_1 = new JLabel("目標状態");
-		panel_9.add(label_1);
 	}
+	
+    public void actionPerformed(ActionEvent e) {
+    	String cmd = e.getActionCommand();
+    	if(cmd == "graphics"){
+    		layout.first(panel);
+    	}else{
+    		layout.last(panel);
+    	}
+        
+    }
+	
 	
 	private void loadData(){
 		
