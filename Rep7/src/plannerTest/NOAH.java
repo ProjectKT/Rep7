@@ -250,21 +250,21 @@ public class NOAH {
 	 * 干渉を探し順序付けを行う
 	 */
 	public void checkInterference() {
+		System.out.println(under);
 		// 今回注目する干渉
 		JointJ j = js.get(0);
-		ArrayList<String> under = new ArrayList<String>();
 		ArrayList<Node> list = j.getforward();
 		Pattern p = Pattern.compile("Place (.*) on (.*)");
 		// 媒介
-		Node mediation = new Node("", 0, null, null);
-
+		Node mediation = new Node("mediation", 0, null, null);
 		for (Node node : list) {
 			Matcher m = p.matcher(node.getNodeName());
 			if (m.find()) {
 				if (!under.contains(m.group(1))) {
 					under.remove(m.group(2));
 					// 上に位置する動作を後回しにする
-					if (j.getback().getNodeName().equals("Goal")) {
+					/*
+					if (!j.getback().getNodeName().equals("mediation")) {
 						node.changeback(j.getback());
 						j.getback().changeforward(node);
 					} else {
@@ -278,6 +278,7 @@ public class NOAH {
 					// mediationをいじる
 					mediation.changeback(node.getForward());
 					mediation.changeforward(j);
+					*/
 				}
 			}
 		}
