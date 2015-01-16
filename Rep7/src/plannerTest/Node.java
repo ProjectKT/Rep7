@@ -17,11 +17,11 @@ public class Node {
 		this.back = back;
 	}
 	
-	public void changeforward(Object forward){
+	public void changeForward(Object forward){
 		this.forward = forward;
 	}
 	
-	public void changeback(Object back){
+	public void changeBack(Object back){
 		this.back = back;
 	}
 	

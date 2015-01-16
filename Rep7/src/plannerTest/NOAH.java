@@ -183,16 +183,16 @@ public class NOAH {
 
 		// スタート、ゴールの登録
 		JointS s = new JointS();
-		s.changeforward("Start");
+		s.changeForward("Start");
 		JointJ j = new JointJ();
 		Node goal = new Node("Goal", 0, j, null);
-		j.changeback(goal);
+		j.changeBack(goal);
 		// ノードの登録
 		for (String str : goalState) {
 			Node newNode = new Node(str, nodecount++, s, j);
 			plan.add(newNode);
-			s.addback(newNode);
-			j.addforward(newNode);
+			s.addBack(newNode);
+			j.addForward(newNode);
 		}
 		ss.add(s);
 		js.add(j);
@@ -208,15 +208,15 @@ public class NOAH {
 		for (Node node : plan) {
 			if (node.getNodeName().contains("on")) {
 				JointS s = new JointS();
-				s.changeforward(node.getForward());
+				s.changeForward(node.getForward());
 				ss.add(s);
 				JointJ j = new JointJ();
 				js.add(j);
 
-				ss.get(0).removeback(node);
-				ss.get(0).addback(s);
+				ss.get(0).removeBack(node);
+				ss.get(0).addBack(s);
 
-				js.get(0).removeforward(node);
+				js.get(0).removeForward(node);
 
 				Pattern p = Pattern.compile("(.*) on (.*)");
 				Matcher m = p.matcher(node.getNodeName());
@@ -224,16 +224,16 @@ public class NOAH {
 					under.add(m.group(2));
 					Node newNode1 = new Node("clear " + m.group(1),
 							nodecount++, s, j);
-					s.addback(newNode1);
-					j.addforward(newNode1);
+					s.addBack(newNode1);
+					j.addForward(newNode1);
 					Node newNode2 = new Node("clear " + m.group(2),
 							nodecount++, s, j);
-					s.addback(newNode2);
-					j.addforward(newNode2);
+					s.addBack(newNode2);
+					j.addForward(newNode2);
 					Node newNode3 = new Node("Place " + m.group(1) + " on "
 							+ m.group(2), nodecount++, j, node.getBack());
-					j.changeback(newNode3);
-					js.get(0).addforward(newNode3);
+					j.changeBack(newNode3);
+					js.get(0).addForward(newNode3);
 
 					newplan.add(newNode1);
 					newplan.add(newNode2);
@@ -255,7 +255,7 @@ public class NOAH {
 		System.out.println(under);
 		// 今回注目する干渉
 		JointJ j = js.get(0);
-		ArrayList<Node> list = j.getforward();
+		ArrayList<Node> list = j.getForward();
 		ArrayList<Node> subPlan = new ArrayList<Node>();
 		Pattern p = Pattern.compile("Place (.*) on (.*)");
 		System.out.println("syu");
@@ -280,13 +280,13 @@ public class NOAH {
 		headNode = subPlan.get(0);
 
 		for (int i = 0; i < subPlan.size() - 1; i++) {
-			subPlan.get(i).changeback(subPlan.get(i + 1).getForward());
-			((JointJ) subPlan.get(i + 1).getForward()).addforward(subPlan
+			subPlan.get(i).changeBack(subPlan.get(i + 1).getForward());
+			((JointJ) subPlan.get(i + 1).getForward()).addForward(subPlan
 					.get(i));
 		}
 
-		subPlan.get(subPlan.size() - 1).changeback(j.getback());
-		j.getback().changeforward(subPlan.get(subPlan.size() - 1));
+		subPlan.get(subPlan.size() - 1).changeBack(j.getBack());
+		j.getBack().changeForward(subPlan.get(subPlan.size() - 1));
 		js.remove(0);
 	}
 
@@ -304,12 +304,12 @@ public class NOAH {
 
 			System.out.println("clearList : " + clearList);
 
-			Node clearNode = ((JointJ) node.getForward()).getforward().get(1);
-			Node extraNode = ((JointJ) node.getForward()).getforward().get(0);
+			Node clearNode = ((JointJ) node.getForward()).getForward().get(1);
+			Node extraNode = ((JointJ) node.getForward()).getForward().get(0);
 			System.out.println("clearNode? :" + clearNode);
 			if (clearList.contains(clearNode.getNodeName())) {
 				System.out.println("in  clearNode");
-				((JointJ) clearNode.getBack()).removeforward(clearNode);
+				((JointJ) clearNode.getBack()).removeForward(clearNode);
 				// ((JointJ)( (JointJ) node.getForward()
 				// ).getforward().get(1).getBack()).removeforward(( (JointJ)
 				// node.getForward() ).getforward().get(1));
@@ -318,13 +318,13 @@ public class NOAH {
 					System.out.println("success JointS\n" + x);
 					JointS jointS = (JointS) x;
 
-					jointS.removeback(clearNode);
+					jointS.removeBack(clearNode);
 					plan.remove(clearNode);
 
-					((JointS) jointS.getforward()).addback(extraNode);
-					((JointS) jointS.getforward()).removeback(jointS);
+					((JointS) jointS.getForward()).addBack(extraNode);
+					((JointS) jointS.getForward()).removeBack(jointS);
 
-					extraNode.changeforward(((JointS) jointS.getforward()));
+					extraNode.changeForward(((JointS) jointS.getForward()));
 
 					ss.remove(jointS);
 				} else {
@@ -333,9 +333,9 @@ public class NOAH {
 					// JointS じゃない
 				}
 			}
-			clearList.add(((JointJ) node.getForward()).getforward().get(0)
+			clearList.add(((JointJ) node.getForward()).getForward().get(0)
 					.getNodeName());
-			clearList.add(((JointJ) node.getForward()).getforward().get(1)
+			clearList.add(((JointJ) node.getForward()).getForward().get(1)
 					.getNodeName());
 			System.out.println(node.getBack().getClass().toString());
 			if (node.getBack().getClass().toString()
@@ -344,7 +344,7 @@ public class NOAH {
 				System.out.println(node.getBack().toString());
 				break;
 			} else {
-				node = ((JointJ) node.getBack()).getback();
+				node = ((JointJ) node.getBack()).getBack();
 			}
 
 			System.out.println("");
@@ -361,7 +361,7 @@ public class NOAH {
 		JointS startNode = ss.get(0);
 		ArrayList<String> currentState = nPara.getCurrentState();
 		
-		for(Object obj : startNode.getback()){
+		for(Object obj : startNode.getBack()){
 			
 			if(obj instanceof Node){
 				if(!currentState.contains(((Node)obj).getNodeName())){
@@ -379,15 +379,15 @@ public class NOAH {
 									Node newNode1 = new Node("clear " + m2.group(1),nodecount++,((Node) obj).getForward(),null);
 									Node newNode2 = new Node("remove " + m2.group(1) +" from on top "+m2.group(2),nodecount++,null,((Node) obj).getBack());
 
-									newNode1.changeback(newNode2);
-									newNode2.changeforward(newNode1);
+									newNode1.changeBack(newNode2);
+									newNode2.changeForward(newNode1);
 									
 									plan.remove(obj);									
-									startNode.removeback(obj);
-									((JointJ)((Node) obj).getBack()).removeforward(obj);
+									startNode.removeBack(obj);
+									((JointJ)((Node) obj).getBack()).removeForward(obj);
 									
-									startNode.addback(newNode1);
-									((JointJ)((Node) obj).getBack()).addforward(newNode2);
+									startNode.addBack(newNode1);
+									((JointJ)((Node) obj).getBack()).addForward(newNode2);
 									
 									plan.add(newNode1);
 									plan.add(newNode2);
@@ -425,9 +425,9 @@ public class NOAH {
 
 			System.out.println("center :" + joint);
 
-			System.out.println("forward : " + joint.getforward());
+			System.out.println("forward : " + joint.getForward());
 
-			Iterator it = joint.getback().iterator();
+			Iterator it = joint.getBack().iterator();
 			while (it.hasNext()) {
 				System.out.println("back : " + it.next());
 			}
@@ -438,12 +438,12 @@ public class NOAH {
 
 			System.out.println("joint2 " + joint2);
 
-			Iterator it = joint2.getforward().iterator();
+			Iterator it = joint2.getForward().iterator();
 			while (it.hasNext()) {
 				System.out.println("forward : " + it.next());
 			}
 
-			System.out.println("back : " + joint2.getback());
+			System.out.println("back : " + joint2.getBack());
 
 			System.out.println("");
 		}

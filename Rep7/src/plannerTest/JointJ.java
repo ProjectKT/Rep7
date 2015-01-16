@@ -7,23 +7,23 @@ public class JointJ {
 	private ArrayList<Node> forwards = new ArrayList<Node>();
 	private Node back;
 	
-	public void addforward(Node forward){
+	public void addForward(Node forward){
 		forwards.add(forward);
 	}
 	
-	public void changeback(Node back){
+	public void changeBack(Node back){
 		this.back = back;
 	}
 	
-	public void removeforward(Object forward){
+	public void removeForward(Object forward){
 		forwards.remove(forward);
 	}
 	
-	public ArrayList<Node> getforward(){
+	public ArrayList<Node> getForward(){
 		return forwards;
 	}
 	
-	public Node getback(){
+	public Node getBack(){
 		return back;
 	}
 }

@@ -7,24 +7,24 @@ public class JointS {
 	private Object forward;
 	private ArrayList<Object> backs = new ArrayList<Object>();
 	
-	public void changeforward(Object forward){
+	public void changeForward(Object forward){
 		this.forward = forward;
 	}
 	
-	public void addback(Object back){
+	public void addBack(Object back){
 		backs.add(back);
 	}
 
-	public void removeback(Object back){
+	public void removeBack(Object back){
 		backs.remove(back);
 	}
 	
 	
-	public Object getforward(){
+	public Object getForward(){
 		return forward;
 	}
 	
-	public ArrayList<Object> getback(){
+	public ArrayList<Object> getBack(){
 		return backs;
 	}
 }
