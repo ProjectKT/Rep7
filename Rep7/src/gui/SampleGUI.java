@@ -91,7 +91,7 @@ public class SampleGUI extends JFrame implements ActionListener{
 		
 		//グラフィックで表示する
 		JPanel card1 = new JPanel();
-		card1.setLayout(new GridLayout());
+		//card1.setLayout(new GridLayout());
 		//JPanel start1 = new JPanel();//初期状態のエリア
 		//JPanel goal1 = new JPanel();//目標状態のエリア
 		//JTabbedPane tab1 = new JTabbedPane();
