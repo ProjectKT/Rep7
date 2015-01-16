@@ -309,7 +309,7 @@ public class NOAH {
 				System.out.println("in  clearNode");
 				((JointJ)clearNode.getBack()).removeforward(clearNode);
 				//((JointJ)( (JointJ) node.getForward() ).getforward().get(1).getBack()).removeforward(( (JointJ) node.getForward() ).getforward().get(1));
-				Object x = ((JointJ)node.getForward()).getforward().get(1).getForward();
+				Object x = clearNode.getForward();
 				if (x instanceof JointS) {
 					System.out.println("success JointS\n" + x);
 					JointS jointS = (JointS) x;
@@ -347,6 +347,7 @@ public class NOAH {
 		printState();
 
 		checkInterference();
+		printState();
 		checkLengthy();
 		
 		System.out.println("\nresult \n");
@@ -384,6 +385,7 @@ public class NOAH {
 		for (Node node : plan) {
 			System.out
 					.println(node.getNodeName() + "  " + node.getNodeNumber());
+			System.out.println("me"+node+"\nforward "+node.getForward()+"\nback "+node.getBack());
 		}
 	}
 
