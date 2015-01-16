@@ -98,25 +98,25 @@ public class SampleGUI extends JFrame implements ActionListener{
 		//tab1.add("start",start1);
 		//tab1.add("goal",goal1);
 		
-		JPanel gra_start = new JPanel();
+		JPanel gra_start = new JPanel();//初期状態のエリア
 		gra_start.add(new JLabel("start"));
 		//gra_start.setBackground(Color.RED);
-		JPanel gra_goal = new JPanel();
+		JPanel gra_goal = new JPanel();//目標状態のエリア
 		gra_goal.add(new JLabel("goal"));
 		//gra_goal.setBackground(Color.GREEN);
 		graphics.setLayout(gra_layout);
 		graphics.add(gra_start);
 		graphics.add(gra_goal);
-		JButton startButton = new JButton("start");
+		JButton startButton = new JButton("start");//初期状態を表示するボタン
 		startButton.addActionListener(this);
 		startButton.setActionCommand("start");
-		JButton prevButton = new JButton("prev");
+		JButton prevButton = new JButton("prev");//前の状態に戻るボタン
 		prevButton.addActionListener(this);
 		prevButton.setActionCommand("prev");
-		JButton nextButton = new JButton("next");
+		JButton nextButton = new JButton("next");//次の状態に進むボタン
 		nextButton.addActionListener(this);
 		nextButton.setActionCommand("next");
-		JButton goalButton = new JButton("goal");
+		JButton goalButton = new JButton("goal");//目標状態を表示するボタン
 		goalButton.addActionListener(this);
 		goalButton.setActionCommand("goal");
 		JPanel btnPanel = new JPanel();
