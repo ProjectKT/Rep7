@@ -98,14 +98,29 @@ public class SampleGUI extends JFrame implements ActionListener{
 		//tab1.add("start",start1);
 		//tab1.add("goal",goal1);
 		
+		graphics.setLayout(gra_layout);
 		JPanel gra_start = new JPanel();//初期状態のエリア
 		gra_start.add(new JLabel("start"));
 		//gra_start.setBackground(Color.RED);
+		graphics.add(gra_start);
+		for(int i = 1; i < 13; i++){
+			JPanel gra_process = new JPanel();//過程のエリア
+			String s = Integer.toString(i);
+			if(i == 1){
+				gra_process.add(new JLabel(s+"st process"));
+			}else if(i == 2){
+				gra_process.add(new JLabel(s+"nd process"));
+			}else if(i == 3){
+				gra_process.add(new JLabel(s+"rd process"));
+				//gra_process.setBackground(Color.BLUE);
+			}else{
+				gra_process.add(new JLabel(s+"th process"));
+			}
+			graphics.add(gra_process);
+		}
 		JPanel gra_goal = new JPanel();//目標状態のエリア
 		gra_goal.add(new JLabel("goal"));
 		//gra_goal.setBackground(Color.GREEN);
-		graphics.setLayout(gra_layout);
-		graphics.add(gra_start);
 		graphics.add(gra_goal);
 		JButton startButton = new JButton("start");//初期状態を表示するボタン
 		startButton.addActionListener(this);
