@@ -282,7 +282,7 @@ public class NOAH {
 				subPlan.get(i).changeback(subPlan.get(i+1).getForward());
 				((JointJ)subPlan.get(i+1).getForward()).addforward(subPlan.get(i));
 		}
-				
+
 			subPlan.get(subPlan.size() - 1).changeback(j.getback());
 			j.getback().changeforward(subPlan.get(subPlan.size() - 1));
 			js.remove(0);
@@ -296,22 +296,45 @@ public class NOAH {
 		ArrayList<String> clearList = new ArrayList<String>();
 		Node node = headNode;
 		
+		
+		System.out.println("check do \n");
 		do{
-			System.out.println(clearList);
-			System.out.println("in");
-			if(clearList.contains(( (JointJ) node.getForward() ).getforward().get(1).getNodeName())){
-				System.out.println("in");
-				((JointJ)( (JointJ) node.getForward() ).getforward().get(1).getBack()).removeforward(( (JointJ) node.getForward() ).getforward().get(1));
-				((JointS)( (JointJ) node.getForward() ).getforward().get(1).getForward()).removeback(( (JointJ) node.getForward() ).getforward().get(1));
+			System.out.println("node : " + node);
+			
+			System.out.println("clearList : "+clearList);
+			
+			Node clearNode = ((JointJ) node.getForward()).getforward().get(1);
+			System.out.println("clearNode? :" +clearNode);
+			if(clearList.contains(clearNode.getNodeName())){
+				System.out.println("in  clearNode");
+				((JointJ)clearNode.getBack()).removeforward(clearNode);
+				//((JointJ)( (JointJ) node.getForward() ).getforward().get(1).getBack()).removeforward(( (JointJ) node.getForward() ).getforward().get(1));
+				Object x = ((JointJ)node.getForward()).getforward().get(1).getForward();
+				if (x instanceof JointS) {
+					System.out.println("success JointS\n" + x);
+					JointS jointS = (JointS) x;
+					
+					jointS.removeback(clearNode);
+				} else {
+					
+					System.out.println("not JointS \n"+x);
+					// JointS じゃない
+				}
 			}
 			clearList.add(( (JointJ) node.getForward() ).getforward().get(0).getNodeName());
 			System.out.println(node.getBack().getClass().toString());
 			if(node.getBack().getClass().toString().equals("class plannerTest.Node")){
+				System.out.println("goalNode :"+node.getBack());
+				System.out.println(node.getBack().toString());
 				break;
 			}else{
 			node = ((JointJ) node.getBack()).getback();
 			}
+			
+			System.out.println("");
 		}while(true);
+		
+		System.out.println("finish checklengthy");
 	}
 
 	/**
@@ -319,31 +342,41 @@ public class NOAH {
 	 */
 	public void planning() {
 		expandplan();
+		
+		System.out.println("initialState \n");
 		printState();
 
 		checkInterference();
 		checkLengthy();
+		
+		System.out.println("\nresult \n");
 		printState();
 	}
 
 	public void printState() {
 		for (JointS joint : ss) {
-			System.out.println(joint.getforward());
+			
+			System.out.println("center :"+ joint);
+			
+			System.out.println("forward : "+joint.getforward());
 
 			Iterator it = joint.getback();
 			while (it.hasNext()) {
-				System.out.println(it.next());
+				System.out.println("back : " + it.next());
 			}
 			System.out.println("");
 		}
 
 		for (JointJ joint2 : js) {
+			
+			System.out.println("joint2 " + joint2);
+			
 			Iterator it = joint2.getforward().iterator();
 			while (it.hasNext()) {
-				System.out.println(it.next());
+				System.out.println("forward : "+it.next());
 			}
 
-			System.out.println(joint2.getback());
+			System.out.println("back : " +joint2.getback());
 
 			System.out.println("");
 		}
