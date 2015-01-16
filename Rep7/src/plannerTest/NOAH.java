@@ -363,7 +363,7 @@ public class NOAH {
 			
 			if(obj instanceof Node){
 				if(!currentState.contains(((Node)obj).getNodeName())){
-					
+					System.out.println("現状態に該当するもの無し :"+ ((Node)obj).getNodeName());
 					Pattern p1 = Pattern.compile("clear (.*)");
 					Matcher m1 = p1.matcher(((Node) obj).getNodeName());
 					
@@ -373,7 +373,7 @@ public class NOAH {
 							Pattern p2 = Pattern.compile("(.*) on (.*)");
 							Matcher m2 = p2.matcher(str);
 							if (m2.find()) {
-								if(m2.group(2) == m1.group(1)){
+								if(m2.group(2).equals(m1.group(1))){
 									Node newNode1 = new Node("clear " + m2.group(1),nodecount++,((Node) obj).getForward(),null);
 									Node newNode2 = new Node("remove " + m2.group(1) +" from on top "+m2.group(2),nodecount++,null,((Node) obj).getBack());
 
