@@ -335,6 +335,8 @@ public class NOAH {
 			}
 			clearList.add(((JointJ) node.getForward()).getforward().get(0)
 					.getNodeName());
+			clearList.add(((JointJ) node.getForward()).getforward().get(1)
+					.getNodeName());
 			System.out.println(node.getBack().getClass().toString());
 			if (node.getBack().getClass().toString()
 					.equals("class plannerTest.Node")) {
