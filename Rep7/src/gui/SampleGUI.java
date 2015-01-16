@@ -51,6 +51,10 @@ public class SampleGUI extends JFrame implements ActionListener{
 	}
 	JPanel panel = new JPanel();
 	CardLayout layout = new CardLayout();
+	
+	JPanel graphics = new JPanel();
+	CardLayout gra_layout = new CardLayout();
+	
 	// 初期化
 	private void initialize() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -88,12 +92,43 @@ public class SampleGUI extends JFrame implements ActionListener{
 		//グラフィックで表示する
 		JPanel card1 = new JPanel();
 		card1.setLayout(new GridLayout());
-		JPanel start1 = new JPanel();//初期状態のエリア
-		JPanel goal1 = new JPanel();//目標状態のエリア
-		JTabbedPane tab1 = new JTabbedPane();
-		tab1.add("start",start1);
-		tab1.add("goal",goal1);
-		card1.add(tab1);
+		//JPanel start1 = new JPanel();//初期状態のエリア
+		//JPanel goal1 = new JPanel();//目標状態のエリア
+		//JTabbedPane tab1 = new JTabbedPane();
+		//tab1.add("start",start1);
+		//tab1.add("goal",goal1);
+		
+		JPanel gra_start = new JPanel();
+		gra_start.add(new JLabel("start"));
+		//gra_start.setBackground(Color.RED);
+		JPanel gra_goal = new JPanel();
+		gra_goal.add(new JLabel("goal"));
+		//gra_goal.setBackground(Color.GREEN);
+		graphics.setLayout(gra_layout);
+		graphics.add(gra_start);
+		graphics.add(gra_goal);
+		JButton startButton = new JButton("start");
+		startButton.addActionListener(this);
+		startButton.setActionCommand("start");
+		JButton prevButton = new JButton("prev");
+		prevButton.addActionListener(this);
+		prevButton.setActionCommand("prev");
+		JButton nextButton = new JButton("next");
+		nextButton.addActionListener(this);
+		nextButton.setActionCommand("next");
+		JButton goalButton = new JButton("goal");
+		goalButton.addActionListener(this);
+		goalButton.setActionCommand("goal");
+		JPanel btnPanel = new JPanel();
+		btnPanel.add(startButton);
+		btnPanel.add(prevButton);
+		btnPanel.add(nextButton);
+		btnPanel.add(goalButton);
+		card1.setLayout(new BorderLayout());
+		card1.add("Center", graphics);
+		card1.add("South", btnPanel);
+		
+		//card1.add(tab1);
 		
 		
 		//テキストで表示する
@@ -142,6 +177,14 @@ public class SampleGUI extends JFrame implements ActionListener{
     	String cmd = e.getActionCommand();
     	if(cmd == "graphics"){
     		layout.first(panel);
+    	}else if(cmd.equals("start")){
+    		gra_layout.first(graphics);
+    	}else if(cmd.equals("goal")){
+    		gra_layout.last(graphics);
+    	}else if(cmd.equals("next")){
+    		gra_layout.next(graphics);
+    	}else if(cmd.equals("prev")){
+    		gra_layout.previous(graphics);
     	}else{
     		layout.last(panel);
     	}
