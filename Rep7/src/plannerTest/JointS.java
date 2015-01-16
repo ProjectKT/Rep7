@@ -24,7 +24,7 @@ public class JointS {
 		return forward;
 	}
 	
-	public Iterator getback(){
-		return backs.iterator();
+	public ArrayList<Object> getback(){
+		return backs;
 	}
 }
