@@ -91,13 +91,32 @@ public class SampleGUI extends JFrame implements ActionListener{
 		
 		//グラフィックで表示する
 		JPanel card1 = new JPanel();
-		//card1.setLayout(new GridLayout());
+		card1.setLayout(new GridLayout());
 		//JPanel start1 = new JPanel();//初期状態のエリア
 		//JPanel goal1 = new JPanel();//目標状態のエリア
 		//JTabbedPane tab1 = new JTabbedPane();
 		//tab1.add("start",start1);
 		//tab1.add("goal",goal1);
 		
+		JTabbedPane tab = new JTabbedPane();
+		//初期状態と目標状態を決めるページ
+		JPanel page1 = new JPanel();
+		JPanel start1 = new JPanel();//初期状態の制作パネル
+		start1.add(new JLabel("初期状態"));
+		start1.setBackground(Color.RED);
+		JPanel goal1 = new JPanel();//目標状態の制作パネル
+		goal1.add(new JLabel("目標状態"));
+		goal1.setBackground(Color.GREEN);
+		JPanel ok = new JPanel();//実行ボタンを配置するパネル
+		JButton okButton = new JButton("OK");
+		ok.add(okButton);
+		page1.setLayout(new GridLayout(3,1));
+		page1.add(start1);
+		page1.add(goal1);
+		page1.add(ok);
+		tab.add("select",page1);
+		//実行結果を表示するページ
+		JPanel page2 = new JPanel();
 		graphics.setLayout(gra_layout);
 		JPanel gra_start = new JPanel();//初期状態のエリア
 		gra_start.add(new JLabel("start"));
@@ -139,9 +158,11 @@ public class SampleGUI extends JFrame implements ActionListener{
 		btnPanel.add(prevButton);
 		btnPanel.add(nextButton);
 		btnPanel.add(goalButton);
-		card1.setLayout(new BorderLayout());
-		card1.add("Center", graphics);
-		card1.add("South", btnPanel);
+		page2.setLayout(new BorderLayout());
+		page2.add("Center", graphics);
+		page2.add("South", btnPanel);
+		tab.add("answer", page2);
+		card1.add(tab);
 		
 		//card1.add(tab1);
 		
@@ -205,7 +226,6 @@ public class SampleGUI extends JFrame implements ActionListener{
     	}
         
     }
-	
 	
 	private void loadData(){
 		
