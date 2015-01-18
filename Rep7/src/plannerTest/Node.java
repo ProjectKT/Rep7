@@ -40,4 +40,10 @@ public class Node {
 	public Object getBack(){
 		return back;
 	}
+	
+	public String toString(){
+
+		return node;
+	}
+	
 }
