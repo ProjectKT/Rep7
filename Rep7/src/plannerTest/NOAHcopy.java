@@ -651,6 +651,7 @@ public class NOAHcopy {
 
 			}
 		}
+		
 
 		while (true) {
 
@@ -671,6 +672,7 @@ public class NOAHcopy {
 				}
 			}
 
+			//stackの下の値から優先度の高いunstackの決定
 			for (Node node : preList) {
 				Matcher unMat = p3.matcher(node.getNodeName());
 
@@ -686,6 +688,7 @@ public class NOAHcopy {
 				}
 			}
 
+			//stackの上の値から優先度の高いunstackの決定+ stack
 			if (!addFrag) {
 				for (Node node : preList) {
 					Matcher unMat = p3.matcher(node.getNodeName());
@@ -707,13 +710,21 @@ public class NOAHcopy {
 				}
 			}
 
+			//stackの決定もしくはunstackのみの場合の処理
 			if (!addFrag) {
 				if (nodeList.size() > 0) {
 					deleteNode = nodeList.get(0);
-				} else {
-
+				}else{
+					//unstackのみの場合
+					
+					break;
+					
+					
 				}
 			}
+			
+			
+			
 			preList.remove(deleteNode);
 			Object x = deleteNode.getBack();
 			
@@ -744,9 +755,89 @@ public class NOAHcopy {
 				}
 			}
 			
+			if(deleteNode2 != null){
+				orderList.add(deleteNode2);
+				
+				preList.remove(deleteNode2);
+				
+				Object y = deleteNode2.getBack();
+				
+				if(y instanceof Node){
+					preList.add((Node) y);
+					
+				}
+
+				
+			}
 			
+			if(preList.size() == 0){
+				break;
+			}
 			
 		}
+		
+		//第二段階
+		//先頭のunstackの冗長はオーダーリストに突っ込む
+		while(true){
+			String name;
+			ArrayList<String> LenList = new ArrayList<String>();
+			ArrayList<Integer> LenNumber = new ArrayList<Integer>();
+ 			for(int i = 0; i<preList.size(); i++){
+				name = preList.get(i).getNodeName();
+				for(int j= i+1; j<preList.size();j++){
+					if(name.equals(preList.get(j).getNodeName())){
+						if(!LenList.contains(name)){
+						LenList.add(name);
+						LenNumber.add(i);
+						}
+					}
+				}
+			
+			}
+			
+ 			//オーダーリストの更新
+			for(Integer num: LenNumber){
+				orderList.add(preList.get(num));
+			}
+			//preListの更新
+			for(Node node: preList){
+				if(LenList.contains(node.getNodeName())){
+					
+				}
+			}
+			
+		}
+		
+		if(preList.size() > 0){
+			ArrayList<JointJ> jList = new ArrayList<JointJ>();
+			
+			for(Node node: preList){
+				Object z = node.getBack();
+				while(true){
+					if(!(z instanceof JointJ)){
+						z = ((Node)z).getBack();
+					}else{
+						if(!jList.contains(z)){
+							jList.add((JointJ) z);
+						}
+						break;
+					}
+					
+				}
+			}
+			
+
+			
+			
+			//元からある山の処理を消す
+			for(JointJ j: jList){
+				for(Node node: j.getForward()){
+					
+				}
+			}
+		}
+		
+		
 
 	}
 
