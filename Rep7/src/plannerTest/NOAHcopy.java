@@ -624,7 +624,7 @@ public class NOAHcopy {
 		ArrayList<Node> orderList = new ArrayList<Node>();
 		ArrayList<String> orderString = new ArrayList<String>();
 		Pattern p1 = Pattern.compile("clear (.*)");
-		Pattern p2 = Pattern.compile("(.*) on (.*)");
+		Pattern p2 = Pattern.compile("Place (.*) on (.*)");
 		Pattern p3 = Pattern.compile("remove (.*) from on top (.*)");
 
 		for (Object obj : ss.get(0).getBack()) {
@@ -651,7 +651,6 @@ public class NOAHcopy {
 
 			}
 		}
-		
 
 		while (true) {
 
@@ -672,7 +671,7 @@ public class NOAHcopy {
 				}
 			}
 
-			//stackの下の値から優先度の高いunstackの決定
+			// stackの下の値から優先度の高いunstackの決定
 			for (Node node : preList) {
 				Matcher unMat = p3.matcher(node.getNodeName());
 
@@ -688,7 +687,7 @@ public class NOAHcopy {
 				}
 			}
 
-			//stackの上の値から優先度の高いunstackの決定+ stack
+			// stackの上の値から優先度の高いunstackの決定+ stack
 			if (!addFrag) {
 				for (Node node : preList) {
 					Matcher unMat = p3.matcher(node.getNodeName());
@@ -710,135 +709,205 @@ public class NOAHcopy {
 				}
 			}
 
-			//stackの決定もしくはunstackのみの場合の処理
+			// stackの決定もしくはunstackのみの場合の処理
 			if (!addFrag) {
 				if (nodeList.size() > 0) {
 					deleteNode = nodeList.get(0);
-				}else{
-					//unstackのみの場合
-					
+				} else {
+					// unstackのみの場合
+
 					break;
-					
-					
+
 				}
 			}
-			
-			
-			
+
 			preList.remove(deleteNode);
 			Object x = deleteNode.getBack();
-			
+
 			Node nextNode = null;
-			
+
 			while (true) {
 				if (x instanceof Node) {
 					nextNode = (Node) x;
 
 					if (orderString.contains(nextNode.getNodeName())) {
 						x = nextNode.getBack();
-					}
-					else{
-						
+					} else {
+
 						preList.add(nextNode);
 						break;
 					}
-				}else{
-					if(x instanceof JointJ){
+				} else {
+					if (x instanceof JointJ) {
 						JointJ j = (JointJ) x;
-						
-						if(j.getForward().size() == 1){
-							if(!j.getBack().getNodeName().equals("Goal")){
+
+						if (j.getForward().size() == 1) {
+							if (!j.getBack().getNodeName().equals("Goal")) {
 								preList.add(j.getBack());
+							}
+						} else {
+							j.removeForward(nextNode);
+						}
+					}
+				}
+			}
+
+			if (deleteNode2 != null) {
+				orderList.add(deleteNode2);
+				orderString.add(deleteNode2.getNodeName());
+
+				preList.remove(deleteNode2);
+
+				Object y = deleteNode2.getBack();
+
+				if (y instanceof Node) {
+					preList.add((Node) y);
+
+				}
+
+			}
+
+			if (preList.size() == 0) {
+				break;
+			}
+
+		}
+
+		// 第二段階
+		// 先頭のunstackの冗長はオーダーリストに突っ込む
+		boolean lenFlag = true;
+
+		while (lenFlag) {
+			lenFlag = false;
+			String name;
+			ArrayList<String> LenList = new ArrayList<String>();
+			ArrayList<Integer> LenNumber = new ArrayList<Integer>();
+			for (int i = 0; i < preList.size(); i++) {
+				name = preList.get(i).getNodeName();
+				for (int j = i + 1; j < preList.size(); j++) {
+					if (name.equals(preList.get(j).getNodeName())) {
+						if (!LenList.contains(name)) {
+							lenFlag = true;
+							LenList.add(name);
+							LenNumber.add(i);
+						}
+					}
+				}
+
+			}
+
+			// オーダーリストの更新
+			for (Integer num : LenNumber) {
+				orderList.add(preList.get(num));
+				orderString.add(preList.get(num).getNodeName());
+			}
+			// preListの更新
+			for (Node node : preList) {
+				if (LenList.contains(node.getNodeName())) {
+					preList.remove(node);
+					Object w = node.getBack();
+					if (w instanceof Node) {
+						preList.add((Node) w);
+					} else {
+						if (w instanceof JointJ) {
+
+							if (((JointJ) w).getForward().size() == 1) {
+								preList.add(((JointJ) w).getBack());
+							} else {
+								((JointJ) w).removeForward(node);
 							}
 						}
 					}
 				}
 			}
-			
-			if(deleteNode2 != null){
-				orderList.add(deleteNode2);
-				
-				preList.remove(deleteNode2);
-				
-				Object y = deleteNode2.getBack();
-				
-				if(y instanceof Node){
-					preList.add((Node) y);
-					
-				}
 
-				
-			}
-			
-			if(preList.size() == 0){
-				break;
-			}
-			
 		}
-		
-		//第二段階
-		//先頭のunstackの冗長はオーダーリストに突っ込む
-		while(true){
-			String name;
-			ArrayList<String> LenList = new ArrayList<String>();
-			ArrayList<Integer> LenNumber = new ArrayList<Integer>();
- 			for(int i = 0; i<preList.size(); i++){
-				name = preList.get(i).getNodeName();
-				for(int j= i+1; j<preList.size();j++){
-					if(name.equals(preList.get(j).getNodeName())){
-						if(!LenList.contains(name)){
-						LenList.add(name);
-						LenNumber.add(i);
-						}
-					}
-				}
-			
-			}
-			
- 			//オーダーリストの更新
-			for(Integer num: LenNumber){
-				orderList.add(preList.get(num));
-			}
-			//preListの更新
-			for(Node node: preList){
-				if(LenList.contains(node.getNodeName())){
-					
-				}
-			}
-			
-		}
-		
-		if(preList.size() > 0){
+
+		// 残っているJを探す
+		if (preList.size() > 0) {
 			ArrayList<JointJ> jList = new ArrayList<JointJ>();
-			
-			for(Node node: preList){
+
+			for (Node node : preList) {
 				Object z = node.getBack();
-				while(true){
-					if(!(z instanceof JointJ)){
-						z = ((Node)z).getBack();
-					}else{
-						if(!jList.contains(z)){
+				while (true) {
+					if (!(z instanceof JointJ)) {
+						z = ((Node) z).getBack();
+					} else {
+						if (!jList.contains(z)) {
 							jList.add((JointJ) z);
 						}
 						break;
 					}
-					
+
 				}
 			}
-			
 
-			
-			
-			//元からある山の処理を消す
-			for(JointJ j: jList){
-				for(Node node: j.getForward()){
-					
+			// 元からある山の処理を消す
+			for (JointJ j : jList) {
+				Matcher stackMap = p2.matcher(j.getBack().getNodeName());
+				Matcher unMap;
+				Node change = null;
+				if (stackMap.find()) {
+					for (Node node : j.getForward()) {
+						unMap = p3.matcher(node.getNodeName());
+						if (unMap.find()) {
+							if (stackMap.group(1).equals(unMap.group(1))
+									&& stackMap.group(2).equals(unMap.group(2))) {
+								change = node;
+							}
+						}
+					}
+
+					if (change != null) {
+						System.out.println("success");
+						while (true) {
+							j.removeForward(change);
+							change = (Node) change.getForward();
+							if (orderString.contains(change.getNodeName())) {
+								preList.remove(change);
+							} else {
+								j.addForward(change);
+							}
+
+							Object obj = j.getBack().getBack();
+							System.out.println(obj.getClass().toString());
+							if (obj instanceof Node) {
+								System.out.println("success");
+								j.changeBack((Node) obj);
+							} else {
+								if (obj instanceof JointJ) {
+									JointJ tail = (JointJ) obj;
+									tail.removeForward(j.getBack());
+									break;
+								}
+							}
+
+							stackMap = p2.matcher(j.getBack().getNodeName());
+							unMap = p3.matcher(change.getNodeName());
+							if (stackMap.find() && unMap.find()) {
+								if (stackMap.group(1).equals(unMap.group(1))
+										&& stackMap.group(2).equals(
+												unMap.group(2))) {
+
+								} else {
+									break;
+								}
+							}
+						}
+					}
+
 				}
 			}
 		}
-		
-		
 
+		System.out.println(orderString);
+		printState();
+		System.out.println(preList);
+		
+		
+		//prelistの更新がうまく言ってない
+		
+		
 	}
 
 	/**
