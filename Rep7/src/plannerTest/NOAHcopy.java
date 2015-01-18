@@ -148,6 +148,10 @@ public class NOAHcopy {
 		goalList.add("7 on 11");
 		goalList.add("4 on 8");
 		goalList.add("8 on 12");
+		goalList.add("12 on 14");
+		goalList.add("14 on 15");
+		goalList.add("15 on 16");
+		
 
 		return goalList;
 	}
@@ -189,6 +193,9 @@ public class NOAHcopy {
 		initialState.add("13 on 10");
 		initialState.add("10 on 11");
 		initialState.add("11 on 12");
+		initialState.add("12 on 14");
+		initialState.add("14 on 15");
+		initialState.add("15 on 16");
 
 		return initialState;
 	}
@@ -1073,6 +1080,7 @@ public class NOAHcopy {
 					System.out.println(list);
 				}
 				System.out.println(words);
+				System.out.println(nodes);
 
 				ArrayList<String> over = new ArrayList<String>();
 				ArrayList<String> under = new ArrayList<String>();
@@ -1096,6 +1104,9 @@ public class NOAHcopy {
 					}
 				}
 
+				System.out.println(over);
+				System.out.println(under);
+				
 				for (int k = 0; k < stacks.size(); k++) {
 					if (words.contains(over.get(k))
 							&& words.contains(under.get(k))) {
@@ -1104,8 +1115,7 @@ public class NOAHcopy {
 					}
 				}
 				// ここまでで下準備
-
-				Node target = null;
+				
 
 				// clearがあった時
 				if (clearflag) {
@@ -1201,7 +1211,34 @@ public class NOAHcopy {
 								}
 								if(!words.contains(overS)){
 									for(ArrayList<Node> list : tList){
-										
+										ArrayList<String> addClear = new ArrayList<String>();
+										if(unstacks.contains(list.get(0))){
+											for(int i = 0; i < list.size();i++){
+												Matcher unstackMat = p3
+														.matcher(list.get(i)
+																.getNodeName());
+												
+												if(unstackMat.find()){
+													//System.out.println(list.get(i));
+													addClear.add(unstackMat.group(2));
+													
+													if(unstackMat.group(2).equals(overS)){
+														// 見つかった場合
+														System.out.println("in5");
+														for (int j = 0; j < i + 1; j++) {
+															orderList.add(list
+																	.get(j));
+
+														}
+														// clearの処理
+														for (String add : addClear) {
+															words.add(add);
+														}
+														okflag2 = true;
+													}
+												}
+											}
+										}
 									}
 								}
 							}
@@ -1215,6 +1252,7 @@ public class NOAHcopy {
 						// stackだけの時
 					}
 				}
+				nodes.clear();
 				ArrayList<ArrayList<Node>> delArray = new ArrayList<ArrayList<Node>>();
 				for (ArrayList<Node> list : tList) {
 					while (true) {
@@ -1227,6 +1265,7 @@ public class NOAHcopy {
 							}
 						} else {
 							delArray.add(list);
+							break;
 						}
 
 					}
@@ -1242,6 +1281,7 @@ public class NOAHcopy {
 			}
 
 		}
+		System.out.println("lastOrder"+orderList);
 	}
 
 	/**
@@ -1286,6 +1326,7 @@ public class NOAHcopy {
 		}
 
 		lastOrder();
+
 	}
 
 	public void printState() {
