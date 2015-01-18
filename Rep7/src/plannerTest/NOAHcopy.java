@@ -618,6 +618,138 @@ public class NOAHcopy {
 		}
 	}
 
+	public void lastOrder() {
+
+		ArrayList<Node> preList = new ArrayList<Node>();
+		ArrayList<Node> orderList = new ArrayList<Node>();
+		ArrayList<String> orderString = new ArrayList<String>();
+		Pattern p1 = Pattern.compile("clear (.*)");
+		Pattern p2 = Pattern.compile("(.*) on (.*)");
+		Pattern p3 = Pattern.compile("remove (.*) from on top (.*)");
+
+		for (Object obj : ss.get(0).getBack()) {
+			if (obj instanceof Node) {
+				Node node = ((Node) obj);
+				Matcher m1 = p1.matcher(node.getNodeName());
+				if (m1.find()) {
+					Object next = node.getBack();
+
+					if (next instanceof Node) {
+						preList.add(((Node) next));
+					} else {
+						if (next instanceof JointJ) {
+							JointJ j = (JointJ) next;
+
+							if (j.getForward().size() > 1) {
+								j.removeForward(node);
+							} else {
+								preList.add(j.getBack());
+							}
+						}
+					}
+				}
+
+			}
+		}
+
+		while (true) {
+
+			Boolean addFrag = false;
+			ArrayList<String> overList = new ArrayList<String>();
+			ArrayList<String> underList = new ArrayList<String>();
+			ArrayList<Node> nodeList = new ArrayList<Node>();
+			Node deleteNode = null;
+			Node deleteNode2 = null;
+			// stackの値とってくる
+			for (Node node : preList) {
+				Matcher stackMat = p2.matcher(node.getNodeName());
+
+				if (stackMat.find()) {
+					overList.add(stackMat.group(1));
+					underList.add(stackMat.group(2));
+					nodeList.add(node);
+				}
+			}
+
+			for (Node node : preList) {
+				Matcher unMat = p3.matcher(node.getNodeName());
+
+				if (unMat.find()) {
+					if (underList.contains(unMat.group(1))) {
+						orderList.add(node);
+						orderString.add(node.getNodeName());
+
+						deleteNode = node;
+						addFrag = true;
+						break;
+					}
+				}
+			}
+
+			if (!addFrag) {
+				for (Node node : preList) {
+					Matcher unMat = p3.matcher(node.getNodeName());
+
+					if (unMat.find()) {
+						if (overList.contains(unMat.group(1))) {
+							orderList.add(node);
+							orderString.add(node.getNodeName());
+
+							deleteNode = node;
+							addFrag = true;
+
+							deleteNode2 = nodeList.get(overList.indexOf(unMat
+									.group(1)));
+
+							break;
+						}
+					}
+				}
+			}
+
+			if (!addFrag) {
+				if (nodeList.size() > 0) {
+					deleteNode = nodeList.get(0);
+				} else {
+
+				}
+			}
+			preList.remove(deleteNode);
+			Object x = deleteNode.getBack();
+			
+			Node nextNode = null;
+			
+			while (true) {
+				if (x instanceof Node) {
+					nextNode = (Node) x;
+
+					if (orderString.contains(nextNode.getNodeName())) {
+						x = nextNode.getBack();
+					}
+					else{
+						
+						preList.add(nextNode);
+						break;
+					}
+				}else{
+					if(x instanceof JointJ){
+						JointJ j = (JointJ) x;
+						
+						if(j.getForward().size() == 1){
+							if(!j.getBack().getNodeName().equals("Goal")){
+								preList.add(j.getBack());
+							}
+						}
+					}
+				}
+			}
+			
+			
+			
+		}
+
+	}
+
 	/**
 	 * 蟷ｲ貂峨�谿区焚�翫→蜀鈴聞縺ｮ邱乗焚s繧堤┌縺上☆
 	 */
@@ -658,6 +790,8 @@ public class NOAHcopy {
 			System.out.println("\n loop");
 			printState();
 		}
+
+		lastOrder();
 	}
 
 	public void printState() {
