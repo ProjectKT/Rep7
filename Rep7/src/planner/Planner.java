@@ -1,5 +1,6 @@
 package planner;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -309,7 +310,7 @@ public class Planner {
 		// / ADD-LIST
 		ArrayList<String> addList3 = new ArrayList<String>();
 		addList3.add(new String("holding ?x"));
-		// / DELETE-LIST
+		// / DELETE-LI
 		ArrayList<String> deleteList3 = new ArrayList<String>();
 		deleteList3.add(new String("ontable ?x"));
 		deleteList3.add(new String("clear ?x"));

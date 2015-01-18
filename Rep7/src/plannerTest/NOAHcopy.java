@@ -151,7 +151,6 @@ public class NOAHcopy {
 		goalList.add("12 on 14");
 		goalList.add("14 on 15");
 		goalList.add("15 on 16");
-		
 
 		return goalList;
 	}
@@ -648,7 +647,7 @@ public class NOAHcopy {
 		}
 	}
 
-	public void lastOrder() {
+	public ArrayList<String> lastOrder() {
 
 		ArrayList<Node> preList = new ArrayList<Node>();
 		ArrayList<Node> orderList = new ArrayList<Node>();
@@ -1106,7 +1105,7 @@ public class NOAHcopy {
 
 				System.out.println(over);
 				System.out.println(under);
-				
+
 				for (int k = 0; k < stacks.size(); k++) {
 					if (words.contains(over.get(k))
 							&& words.contains(under.get(k))) {
@@ -1115,7 +1114,6 @@ public class NOAHcopy {
 					}
 				}
 				// ここまでで下準備
-				
 
 				// clearがあった時
 				if (clearflag) {
@@ -1127,9 +1125,12 @@ public class NOAHcopy {
 							if (unstack.group(1).equals(
 									over.get(clearNodeIndex))) {
 								orderList.add(node);
+								orderString.add(node.getNodeName());
 								// unstackの下をclearにする
 								words.add(unstack.group(2));
 								orderList.add(stacks.get(clearNodeIndex));
+								orderString.add(stacks.get(clearNodeIndex)
+										.getNodeName());
 								// 下側のモノのclearは消す
 								words.remove(under.get(clearNodeIndex));
 								flag1 = false;
@@ -1140,6 +1141,8 @@ public class NOAHcopy {
 					// 床においてあるものを載せるとき
 					if (flag1) {
 						orderList.add(stacks.get(clearNodeIndex));
+						orderString.add(stacks.get(clearNodeIndex)
+								.getNodeName());
 						// 下側のモノのclearは消す
 						words.remove(under.get(clearNodeIndex));
 					}
@@ -1152,8 +1155,8 @@ public class NOAHcopy {
 						// stackの下(甲)をclearにする
 						boolean okflag1 = false;
 						for (String underS : under) {
-							
-							if(okflag1){
+
+							if (okflag1) {
 								break;
 							}
 							if (!words.contains(underS)) {
@@ -1185,6 +1188,9 @@ public class NOAHcopy {
 													for (int j = 0; j < i + 1; j++) {
 														orderList.add(list
 																.get(j));
+														orderString.add(list
+																.get(j)
+																.getNodeName());
 
 													}
 													// clearの処理
@@ -1201,33 +1207,40 @@ public class NOAHcopy {
 								}
 							}
 						}
-						
-						//stackの上(乙)をclearにする
-						boolean okflag2 =false;
-						if(!okflag1){
-							for(String overS:over){
-								if(okflag2){
+
+						// stackの上(乙)をclearにする
+						boolean okflag2 = false;
+						if (!okflag1) {
+							for (String overS : over) {
+								if (okflag2) {
 									break;
 								}
-								if(!words.contains(overS)){
-									for(ArrayList<Node> list : tList){
+								if (!words.contains(overS)) {
+									for (ArrayList<Node> list : tList) {
 										ArrayList<String> addClear = new ArrayList<String>();
-										if(unstacks.contains(list.get(0))){
-											for(int i = 0; i < list.size();i++){
+										if (unstacks.contains(list.get(0))) {
+											for (int i = 0; i < list.size(); i++) {
 												Matcher unstackMat = p3
 														.matcher(list.get(i)
 																.getNodeName());
-												
-												if(unstackMat.find()){
-													//System.out.println(list.get(i));
-													addClear.add(unstackMat.group(2));
-													
-													if(unstackMat.group(2).equals(overS)){
+
+												if (unstackMat.find()) {
+													// System.out.println(list.get(i));
+													addClear.add(unstackMat
+															.group(2));
+
+													if (unstackMat.group(2)
+															.equals(overS)) {
 														// 見つかった場合
-														System.out.println("in5");
+														System.out
+																.println("in5");
 														for (int j = 0; j < i + 1; j++) {
 															orderList.add(list
 																	.get(j));
+															orderString
+																	.add(list
+																			.get(j)
+																			.getNodeName());
 
 														}
 														// clearの処理
@@ -1243,11 +1256,10 @@ public class NOAHcopy {
 								}
 							}
 						}
-						
+
 					} else if (stacks.size() == 0) {
 						// unstackだけのとき
-						
-						
+
 					} else {
 						// stackだけの時
 					}
@@ -1281,7 +1293,75 @@ public class NOAHcopy {
 			}
 
 		}
-		System.out.println("lastOrder"+orderList);
+		System.out.println("lastOrder" + orderList);
+		System.out.println(orderString);
+
+		return orderString;
+	}
+
+	/**
+	 * できたプランを今回の課題の形式に落としこむ
+	 * 
+	 * @param lastOrder
+	 */
+
+	public ArrayList<String> planEmbossing(ArrayList<String> lastOrder) {
+		ArrayList<String> finalPlan = new ArrayList<String>();
+
+		Pattern sP = Pattern.compile("Place (.*) on (.*)");
+		Pattern rP = Pattern.compile("remove (.*) from on top (.*)");
+
+		String lastStr1 = null;
+		String lastStr2 = null;
+		String lastType = null;
+		for (String str : lastOrder) {
+			Matcher sMat = sP.matcher(str);
+			Matcher rMat = rP.matcher(str);
+
+			if (sMat.find()) {
+				if (lastType == null) {
+					finalPlan.add("pick up " + sMat.group(1)
+							+ " from the table");
+					finalPlan.add(str);
+				} else {
+					if(lastType.equals("unstack")){
+					if (lastStr1.equals(sMat.group(1))) {
+						finalPlan.add(str);
+					} else {
+						finalPlan.add("put " + lastStr1 + " down on the table");
+						finalPlan.add("pick up " + sMat.group(1)
+								+ " from the table");
+						finalPlan.add(str);
+					}
+					}else{
+						finalPlan.add("pick up " + sMat.group(1)
+								+ " from the table");
+						finalPlan.add(str);
+					}
+				}
+
+				lastType = "stack";
+				lastStr1 = sMat.group(1);
+				lastStr2 = sMat.group(2);
+			}
+
+			if (rMat.find()) {
+				if(lastType != null){
+				if(lastType.equals("unstack")){
+					finalPlan.add("put " + lastStr1 + " down on the table");
+				}
+				}
+					finalPlan.add(str);
+
+				
+				lastType = "unstack";
+				lastStr1 = rMat.group(1);
+				lastStr2 = rMat.group(2);
+			}
+
+		}
+
+		return finalPlan;
 	}
 
 	/**
@@ -1325,8 +1405,15 @@ public class NOAHcopy {
 			printState();
 		}
 
-		lastOrder();
-
+		int count = 0;
+		
+		ArrayList<String> finalPlan = planEmbossing(lastOrder());
+		
+		System.out.println("\nfinalPlan!!!");
+		for(String str: finalPlan){
+			System.out.println("count " +(count++)+ " : " +str);
+			
+		}
 	}
 
 	public void printState() {
