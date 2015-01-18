@@ -1,38 +1,98 @@
 package gui;
 
+import java.awt.AWTError;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.LayoutManager;
+import java.awt.Toolkit;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
-import java.awt.geom.AffineTransform;
-import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Random;
 
+import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 
+import org.jbox2d.callbacks.DebugDraw;
+import org.jbox2d.callbacks.QueryCallback;
+import org.jbox2d.collision.AABB;
 import org.jbox2d.collision.shapes.PolygonShape;
+import org.jbox2d.common.Color3f;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.BodyDef;
+import org.jbox2d.dynamics.BodyType;
+import org.jbox2d.dynamics.Fixture;
+import org.jbox2d.dynamics.Profile;
 import org.jbox2d.dynamics.World;
+import org.jbox2d.dynamics.joints.MouseJoint;
+import org.jbox2d.dynamics.joints.MouseJointDef;
 
 public class PhysicsPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
+	private static final int INIT_WIDTH = 300;
+	private static final int INIT_HEIGHT = 300;
 	
 	public static final int FPS = 60;
-
-	private Worker worker = new Worker();
-	private World world = null;
-	private Random random = new Random();
+	public static final int TEXT_LINE_SPACE = 13;
+	public static final int TEXT_SECTION_SPACE = 20;
 	
-	// 表示に関する情報
-	private int scale = 20;   // 表示倍率
-	private Vec2 camera = new Vec2();
-	private int mouseX = 0;
-	private int mouseY = 0;
+	// 設定
+	public class Settings {
+		// Body を描画するか
+		boolean drawShapes = true;
+		// Joint を描画するか
+		boolean drawJoints = false;
+		// AABB を描画するか
+		boolean drawAABBs = false;
+		// COM を描画するか
+		boolean drawCOMs = false;
+		// Tree を描画するか
+		boolean drawTree = false;
+		// draw stats
+		public boolean drawStats = true;
+		
+		boolean allowSleep = false;
+		public boolean enableWarmStarting = false;
+		public boolean enableSubStepping = false;
+		public boolean enableContinuousCollision = false;
+	}
+	public Settings settings = new Settings();
+
+	// 画面を更新する描画ワーカー
+	private Animator animator = new Animator();
+	// World インスタンス
+	protected World world = null;
+	// 地面
+	private Body groundBody;
+	// カメラ
+	protected final Camera camera = new Camera(0, 0, 1);
+	// 
+	private Random random = new Random();
+	// 描画用 Graphics2D
+	private Graphics2D dbg = null;
+	// 描画用 Image
+	private Image dbImage = null;
+	// 描画ヘルパー
+	private final PhysicsDebugDraw debugDraw = new PhysicsDebugDraw(this);
+	
+	// デバッグ情報表示用
+	protected String title = null;
+	protected int textLine;
+	private final LinkedList<String> textList = new LinkedList<String>();
+	private final ArrayList<String> statsList = new ArrayList<String>();
+	
+	// 再生成しないための作業用オブジェクト
+	private int panelWidth, panelHeight;
+	private Vec2 p1 = new Vec2();
 
 	public PhysicsPanel() {
 		initialize();
@@ -50,35 +110,41 @@ public class PhysicsPanel extends JPanel {
 		initialize();
 	}
 	
+	/**
+	 * オブジェクト初期化
+	 */
 	private void initialize() {
 		// イベントリスナー登録
 		addMouseListener(mouseAdapter);
 		addMouseMotionListener(mouseAdapter);
 		addMouseWheelListener(mouseAdapter);
+		addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentResized(ComponentEvent e) {
+				// update
+				updateSize(getWidth(), getHeight());
+				dbImage = null;
+			}
+		});
+		
+		// パネル初期化
+//	    setBackground(Color.black);
+	    setPreferredSize(new Dimension(INIT_WIDTH, INIT_HEIGHT));
+		updateSize(getWidth(), getHeight());
+		textLine = 0;
 		
 		// jbox2dの初期化
 		Vec2 gravity = new Vec2(0, 10f);
 		world = new World(gravity);
+		world.setDebugDraw(debugDraw);
 
 		// 地面の定義
 		BodyDef bd = new BodyDef();
-		bd.position.set(5.0f, 9.0f);
-		bd.angle = (float)Math.PI / 180 * 15;
-
-		float w = 8.0f;
-		float h = 1.0f;
-
-		Body body = world.createBody(bd);
-
-		PolygonShape ps = new PolygonShape();
-		ps.setAsBox(w / 2, h / 2);
-
-		body.createFixture(ps, 0f);
-		body.setUserData(new Rect(w, h));
-
+		groundBody = world.createBody(bd);
+		
 		// 描画スレッド開始
 		try {
-			worker.start();
+			animator.start();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
@@ -88,76 +154,295 @@ public class PhysicsPanel extends JPanel {
 		return world;
 	}
 
-	@Override
-	public void paint(Graphics g) {
-		// 回転を戻す
-		AffineTransform at = new AffineTransform();
-		((Graphics2D) g).setTransform(at);
-
-		// 初期化
-		g.clearRect(0,0,getWidth(),getHeight());
-		
-		// 再描画
-		draw((Graphics2D) g);
+	// --- 描画周り ---
+	
+	/**
+	 * レンダリング用 Image の初期化を行う
+	 * @return
+	 */
+	public boolean render() {
+		if (dbImage == null) {
+			System.out.println("creating dbImage");
+			if (panelWidth <= 0 || panelHeight <= 0) {
+				return false;
+			}
+			dbImage = createImage(panelWidth, panelHeight);
+			if (dbImage == null) {
+				System.out.println("dbImage is still null, ignoring render call");
+				return false;
+			}
+			dbg = (Graphics2D) dbImage.getGraphics();
+			dbg.setFont(new Font("Courier New", Font.PLAIN, 12));
+		}
+		dbg.setColor(Color.black);
+		dbg.fillRect(0, 0, panelWidth, panelHeight);
+		return true;
 	}
 	
-	protected void draw(Graphics2D g) {
-		for (Body body = world.getBodyList(); body != null; body = body.getNext()) {
-			try {
-				Vec2 position = body.getPosition();
-				Rect obj = (Rect) body.getUserData();
-
-				// カメラの左上座標(ピクセル)
-				int cxb = (int) (camera.x * scale - getWidth() / 2);
-				int cyb = (int) (camera.y * scale - getHeight() / 2);
-
-				// オブジェクトの基準座標(ピクセル)
-				int oxc = (int) (position.x * scale);
-				int oyc = (int) (position.y * scale);
-
-				// オブジェクトの左上座標(ピクセル)
-				int oxb = (int) ((position.x - obj.width / 2.0f) * scale);
-				int oyb = (int) ((position.y - obj.height / 2.0f) * scale);
-
-				// オブジェクトのサイズ(ピクセル)
-				int ow = (int) (obj.width * scale);
-				int oh = (int) (obj.height * scale);
-
-				AffineTransform at = new AffineTransform();
-				at.setToRotation(body.getAngle(), oxc - cxb, oyc - cyb);
-				g.setTransform(at);
-
-				g.drawRect(oxb - cxb, oyb - cyb, ow, oh);
-			} catch (RuntimeException e) {
+	/**
+	 * レンダリング用 Image を描画する
+	 */
+	public void paintScreen() {
+		try {
+			Graphics g = this.getGraphics();
+			if ((g != null) && dbImage != null) {
+				g.drawImage(dbImage, 0, 0, null);
+				Toolkit.getDefaultToolkit().sync();
+				g.dispose();
 			}
+		} catch (AWTError e) {
+			System.out.println("Graphics context error"+e);
 		}
 	}
+	
+	private void updateSize(int width, int height) {
+		panelWidth = width;
+		panelHeight = height;
+		camera.getTransform().setExtents(width / 2, height / 2);
+	}
+	
+	public Graphics2D getDBGraphics() {
+		return dbg;
+	}
+	
+	public void step(float hz, int velocityIterations, int positionIterations) {
+		float timeStep = hz > 0f ? 1f / hz : 0;
+
+		textLine = 20;
+
+		if (title != null) {
+			debugDraw.drawString(camera.getTransform().getExtents().x, 15, title, Color3f.WHITE);
+			textLine += TEXT_LINE_SPACE;
+		}
+
+		int flags = 0;
+		flags += settings.drawShapes ? DebugDraw.e_shapeBit : 0;
+		flags += settings.drawJoints ? DebugDraw.e_jointBit : 0;
+		flags += settings.drawAABBs ? DebugDraw.e_aabbBit : 0;
+		flags += settings.drawCOMs ? DebugDraw.e_centerOfMassBit : 0;
+		flags += settings.drawTree ? DebugDraw.e_dynamicTreeBit : 0;
+		debugDraw.setFlags(flags);
+
+		world.setAllowSleep(settings.allowSleep);
+		world.setWarmStarting(settings.enableWarmStarting);
+		world.setSubStepping(settings.enableSubStepping);
+		world.setContinuousPhysics(settings.enableContinuousCollision);
+
+		world.step(timeStep, velocityIterations, positionIterations);
+
+		world.drawDebugData();
+
+		if (settings.drawStats) {
+			// Vec2.watchCreations = true;
+			debugDraw.drawString(5, textLine, "Engine Info", Color3f.GREEN);
+			textLine += TEXT_LINE_SPACE;
+			debugDraw.drawString(5, textLine, "Framerate: toBeCalculated", Color3f.WHITE);
+			textLine += TEXT_LINE_SPACE;
+			debugDraw.drawString(5, textLine,
+					"bodies/contacts/joints/proxies = "
+							+ world.getBodyCount() + "/"
+							+ world.getContactCount() + "/"
+							+ world.getJointCount() + "/"
+							+ world.getProxyCount(), Color3f.WHITE);
+			textLine += TEXT_LINE_SPACE;
+			debugDraw.drawString(5, textLine, "World mouse position: " + mouseScreen.toString(), Color3f.WHITE);
+			textLine += TEXT_LINE_SPACE;
+
+			statsList.clear();
+			Profile p = getWorld().getProfile();
+			p.toDebugStrings(statsList);
+
+			for (String s : statsList) {
+				debugDraw.drawString(5, textLine, s, Color3f.WHITE);
+				textLine += TEXT_LINE_SPACE;
+			}
+			textLine += TEXT_SECTION_SPACE;
+		}
+
+		if (!textList.isEmpty()) {
+			debugDraw.drawString(5, textLine, "Test Info", Color3f.GREEN);
+			textLine += TEXT_LINE_SPACE;
+			for (String s : textList) {
+				debugDraw.drawString(5, textLine, s, Color3f.WHITE);
+				textLine += TEXT_LINE_SPACE;
+			}
+			textList.clear();
+		}
+
+		if (mouseJoint != null) {
+			mouseJoint.getAnchorB(p1);
+			Vec2 p2 = mouseJoint.getTarget();
+
+			debugDraw.drawSegment(p1, p2, Color3f.BLUE);
+		}
+
+//		if (settings.getSetting(TestbedSettings.DrawContactPoints).enabled) {
+//			final float k_impulseScale = 0.1f;
+//			final float axisScale = 0.3f;
+//
+//			for (int i = 0; i < pointCount; i++) {
+//
+//				ContactPoint point = points[i];
+//
+//				if (point.state == PointState.ADD_STATE) {
+//					debugDraw.drawPoint(point.position, 10f, color1);
+//				} else if (point.state == PointState.PERSIST_STATE) {
+//					debugDraw.drawPoint(point.position, 5f, color2);
+//				}
+//
+//				if (settings.getSetting(TestbedSettings.DrawContactNormals).enabled) {
+//					p1.set(point.position);
+//					p2.set(point.normal).mulLocal(axisScale).addLocal(p1);
+//					debugDraw.drawSegment(p1, p2, color3);
+//
+//				} else if (settings
+//						.getSetting(TestbedSettings.DrawContactImpulses).enabled) {
+//					p1.set(point.position);
+//					p2.set(point.normal).mulLocal(k_impulseScale)
+//							.mulLocal(point.normalImpulse).addLocal(p1);
+//					debugDraw.drawSegment(p1, p2, color5);
+//				}
+//
+//				if (settings.getSetting(TestbedSettings.DrawFrictionImpulses).enabled) {
+//					Vec2.crossToOutUnsafe(point.normal, 1, tangent);
+//					p1.set(point.position);
+//					p2.set(tangent).mulLocal(k_impulseScale)
+//							.mulLocal(point.tangentImpulse).addLocal(p1);
+//					debugDraw.drawSegment(p1, p2, color5);
+//				}
+//			}
+//		}
+	}
+
+	// --------------
+	
+	private Body getBodyAt(float x, float y) {
+		// どの body が点 (x,y) を含んでいるか
+		// 四角形のバウンド AABB を使って調べる
+		queryAABB.lowerBound.set(x - 0.001f, y - 0.001f);
+		queryAABB.upperBound.set(x + 0.001f, y + 0.001f);
+		queryAABBCallback.point.set(x, y);
+		queryAABBCallback.fixture = null;
+		world.queryAABB(queryAABBCallback, queryAABB);
+		
+		if (queryAABBCallback.fixture != null) {
+			return queryAABBCallback.fixture.getBody();
+		}
+		return null;
+	}
+	
+	// --- Mouse Joint ----
+
+	// QueryAABB
+	private final AABB queryAABB = new AABB();
+	// Callback
+	private final QueryAABBCallback queryAABBCallback = new QueryAABBCallback();
+	// MouseJoint
+	private MouseJoint mouseJoint = null;
+	
+	private boolean spawnMouseJoint(Vec2 p) {
+		if (mouseJoint != null) {
+			return true;
+		}
+		Body body = getBodyAt(p.x, p.y);
+		if (body != null) {
+			MouseJointDef def = new MouseJointDef();
+			def.bodyA = groundBody;
+			def.bodyB = body;
+			def.target.set(p);
+			def.maxForce = 1000f * body.getMass();
+			mouseJoint = (MouseJoint) world.createJoint(def);
+			body.setAwake(true);
+			return true;
+		}
+		return false;
+	}
+	
+	private void updateMouseJoint(Vec2 p) {
+		if (mouseJoint != null) {
+			mouseJoint.setTarget(p);
+		}
+	}
+	
+	private void destroyMouseJoint() {
+		if (mouseJoint != null) {
+			world.destroyJoint(mouseJoint);
+			mouseJoint = null;
+		}
+	}
+	
+	private class QueryAABBCallback implements QueryCallback {
+		public final Vec2 point = new Vec2();
+		public Fixture fixture;
+		
+		@Override
+		public boolean reportFixture(Fixture fixture) {
+			System.out.println("report: "+fixture);
+			Body body = fixture.getBody();
+		    if (body.getType() == BodyType.DYNAMIC) {
+		      boolean inside = fixture.testPoint(point);
+		      if (inside) {
+		        this.fixture = fixture;
+		        return false;
+		      }
+		    }
+
+		    return true;
+		}
+	}
+	
+	// -------------------
+
+	// ワールド座標系でのマウスの位置
+	private final Vec2 mouseWorld = new Vec2();
+	// スクリーン上でのマウスの位置
+	private final Vec2 mouseScreen = new Vec2();
+	private final Vec2 oldMouseScreen = new Vec2();
+	private boolean draggingBody = false;
 	
 	private MouseAdapter mouseAdapter = new MouseAdapter() {
 		@Override
 		public void mouseWheelMoved(MouseWheelEvent e) {
-			scale -= (e.getWheelRotation() * 2);
-			if (scale <= 10) scale = 10;
-			if (scale >= 50) scale = 50;
+			updateMouse(e);
+			if (0 < e.getPreciseWheelRotation()) {
+				camera.zoomOut(mouseScreen);
+			} else {
+				camera.zoomIn(mouseScreen);
+			}
 		}
 		@Override
 		public void mousePressed(MouseEvent e) {
-			mouseX = e.getX();
-			mouseY = e.getY();
+			updateMouse(e);
+			oldMouseScreen.set(mouseScreen);
+			draggingBody = spawnMouseJoint(mouseWorld);
 		}
 		@Override
 		public void mouseDragged(MouseEvent e) {
-			camera.x += (float) (mouseX - e.getX()) / scale;
-			camera.y += (float) (mouseY - e.getY()) / scale;
-			mouseX = e.getX();
-			mouseY = e.getY();
+			if (!draggingBody) {
+				camera.move(oldMouseScreen.sub(mouseScreen));
+			}
+			updateMouse(e);
+			if (draggingBody) {
+				updateMouseJoint(mouseWorld);
+			}
+		}
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			destroyMouseJoint();
+			draggingBody = false;
+		}
+		
+		private void updateMouse(MouseEvent e) {
+			oldMouseScreen.set(mouseScreen);
+			mouseScreen.set(e.getX(), e.getY());
+			camera.getTransform().getScreenToWorld(mouseScreen, mouseWorld);
 		}
 	};
 	
 	/**
 	 * 描画するワーカー
 	 */
-	private class Worker implements Runnable {
+	private class Animator implements Runnable {
 		Thread thread;
 		long pt = 0;
 		long ct = 0;
@@ -185,24 +470,43 @@ public class PhysicsPanel extends JPanel {
 		
 		@Override
 		public void run() {
+			long beforeTime, afterTime, timeSpent, sleepTime;
+			beforeTime = System.nanoTime();
+			sleepTime = 0;
+			
 			try {
 				pt = System.nanoTime();
 				while (!thread.isInterrupted()) {
-					SwingUtilities.invokeAndWait(new Runnable() {
-						@Override
-						public void run() {
-							ct = System.nanoTime();
-							world.step((ct-pt) / 1000f / 1000f / 1000f, 8, 8);
-							repaint();
-							pt = ct;
-						}
-					});
+					ct = System.nanoTime();
+					timeSpent = ct - pt;
+					if (render()) {
+						step(FPS, 8, 8);
+						paintScreen();
+					}
+					pt = ct;
 					
-					Thread.sleep(1000 / FPS);
+					afterTime = System.nanoTime();
+					
+					sleepTime = (1000000000 / FPS - (afterTime - beforeTime)) / 1000000;
+					if (0 < sleepTime) {
+						Thread.sleep(sleepTime);
+					}
+					
+					beforeTime = System.nanoTime();
 				}
-			} catch (InterruptedException | InvocationTargetException e) {
+			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	
+	public static void main(String[] args) {
+		JFrame f = new JFrame();
+		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		f.setBounds(0, 0, 1500, 1000);
+		PhysicsPanel p = new PhysicsPanel();
+		f.getContentPane().add(p);
+		f.setVisible(true);
 	}
 }
