@@ -132,17 +132,15 @@ public class NOAHcopy {
 	private ArrayList<String> initGoalState() {
 		ArrayList<String> goalList = new ArrayList<String>();
 		/*
-		goalList.add("E on A");
-		goalList.add("C on E");
-		goalList.add("B on D");
-		*/
-		
+		 * goalList.add("E on A"); goalList.add("C on E");
+		 * goalList.add("B on D");
+		 */
+
 		goalList.add("4 on 1");
 		goalList.add("6 on 5");
 		goalList.add("5 on 2");
 		goalList.add("2 on 3");
-		
-		
+
 		return goalList;
 	}
 
@@ -153,24 +151,22 @@ public class NOAHcopy {
 	 */
 	private ArrayList<String> initCurrentState() {
 		ArrayList<String> initialState = new ArrayList<String>();
-		
-		/*
-		initialState.add("clear A");
-		initialState.add("clear D");
 
-		initialState.add("A on B");
-		initialState.add("B on C");
-		initialState.add("D on E");
-		*/
-		
+		/*
+		 * initialState.add("clear A"); initialState.add("clear D");
+		 * 
+		 * initialState.add("A on B"); initialState.add("B on C");
+		 * initialState.add("D on E");
+		 */
+
 		initialState.add("clear 1");
 		initialState.add("clear 4");
-		
+
 		initialState.add("1 on 2");
 		initialState.add("2 on 3");
 		initialState.add("4 on 5");
 		initialState.add("5 on 6");
-		
+
 		return initialState;
 	}
 
@@ -363,29 +359,13 @@ public class NOAHcopy {
 				if (m.find()) {
 					subPlan.add(node);
 					stackFlag = true;
-				}
-
-				// if(m2.find()){
-				else {
+				} else {
 					subPlan.add(0, node);
 				}
 			}
 
-			// if((subPlan.size() > 1 )&&(stackFlag)){
 			if (stackFlag) {
-				/*
-				 * subPlan.get(0).changeBack(((JointJ)subPlan.get(1).getForward()
-				 * )); Object x = subPlan.get(1).getForward(); if(x instanceof
-				 * JointJ){ JointJ x2 = (JointJ) x;
-				 * x2.addForward(subPlan.get(0)); }
-				 * subPlan.get(1).changeBack(j.getBack());
-				 * j.getBack().changeForward(subPlan.get(1));
-				 * 
-				 * deleteList.add(j);
-				 * 
-				 * headNodes.add(subPlan.get(0));
-				 */
-
+				System.out.println("subPlan" + subPlan + "\n\n");
 				Object joint = subPlan.get(subPlan.size() - 1);
 				while (joint instanceof Node) {
 
@@ -395,10 +375,11 @@ public class NOAHcopy {
 				}
 
 				if (joint instanceof JointJ) {
-
+					System.out.println("succes");
 					JointJ target = (JointJ) joint;
 
-					for (int k = 0; i < (subPlan.size() - 1); k++) {
+					for (int k = 0; k < (subPlan.size() - 1); k++) {
+						System.out.println(subPlan.get(k));
 						Node jointNode = subPlan.get(k);
 
 						jointNode.changeBack(target);
@@ -596,8 +577,8 @@ public class NOAHcopy {
 									newNode2.changeForward(newNode1);
 
 									plan.remove(obj);
-									//startNode.removeBack(obj);
-									deleteList.add((Node)obj);
+									// startNode.removeBack(obj);
+									deleteList.add((Node) obj);
 
 									Object joint = ((Node) obj).getBack();
 
@@ -605,12 +586,12 @@ public class NOAHcopy {
 										((JointJ) ((Node) obj).getBack())
 												.removeForward(obj);
 
-										//startNode.addBack(newNode1);
+										// startNode.addBack(newNode1);
 										addList.add(newNode1);
 										((JointJ) ((Node) obj).getBack())
 												.addForward(newNode2);
 									} else {
-										//startNode.addBack(newNode1);
+										// startNode.addBack(newNode1);
 										addList.add(newNode1);
 										((Node) ((Node) obj).getBack())
 												.changeForward(newNode2);
@@ -627,12 +608,12 @@ public class NOAHcopy {
 				}
 			}
 		}
-		
-		for(Node delete : deleteList){
+
+		for (Node delete : deleteList) {
 			startNode.removeBack(delete);
 		}
-		
-		for(Node add : addList){
+
+		for (Node add : addList) {
 			startNode.addBack(add);
 		}
 	}
@@ -688,12 +669,10 @@ public class NOAHcopy {
 
 			Iterator it = joint.getBack().iterator();
 			while (it.hasNext()) {
-				
+
 				Object obj = it.next();
 				System.out.println("back : " + obj);
-				
 
-				
 			}
 			System.out.println("");
 		}
@@ -704,11 +683,10 @@ public class NOAHcopy {
 
 			Iterator it = joint2.getForward().iterator();
 			while (it.hasNext()) {
-				
+
 				Object obj = it.next();
-				
+
 				System.out.println("forward : " + obj);
-				
 
 			}
 
@@ -720,8 +698,8 @@ public class NOAHcopy {
 		for (Node node : plan) {
 			System.out
 					.println(node.getNodeName() + "  " + node.getNodeNumber());
-			System.out.println("forward " + node.getForward()
-					+ "\nback " + node.getBack() +"\n");
+			System.out.println("forward " + node.getForward() + "\nback "
+					+ node.getBack() + "\n");
 		}
 	}
 
