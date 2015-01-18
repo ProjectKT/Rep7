@@ -136,10 +136,21 @@ public class NOAHcopy {
 		 * goalList.add("B on D");
 		 */
 
-		goalList.add("4 on 1");
-		goalList.add("6 on 5");
-		goalList.add("5 on 2");
-		goalList.add("2 on 3");
+		// goalList.add("4 on 1");
+		// goalList.add("6 on 5");
+		// goalList.add("5 on 2");
+		// goalList.add("2 on 3");
+		goalList.add("1 on 5");
+		goalList.add("5 on 9");
+		goalList.add("2 on 6");
+		goalList.add("6 on 10");
+		goalList.add("3 on 7");
+		goalList.add("7 on 11");
+		goalList.add("4 on 8");
+		goalList.add("8 on 12");
+		goalList.add("12 on 14");
+		goalList.add("14 on 15");
+		goalList.add("15 on 16");
 
 		return goalList;
 	}
@@ -159,13 +170,31 @@ public class NOAHcopy {
 		 * initialState.add("D on E");
 		 */
 
+		// initialState.add("clear 1");
+		// initialState.add("clear 4");
+
+		// initialState.add("1 on 2");
+		// initialState.add("2 on 3");
+		// initialState.add("4 on 5");
+		// initialState.add("5 on 6");
+
 		initialState.add("clear 1");
 		initialState.add("clear 4");
+		initialState.add("clear 7");
+		initialState.add("clear 13");
 
 		initialState.add("1 on 2");
 		initialState.add("2 on 3");
 		initialState.add("4 on 5");
 		initialState.add("5 on 6");
+		initialState.add("7 on 8");
+		initialState.add("8 on 9");
+		initialState.add("13 on 10");
+		initialState.add("10 on 11");
+		initialState.add("11 on 12");
+		initialState.add("12 on 14");
+		initialState.add("14 on 15");
+		initialState.add("15 on 16");
 
 		return initialState;
 	}
@@ -618,7 +647,7 @@ public class NOAHcopy {
 		}
 	}
 
-	public void lastOrder() {
+	public ArrayList<String> lastOrder() {
 
 		ArrayList<Node> preList = new ArrayList<Node>();
 		ArrayList<Node> orderList = new ArrayList<Node>();
@@ -657,6 +686,7 @@ public class NOAHcopy {
 			Boolean addFrag = false;
 			ArrayList<String> overList = new ArrayList<String>();
 			ArrayList<String> underList = new ArrayList<String>();
+			// stackが入ってる
 			ArrayList<Node> nodeList = new ArrayList<Node>();
 			Node deleteNode = null;
 			Node deleteNode2 = null;
@@ -773,54 +803,92 @@ public class NOAHcopy {
 
 		}
 
+		System.out.println("第一完了" + orderList);
+
 		// 第二段階
 		// 先頭のunstackの冗長はオーダーリストに突っ込む
-		boolean lenFlag = true;
+		/*
+		 * boolean lenFlag = true;
+		 * 
+		 * while (lenFlag) { lenFlag = false; String name; ArrayList<String>
+		 * LenList = new ArrayList<String>(); ArrayList<Integer> LenNumber = new
+		 * ArrayList<Integer>(); for (int i = 0; i < preList.size(); i++) { name
+		 * = preList.get(i).getNodeName(); for (int j = i + 1; j <
+		 * preList.size(); j++) { if (name.equals(preList.get(j).getNodeName()))
+		 * { if (!LenList.contains(name)) { lenFlag = true; LenList.add(name);
+		 * LenNumber.add(i); } } }
+		 * 
+		 * }
+		 * 
+		 * // オーダーリストの更新 for (Integer num : LenNumber) {
+		 * orderList.add(preList.get(num));
+		 * orderString.add(preList.get(num).getNodeName()); }
+		 * 
+		 * // preListの更新 ArrayList<Node> delList = new ArrayList<Node>();
+		 * ArrayList<Node> addList = new ArrayList<Node>();
+		 * 
+		 * for (Node node : preList) { if (LenList.contains(node.getNodeName()))
+		 * { // preList.remove(node); delList.add(node); Object w =
+		 * node.getBack(); if (w instanceof Node) { // preList.add((Node) w);
+		 * addList.add((Node) w); } else { if (w instanceof JointJ) {
+		 * 
+		 * if (((JointJ) w).getForward().size() == 1) { // preList.add(((JointJ)
+		 * w).getBack()); addList.add(((JointJ) w).getBack()); } else {
+		 * ((JointJ) w).removeForward(node); } } } } }
+		 * 
+		 * for (Node add : addList) { preList.add(add); }
+		 * 
+		 * for (Node del : delList) { preList.remove(del); }
+		 * 
+		 * }
+		 */
 
-		while (lenFlag) {
-			lenFlag = false;
-			String name;
-			ArrayList<String> LenList = new ArrayList<String>();
-			ArrayList<Integer> LenNumber = new ArrayList<Integer>();
-			for (int i = 0; i < preList.size(); i++) {
-				name = preList.get(i).getNodeName();
-				for (int j = i + 1; j < preList.size(); j++) {
-					if (name.equals(preList.get(j).getNodeName())) {
-						if (!LenList.contains(name)) {
-							lenFlag = true;
-							LenList.add(name);
-							LenNumber.add(i);
+		HashMap<String, Node> NodeMap = new HashMap<String, Node>();
+		HashMap<Node, Node> NextMap = new HashMap<Node, Node>();
+		HashMap<String, Integer> LengthMap = new HashMap<String, Integer>();
+		ArrayList<Node> delList = new ArrayList<Node>();
+		ArrayList<Node> delList2 = new ArrayList<Node>();
+		for (Object obj : ss.get(0).getBack()) {
+			Node node = ((Node) obj);
+			Node next = node;
+			Integer count = 0;
+			while (true) {
+				if (next.getBack() instanceof Node) {
+					next = (Node) next.getBack();
+					count++;
+				} else {
+					if (NodeMap.containsKey(node.getNodeName())) {
+						if (LengthMap.get(node.getNodeName()) < count) {
+							delList.add(NodeMap.get(node.getNodeName()));
+							delList2.add(NextMap.get(NodeMap.get(node
+									.getNodeName())));
+							NodeMap.remove(node.getNodeName());
+							LengthMap.remove(node.getNodeName());
+							NodeMap.put(node.getNodeName(), node);
+							LengthMap.put(node.getNodeName(), count);
+							NextMap.put(node, next);
+						} else {
+							delList.add(node);
+							delList2.add(next);
 						}
-					}
-				}
-
-			}
-
-			// オーダーリストの更新
-			for (Integer num : LenNumber) {
-				orderList.add(preList.get(num));
-				orderString.add(preList.get(num).getNodeName());
-			}
-			// preListの更新
-			for (Node node : preList) {
-				if (LenList.contains(node.getNodeName())) {
-					preList.remove(node);
-					Object w = node.getBack();
-					if (w instanceof Node) {
-						preList.add((Node) w);
 					} else {
-						if (w instanceof JointJ) {
-
-							if (((JointJ) w).getForward().size() == 1) {
-								preList.add(((JointJ) w).getBack());
-							} else {
-								((JointJ) w).removeForward(node);
-							}
-						}
+						NodeMap.put(node.getNodeName(), node);
+						LengthMap.put(node.getNodeName(), count);
+						NextMap.put(node, next);
 					}
+					break;
 				}
 			}
+		}
 
+		for (Node node : delList) {
+			ss.get(0).removeBack(node);
+			preList.remove(node);
+		}
+
+		for (Node node : delList2) {
+			((JointJ) node.getBack()).removeForward(node);
+			;
 		}
 
 		// 残っているJを探す
@@ -861,10 +929,11 @@ public class NOAHcopy {
 					if (change != null) {
 						System.out.println("success");
 						while (true) {
+							Node last = change;
 							j.removeForward(change);
 							change = (Node) change.getForward();
 							if (orderString.contains(change.getNodeName())) {
-								preList.remove(change);
+								preList.remove(last);
 							} else {
 								j.addForward(change);
 							}
@@ -878,6 +947,7 @@ public class NOAHcopy {
 								if (obj instanceof JointJ) {
 									JointJ tail = (JointJ) obj;
 									tail.removeForward(j.getBack());
+									jList.remove(tail);
 									break;
 								}
 							}
@@ -898,16 +968,400 @@ public class NOAHcopy {
 
 				}
 			}
+
+			System.out.println(orderString);
+			// printState();
+			// System.out.println(preList);
+
+			// 残ったものの順序決定
+			// HashMap<Node, Node> delLen = new HashMap<Node, Node>();
+			ArrayList<ArrayList<Node>> tList = new ArrayList<ArrayList<Node>>();
+			for (JointJ j : jList) {
+				ArrayList<Node> temp = new ArrayList<Node>();
+				Node next = j.getBack();
+				while (true) {
+					temp.add(next);
+
+					if (next.getBack() instanceof Node) {
+						next = (Node) next.getBack();
+					} else {
+						break;
+					}
+				}
+				for (int k = 0; k < j.getForward().size(); k++) { // jの前の数
+					Node unStack = j.getForward().get(k);
+					while (true) {
+
+						Matcher unMat = p3.matcher(unStack.getNodeName());
+
+						if (unMat.find()) {
+							// Node stack = j.getBack();
+							int t;
+							for (t = 0; t < temp.size(); t++) {
+								Matcher stackMat = p2.matcher(temp.get(t)
+										.getNodeName());
+
+								if (stackMat.find()) {
+									if (unMat.group(1)
+											.equals(stackMat.group(1))) {
+										temp.add(t, unStack);
+										break;
+									} else if (unMat.group(2).equals(
+											stackMat.group(1))) {
+										temp.add(t, unStack);
+										// fix me?
+										break;
+
+									} else if ((!unMat.group(1).equals(
+											stackMat.group(2)))
+											&&
+											// (!unMat.group(2).equals(stackMat.group(1)))
+											// &&
+											(!unMat.group(2).equals(
+													stackMat.group(2)))) {
+
+										// tugi
+									} else {
+										temp.add(0, unStack);
+										break;
+									}
+								} else {
+									if (unStack.getBack().equals(temp.get(t))) {
+										temp.add(t, unStack);
+										break;
+									} else {
+
+										// 自分と関係ないunStack
+									}
+								}
+							}
+
+							// 何ともマッチしなかった
+							if (t == temp.size()) {
+								temp.add(0, unStack);
+							}
+
+						}
+
+						if (!preList.contains(unStack)) {
+							unStack = ((Node) unStack.getForward());
+						} else {
+							preList.remove(unStack);
+							break;
+						}
+
+					}
+
+					tList.add(temp);
+
+					System.out.println("temp" + temp);
+				}
+
+			}
+
+			ArrayList<Node> nodes = new ArrayList<Node>();
+			ArrayList<String> words = new ArrayList<String>();
+
+			for (String str : nPara.getCurrentState()) {
+				Matcher clearWord = p1.matcher(str);
+				if (clearWord.find()) {
+					words.add(clearWord.group(1));
+				}
+			}
+
+			// 先頭の初期化
+			for (ArrayList<Node> list : tList) {
+				nodes.add(list.get(0));
+			}
+			while (true) {
+				System.out.println(orderList);
+				for (ArrayList<Node> list : tList) {
+					System.out.println(list);
+				}
+				System.out.println(words);
+				System.out.println(nodes);
+
+				ArrayList<String> over = new ArrayList<String>();
+				ArrayList<String> under = new ArrayList<String>();
+				ArrayList<Node> stacks = new ArrayList<Node>();
+				ArrayList<Node> unstacks = new ArrayList<Node>();
+
+				Integer clearNodeIndex = null;
+				// clearNodeが一個でもあるかのフラグ
+				boolean clearflag = false;
+				// over,under
+				for (Node node : nodes) {
+					Matcher stack = p2.matcher(node.getNodeName());
+
+					if (stack.find()) {
+						over.add(stack.group(1));
+						under.add(stack.group(2));
+
+						stacks.add(node);
+					} else {
+						unstacks.add(node);
+					}
+				}
+
+				System.out.println(over);
+				System.out.println(under);
+
+				for (int k = 0; k < stacks.size(); k++) {
+					if (words.contains(over.get(k))
+							&& words.contains(under.get(k))) {
+						clearNodeIndex = k;
+						clearflag = true;
+					}
+				}
+				// ここまでで下準備
+
+				// clearがあった時
+				if (clearflag) {
+					boolean flag1 = true;
+					for (Node node : unstacks) {
+						Matcher unstack = p3.matcher(node.getNodeName());
+
+						if (unstack.find()) {
+							if (unstack.group(1).equals(
+									over.get(clearNodeIndex))) {
+								orderList.add(node);
+								orderString.add(node.getNodeName());
+								// unstackの下をclearにする
+								words.add(unstack.group(2));
+								orderList.add(stacks.get(clearNodeIndex));
+								orderString.add(stacks.get(clearNodeIndex)
+										.getNodeName());
+								// 下側のモノのclearは消す
+								words.remove(under.get(clearNodeIndex));
+								flag1 = false;
+								break;
+							}
+						}
+					}
+					// 床においてあるものを載せるとき
+					if (flag1) {
+						orderList.add(stacks.get(clearNodeIndex));
+						orderString.add(stacks.get(clearNodeIndex)
+								.getNodeName());
+						// 下側のモノのclearは消す
+						words.remove(under.get(clearNodeIndex));
+					}
+				} else {
+					// クリアがなかったとき
+
+					if (stacks.size() > 0 && unstacks.size() > 0) {
+						// stackとunstackが共存するとき
+
+						// stackの下(甲)をclearにする
+						boolean okflag1 = false;
+						for (String underS : under) {
+
+							if (okflag1) {
+								break;
+							}
+							if (!words.contains(underS)) {
+
+								for (ArrayList<Node> list : tList) {
+									// 前方が求める甲であるunstackになるまで遡る
+									// 途中でstackが出るかListがなくなれば諦める
+									// System.out.println(list.get(0));
+									ArrayList<String> addClear = new ArrayList<String>();
+									if (unstacks.contains(list.get(0))) {
+										// System.out.println("in4");
+										// System.out.println(orderList);
+										// System.out.println(words);
+										for (int i = 0; i < list.size(); i++) {
+
+											Matcher unstackMat = p3
+													.matcher(list.get(i)
+															.getNodeName());
+
+											if (unstackMat.find()) {
+
+												addClear.add(unstackMat
+														.group(2));
+
+												if (unstackMat.group(1).equals(
+														underS)) {
+													// 見つかった場合
+
+													for (int j = 0; j < i + 1; j++) {
+														orderList.add(list
+																.get(j));
+														orderString.add(list
+																.get(j)
+																.getNodeName());
+
+													}
+													// clearの処理
+													for (String add : addClear) {
+														words.add(add);
+													}
+													okflag1 = true;
+												}
+											} else {
+												break;
+											}
+										}
+									}
+								}
+							}
+						}
+
+						// stackの上(乙)をclearにする
+						boolean okflag2 = false;
+						if (!okflag1) {
+							for (String overS : over) {
+								if (okflag2) {
+									break;
+								}
+								if (!words.contains(overS)) {
+									for (ArrayList<Node> list : tList) {
+										ArrayList<String> addClear = new ArrayList<String>();
+										if (unstacks.contains(list.get(0))) {
+											for (int i = 0; i < list.size(); i++) {
+												Matcher unstackMat = p3
+														.matcher(list.get(i)
+																.getNodeName());
+
+												if (unstackMat.find()) {
+													// System.out.println(list.get(i));
+													addClear.add(unstackMat
+															.group(2));
+
+													if (unstackMat.group(2)
+															.equals(overS)) {
+														// 見つかった場合
+														System.out
+																.println("in5");
+														for (int j = 0; j < i + 1; j++) {
+															orderList.add(list
+																	.get(j));
+															orderString
+																	.add(list
+																			.get(j)
+																			.getNodeName());
+
+														}
+														// clearの処理
+														for (String add : addClear) {
+															words.add(add);
+														}
+														okflag2 = true;
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+
+					} else if (stacks.size() == 0) {
+						// unstackだけのとき
+
+					} else {
+						// stackだけの時
+					}
+				}
+				nodes.clear();
+				ArrayList<ArrayList<Node>> delArray = new ArrayList<ArrayList<Node>>();
+				for (ArrayList<Node> list : tList) {
+					while (true) {
+						if (list.size() > 0) {
+							if (orderList.contains(list.get(0))) {
+								list.remove(0);
+							} else {
+								nodes.add(list.get(0));
+								break;
+							}
+						} else {
+							delArray.add(list);
+							break;
+						}
+
+					}
+				}
+
+				for (ArrayList<Node> list : delArray) {
+					tList.remove(list);
+				}
+
+				if (tList.size() == 0) {
+					break;
+				}
+			}
+
+		}
+		System.out.println("lastOrder" + orderList);
+		System.out.println(orderString);
+
+		return orderString;
+	}
+
+	/**
+	 * できたプランを今回の課題の形式に落としこむ
+	 * 
+	 * @param lastOrder
+	 */
+
+	public ArrayList<String> planEmbossing(ArrayList<String> lastOrder) {
+		ArrayList<String> finalPlan = new ArrayList<String>();
+
+		Pattern sP = Pattern.compile("Place (.*) on (.*)");
+		Pattern rP = Pattern.compile("remove (.*) from on top (.*)");
+
+		String lastStr1 = null;
+		String lastStr2 = null;
+		String lastType = null;
+		for (String str : lastOrder) {
+			Matcher sMat = sP.matcher(str);
+			Matcher rMat = rP.matcher(str);
+
+			if (sMat.find()) {
+				if (lastType == null) {
+					finalPlan.add("pick up " + sMat.group(1)
+							+ " from the table");
+					finalPlan.add(str);
+				} else {
+					if(lastType.equals("unstack")){
+					if (lastStr1.equals(sMat.group(1))) {
+						finalPlan.add(str);
+					} else {
+						finalPlan.add("put " + lastStr1 + " down on the table");
+						finalPlan.add("pick up " + sMat.group(1)
+								+ " from the table");
+						finalPlan.add(str);
+					}
+					}else{
+						finalPlan.add("pick up " + sMat.group(1)
+								+ " from the table");
+						finalPlan.add(str);
+					}
+				}
+
+				lastType = "stack";
+				lastStr1 = sMat.group(1);
+				lastStr2 = sMat.group(2);
+			}
+
+			if (rMat.find()) {
+				if(lastType != null){
+				if(lastType.equals("unstack")){
+					finalPlan.add("put " + lastStr1 + " down on the table");
+				}
+				}
+					finalPlan.add(str);
+
+				
+				lastType = "unstack";
+				lastStr1 = rMat.group(1);
+				lastStr2 = rMat.group(2);
+			}
+
 		}
 
-		System.out.println(orderString);
-		printState();
-		System.out.println(preList);
-		
-		
-		//prelistの更新がうまく言ってない
-		
-		
+		return finalPlan;
 	}
 
 	/**
@@ -951,7 +1405,15 @@ public class NOAHcopy {
 			printState();
 		}
 
-		lastOrder();
+		int count = 0;
+		
+		ArrayList<String> finalPlan = planEmbossing(lastOrder());
+		
+		System.out.println("\nfinalPlan!!!");
+		for(String str: finalPlan){
+			System.out.println("count " +(count++)+ " : " +str);
+			
+		}
 	}
 
 	public void printState() {
