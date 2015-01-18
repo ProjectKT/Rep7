@@ -7,7 +7,6 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.LayoutManager;
 import java.awt.Toolkit;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -15,16 +14,20 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import org.jbox2d.callbacks.ContactImpulse;
+import org.jbox2d.callbacks.ContactListener;
 import org.jbox2d.callbacks.DebugDraw;
 import org.jbox2d.callbacks.QueryCallback;
 import org.jbox2d.collision.AABB;
-import org.jbox2d.collision.shapes.PolygonShape;
+import org.jbox2d.collision.Manifold;
 import org.jbox2d.common.Color3f;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Body;
@@ -33,6 +36,7 @@ import org.jbox2d.dynamics.BodyType;
 import org.jbox2d.dynamics.Fixture;
 import org.jbox2d.dynamics.Profile;
 import org.jbox2d.dynamics.World;
+import org.jbox2d.dynamics.contacts.Contact;
 import org.jbox2d.dynamics.joints.MouseJoint;
 import org.jbox2d.dynamics.joints.MouseJointDef;
 
@@ -74,7 +78,7 @@ public class PhysicsPanel extends JPanel {
 	// 地面
 	private Body groundBody;
 	// カメラ
-	protected final Camera camera = new Camera(0, 0, 1);
+	protected final Camera camera = new Camera(0, 0, getInitialZoom());
 	// 
 	private Random random = new Random();
 	// 描画用 Graphics2D
@@ -97,17 +101,9 @@ public class PhysicsPanel extends JPanel {
 	public PhysicsPanel() {
 		initialize();
 	}
-	public PhysicsPanel(LayoutManager layout) {
-		super(layout);
-		initialize();
-	}
-	public PhysicsPanel(boolean isDoubleBuffered) {
-		super(isDoubleBuffered);
-		initialize();
-	}
-	public PhysicsPanel(LayoutManager layout, boolean isDoubleBuffered) {
-		super(layout, isDoubleBuffered);
-		initialize();
+	
+	protected float getInitialZoom() {
+		return 1.0f;
 	}
 	
 	/**
@@ -128,6 +124,7 @@ public class PhysicsPanel extends JPanel {
 		});
 		
 		// パネル初期化
+		setFocusable(true);
 //	    setBackground(Color.black);
 	    setPreferredSize(new Dimension(INIT_WIDTH, INIT_HEIGHT));
 		updateSize(getWidth(), getHeight());
@@ -136,6 +133,7 @@ public class PhysicsPanel extends JPanel {
 		// jbox2dの初期化
 		Vec2 gravity = new Vec2(0, 10f);
 		world = new World(gravity);
+		world.setContactListener(contactListener);
 		world.setDebugDraw(debugDraw);
 
 		// 地面の定義
@@ -152,6 +150,21 @@ public class PhysicsPanel extends JPanel {
 	
 	public World getWorld() {
 		return world;
+	}
+	
+	private Body getBodyAt(float x, float y) {
+		// どの body が点 (x,y) を含んでいるか
+		// 四角形のバウンド AABB を使って調べる
+		queryAABB.lowerBound.set(x - 0.001f, y - 0.001f);
+		queryAABB.upperBound.set(x + 0.001f, y + 0.001f);
+		queryAABBCallback.point.set(x, y);
+		queryAABBCallback.fixture = null;
+		world.queryAABB(queryAABBCallback, queryAABB);
+		
+		if (queryAABBCallback.fixture != null) {
+			return queryAABBCallback.fixture.getBody();
+		}
+		return null;
 	}
 
 	// --- 描画周り ---
@@ -316,21 +329,6 @@ public class PhysicsPanel extends JPanel {
 
 	// --------------
 	
-	private Body getBodyAt(float x, float y) {
-		// どの body が点 (x,y) を含んでいるか
-		// 四角形のバウンド AABB を使って調べる
-		queryAABB.lowerBound.set(x - 0.001f, y - 0.001f);
-		queryAABB.upperBound.set(x + 0.001f, y + 0.001f);
-		queryAABBCallback.point.set(x, y);
-		queryAABBCallback.fixture = null;
-		world.queryAABB(queryAABBCallback, queryAABB);
-		
-		if (queryAABBCallback.fixture != null) {
-			return queryAABBCallback.fixture.getBody();
-		}
-		return null;
-	}
-	
 	// --- Mouse Joint ----
 
 	// QueryAABB
@@ -439,6 +437,76 @@ public class PhysicsPanel extends JPanel {
 		}
 	};
 	
+	// --- Contact Listener ---
+	private final ArrayList<ContactListener> contactListeners = new ArrayList<ContactListener>();
+	
+	public void addContactListener(ContactListener listener) {
+		synchronized(contactListeners) {
+			if (!contactListeners.contains(listener)) {
+				contactListeners.add(listener);
+			}
+		}
+	}
+	
+	public void removeContactListener(ContactListener listener) {
+		synchronized(contactListeners) {
+			int index = contactListeners.indexOf(listener);
+			if (index != -1) {
+				contactListeners.remove(index);
+			}
+		}
+	}
+	
+	private ContactListener contactListener = new ContactListener() {
+		@Override
+		public void beginContact(Contact contact) {
+			synchronized (contactListeners) {
+				for (int i = contactListeners.size()-1; i >= 0; i--) {
+					contactListeners.get(i).beginContact(contact);
+				}
+			}
+		}
+		@Override
+		public void endContact(Contact contact) {
+			synchronized (contactListeners) {
+				for (int i = contactListeners.size()-1; i >= 0; i--) {
+					contactListeners.get(i).endContact(contact);
+				}
+			}
+		}
+		@Override
+		public void preSolve(Contact contact, Manifold oldManifold) {
+			synchronized (contactListeners) {
+				for (int i = contactListeners.size()-1; i >= 0; i--) {
+					contactListeners.get(i).preSolve(contact, oldManifold);
+				}
+			}
+		}
+		@Override
+		public void postSolve(Contact contact, ContactImpulse impulse) {
+			synchronized (contactListeners) {
+				for (int i = contactListeners.size()-1; i >= 0; i--) {
+					contactListeners.get(i).postSolve(contact, impulse);
+				}
+			}
+		}
+	};
+	
+	/**
+	 * ContactListener の実装クラス
+	 */
+	protected class ContactAdapter implements ContactListener {
+		@Override
+		public void beginContact(Contact contact) { }
+		@Override
+		public void endContact(Contact contact) { }
+		@Override
+		public void preSolve(Contact contact, Manifold oldManifold) { }
+		@Override
+		public void postSolve(Contact contact, ContactImpulse impulse) { }
+	}
+	// ------------------------
+	
 	/**
 	 * 描画するワーカー
 	 */
@@ -509,4 +577,5 @@ public class PhysicsPanel extends JPanel {
 		f.getContentPane().add(p);
 		f.setVisible(true);
 	}
+
 }
