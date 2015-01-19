@@ -21,6 +21,9 @@ public class NOAH {
 	ArrayList<Node> plan = new ArrayList<Node>();
 	int nodecount = 1;
 	
+	//最終結果のプラン
+	ArrayList<String> resultPlan =new ArrayList<String>();
+	
 	//JointSのリスト
 	//JointSは前方が一個、後方が複数の結合部
 	ArrayList<JointS> ss = new ArrayList<JointS>();
@@ -36,7 +39,7 @@ public class NOAH {
 	ArrayList<String> over = new ArrayList<String>();
 
 	public static void main(String args[]) {
-		(new NOAH()).initialplanning();
+		(new NOAH()).planning();
 	}
 
 	/** 初期状態とゴール状態が与えられない場合のコンストラクタ
@@ -230,7 +233,7 @@ public class NOAH {
 	}
 
 	/**
-	 * GUI上でいじった初期状態を
+	 * GUI上でいじった初期状態を適用する
 	 * 
 	 * @param State
 	 */
@@ -239,7 +242,7 @@ public class NOAH {
 	}
 
 	/**
-	 * 逶ｮ讓咏憾諷九ｒ繧ｻ繝�ヨ
+	 * GUI上でいじったゴール状態を適用する
 	 * 
 	 * @param GoalList
 	 */
@@ -256,19 +259,30 @@ public class NOAH {
 	}
 
 	/**
-	 * 迴ｾ蝨ｨ迥ｶ諷九°繧臥岼讓咏憾諷九∈縺ｮ驕鍋ｭ九ｒNOAH(Nets Of Action Hierarchies)縺ｧ豎ゅａ繧
+	 * ゴール状態をプランに登録する
+	 * 具体的には
+	 * Goalに[A on B,B on C]があったら
 	 * 
+	 *                     |  - A on B - | 
+	 * Start --- JointS ---              ----JointJ --- Goal
+	 *                     |  - B on C - |
+	 *                     
+	 *                     ができる
 	 */
-	public void initialplanning() {
+	private void initialPlanning() {
 		ArrayList<String> goalState = nPara.getGoalState();
 
-		// 繧ｹ繧ｿ繝ｼ繝医√ざ繝ｼ繝ｫ縺ｮ逋ｻ骭ｲ
+		// 先頭のJointSを作る
+		// 先頭のJointSは前がStartノード
 		JointS s = new JointS();
 		s.changeForward("Start");
+		
+		// 末尾のJointJを作る
+		// 末尾のJointJは後がGoalノード
 		JointJ j = new JointJ();
 		Node goal = new Node("Goal", 0, j, null);
 		j.changeBack(goal);
-		// 繝弱�繝峨�逋ｻ骭ｲ
+		// ゴール状態の数分ループ
 		for (String str : goalState) {
 			Node newNode = new Node(str, nodecount++, s, j);
 			plan.add(newNode);
@@ -277,14 +291,21 @@ public class NOAH {
 		}
 		ss.add(s);
 		js.add(j);
-		planning();
 
 	}
 
 	/**
-	 * 繝励Λ繝ｳ繧貞ｱ暮幕縺吶ｋ
+	 * ゴール状態のままでは不十分なのでプランを展開する
+	 * 具体的には
+	 * A on Bを
+	 * 
+	 *         |- Clear A -|
+	 * JointS---           ---JointJ --- Place A on B 
+	 *         |- Clear B -|
+	 *         
+	 *         に展開する
 	 */
-	public void expandplan() {
+	private void expandPlan() {
 		ArrayList<Node> newplan = new ArrayList<Node>();
 		for (Node node : plan) {
 			if (node.getNodeName().contains("on")) {
@@ -331,9 +352,9 @@ public class NOAH {
 	ArrayList<Node> headNodes = new ArrayList<Node>();
 
 	/**
-	 * 蟷ｲ貂峨ｒ謗｢縺鈴�ｺ丈ｻ倥￠繧定｡後≧
+	 * 一回目の順序付けを行うメソッド
 	 */
-	public void checkInterference() {
+	private void checkInterference() {
 		System.out.println(under);
 		// 莉雁屓豕ｨ逶ｮ縺吶ｋ蟷ｲ貂
 		JointJ j = js.get(0);
@@ -362,9 +383,6 @@ public class NOAH {
 		headNodes.addAll(subPlan);
 
 		for (int i = 0; i < subPlan.size(); i++) {
-			// subPlan.get(i).changeBack(subPlan.get(i + 1).getForward());
-			// ((JointJ) subPlan.get(i + 1).getForward()).addForward(subPlan
-			// .get(i));
 			Matcher m2 = p.matcher(subPlan.get(i).getNodeName());
 			if (m2.find()) {
 				for (int i2 = i + 1; i2 < subPlan.size(); i2++) {
@@ -390,15 +408,12 @@ public class NOAH {
 
 		}
 
-		// subPlan.get(subPlan.size() - 1).changeBack(j.getBack());
-		// j.getBack().changeForward(subPlan.get(subPlan.size() - 1));
-		// js.remove(0);
 	}
 
 	/**
 	 * 莠悟捉逶ｮ莉･髯阪�鬆�ｺ丈ｻ倥￠
 	 */
-	public void checkIF() {
+	private void checkIF() {
 
 		headNodes.clear();
 		Pattern p = Pattern.compile("Place (.*) on (.*)");
@@ -414,7 +429,6 @@ public class NOAH {
 
 			for (Node node : forward) {
 				Matcher m = p.matcher(node.getNodeName());
-				// Matcher m2 = p.matcher(node.getNodeName());
 				if (m.find()) {
 					subPlan.add(node);
 					stackFlag = true;
@@ -482,7 +496,7 @@ public class NOAH {
 	/**
 	 * 蜀鈴聞繧呈爾縺励げ繝ｩ繝輔�螟牙ｽ｢繧定｡後≧
 	 */
-	public void checkLengthy() {
+	private void checkLengthy() {
 
 		for (Node node : headNodes) {
 			ArrayList<String> clearList = new ArrayList<String>();
@@ -502,9 +516,6 @@ public class NOAH {
 				if (clearList.contains(clearNode.getNodeName())) {
 					System.out.println("in  clearNode");
 					((JointJ) clearNode.getBack()).removeForward(clearNode);
-					// ((JointJ)( (JointJ) node.getForward()
-					// ).getforward().get(1).getBack()).removeforward(( (JointJ)
-					// node.getForward() ).getforward().get(1));
 					Object x = clearNode.getForward();
 					if (x instanceof JointS) {
 						System.out.println("success JointS\n" + x);
@@ -545,7 +556,7 @@ public class NOAH {
 
 	}
 
-	public void checkLen() {
+	private void checkLen() {
 
 		ArrayList<Node> clearList = new ArrayList<Node>();
 		Pattern p = Pattern.compile("clear (.*)");
@@ -602,7 +613,7 @@ public class NOAH {
 	/**
 	 * 縲隧ｳ邏ｰ蛹
 	 */
-	public void refinement() {
+	private void refinement() {
 
 		JointS startNode = ss.get(0);
 		ArrayList<String> currentState = nPara.getCurrentState();
@@ -636,7 +647,6 @@ public class NOAH {
 									newNode2.changeForward(newNode1);
 
 									plan.remove(obj);
-									// startNode.removeBack(obj);
 									deleteList.add((Node) obj);
 
 									Object joint = ((Node) obj).getBack();
@@ -644,13 +654,10 @@ public class NOAH {
 									if (joint instanceof JointJ) {
 										((JointJ) ((Node) obj).getBack())
 												.removeForward(obj);
-
-										// startNode.addBack(newNode1);
 										addList.add(newNode1);
 										((JointJ) ((Node) obj).getBack())
 												.addForward(newNode2);
 									} else {
-										// startNode.addBack(newNode1);
 										addList.add(newNode1);
 										((Node) ((Node) obj).getBack())
 												.changeForward(newNode2);
@@ -677,7 +684,7 @@ public class NOAH {
 		}
 	}
 
-	public ArrayList<String> lastOrder() {
+	private ArrayList<String> lastOrder() {
 
 		ArrayList<Node> preList = new ArrayList<Node>();
 		ArrayList<Node> orderList = new ArrayList<Node>();
@@ -837,41 +844,6 @@ public class NOAH {
 
 		// 第二段階
 		// 先頭のunstackの冗長はオーダーリストに突っ込む
-		/*
-		 * boolean lenFlag = true;
-		 * 
-		 * while (lenFlag) { lenFlag = false; String name; ArrayList<String>
-		 * LenList = new ArrayList<String>(); ArrayList<Integer> LenNumber = new
-		 * ArrayList<Integer>(); for (int i = 0; i < preList.size(); i++) { name
-		 * = preList.get(i).getNodeName(); for (int j = i + 1; j <
-		 * preList.size(); j++) { if (name.equals(preList.get(j).getNodeName()))
-		 * { if (!LenList.contains(name)) { lenFlag = true; LenList.add(name);
-		 * LenNumber.add(i); } } }
-		 * 
-		 * }
-		 * 
-		 * // オーダーリストの更新 for (Integer num : LenNumber) {
-		 * orderList.add(preList.get(num));
-		 * orderString.add(preList.get(num).getNodeName()); }
-		 * 
-		 * // preListの更新 ArrayList<Node> delList = new ArrayList<Node>();
-		 * ArrayList<Node> addList = new ArrayList<Node>();
-		 * 
-		 * for (Node node : preList) { if (LenList.contains(node.getNodeName()))
-		 * { // preList.remove(node); delList.add(node); Object w =
-		 * node.getBack(); if (w instanceof Node) { // preList.add((Node) w);
-		 * addList.add((Node) w); } else { if (w instanceof JointJ) {
-		 * 
-		 * if (((JointJ) w).getForward().size() == 1) { // preList.add(((JointJ)
-		 * w).getBack()); addList.add(((JointJ) w).getBack()); } else {
-		 * ((JointJ) w).removeForward(node); } } } } }
-		 * 
-		 * for (Node add : addList) { preList.add(add); }
-		 * 
-		 * for (Node del : delList) { preList.remove(del); }
-		 * 
-		 * }
-		 */
 
 		HashMap<String, Node> NodeMap = new HashMap<String, Node>();
 		HashMap<Node, Node> NextMap = new HashMap<Node, Node>();
@@ -1000,11 +972,8 @@ public class NOAH {
 			}
 
 			System.out.println(orderString);
-			// printState();
-			// System.out.println(preList);
 
 			// 残ったものの順序決定
-			// HashMap<Node, Node> delLen = new HashMap<Node, Node>();
 			ArrayList<ArrayList<Node>> tList = new ArrayList<ArrayList<Node>>();
 			for (JointJ j : jList) {
 				ArrayList<Node> temp = new ArrayList<Node>();
@@ -1025,7 +994,6 @@ public class NOAH {
 						Matcher unMat = p3.matcher(unStack.getNodeName());
 
 						if (unMat.find()) {
-							// Node stack = j.getBack();
 							int t;
 							for (t = 0; t < temp.size(); t++) {
 								Matcher stackMat = p2.matcher(temp.get(t)
@@ -1045,8 +1013,6 @@ public class NOAH {
 									} else if ((!unMat.group(1).equals(
 											stackMat.group(2)))
 											&&
-											// (!unMat.group(2).equals(stackMat.group(1)))
-											// &&
 											(!unMat.group(2).equals(
 													stackMat.group(2)))) {
 
@@ -1194,12 +1160,8 @@ public class NOAH {
 								for (ArrayList<Node> list : tList) {
 									// 前方が求める甲であるunstackになるまで遡る
 									// 途中でstackが出るかListがなくなれば諦める
-									// System.out.println(list.get(0));
 									ArrayList<String> addClear = new ArrayList<String>();
 									if (unstacks.contains(list.get(0))) {
-										// System.out.println("in4");
-										// System.out.println(orderList);
-										// System.out.println(words);
 										for (int i = 0; i < list.size(); i++) {
 
 											Matcher unstackMat = p3
@@ -1312,26 +1274,6 @@ public class NOAH {
 							}
 						}
 
-						/*
-						 * for(int t = 0; t < tList.size();t++){
-						 * if(tList.get(t).size() > 1){ Node checkStack =
-						 * tList.get(t).get(1);
-						 * 
-						 * Matcher sMat = p2.matcher(checkStack.getNodeName());
-						 * 
-						 * if(sMat.find()){ stackNum = t; for(Node temp :
-						 * nodes){ Matcher unMat =
-						 * p3.matcher(temp.getNodeName());
-						 * 
-						 * if(unMat.find()){
-						 * if(sMat.group(1).equals(unMat.group(1))){
-						 * orderList.add(nodes.get(t));
-						 * orderString.add(nodes.get(t).getNodeName());
-						 * 
-						 * break; } } } }
-						 * 
-						 * } }
-						 */
 						int action = -1;
 						for (int k = 0; k < stackList.size(); k++) {
 							if (stackList.get(k) != null) {
@@ -1421,7 +1363,7 @@ public class NOAH {
 	 * @param lastOrder
 	 */
 
-	public ArrayList<String> planEmbossing(ArrayList<String> lastOrder) {
+	private ArrayList<String> planEmbossing(ArrayList<String> lastOrder) {
 		ArrayList<String> finalPlan = new ArrayList<String>();
 
 		Pattern sP = Pattern.compile("Place (.*) on (.*)");
@@ -1484,7 +1426,9 @@ public class NOAH {
 	 * 蟷ｲ貂峨�谿区焚�翫→蜀鈴聞縺ｮ邱乗焚s繧堤┌縺上☆
 	 */
 	public void planning() {
-		expandplan();
+		initialPlanning();
+		
+		expandPlan();
 
 		System.out.println("initialState \n");
 		printState();
@@ -1501,9 +1445,8 @@ public class NOAH {
 		printState();
 
 		// 莉･荳倶ｺ悟捉逶ｮ莉･髯
-		// while () {
 		checkIF();
-		// }
+
 		System.out.println("\n checkIF");
 		printState();
 		ArrayList<Node> lastPlan = new ArrayList<Node>();
@@ -1530,9 +1473,15 @@ public class NOAH {
 			System.out.println("count " + (count++) + " : " + str);
 
 		}
+		
+		resultPlan = finalPlan;
+	}
+	
+	public ArrayList<String> getResult(){
+		return resultPlan;
 	}
 
-	public void printState() {
+	private void printState() {
 		for (JointS joint : ss) {
 
 			System.out.println("center :" + joint);
