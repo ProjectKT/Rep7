@@ -9,39 +9,55 @@ import java.util.regex.Pattern;
 
 import planner.Operator;
 
-public class NOAHcopy {
+public class NOAH {
 
+	//メンバ
+	
+	//パラメーターを保存するクラス
+	//MultiThreadで実装しようとした頃の名残
 	NOAHParameters nPara;
-	NOAHPlan nPlan;
 
+	//最初のプラン
 	ArrayList<Node> plan = new ArrayList<Node>();
 	int nodecount = 1;
-	//メンバ
+	
+	//JointSのリスト
+	//JointSは前方が一個、後方が複数の結合部
 	ArrayList<JointS> ss = new ArrayList<JointS>();
+	
+	//JointSのリスト
+	//JointSは前方が一個、後方が複数の結合部
 	ArrayList<JointJ> js = new ArrayList<JointJ>();
 
+	/**A on Bが合ったとき
+	 * underにB、overにAが入る
+	*/
 	ArrayList<String> under = new ArrayList<String>();
 	ArrayList<String> over = new ArrayList<String>();
 
 	public static void main(String args[]) {
-		(new NOAHcopy()).initialplanning();
+		(new NOAH()).initialplanning();
 	}
 
-	// 蛻晄悄迥ｶ諷九∫岼讓咏憾諷九�謖�ｮ壹′縺ｪ縺�ｴ蜷医�繧ｳ繝ｳ繧ｹ繝医Λ繧ｯ繧ｿ
-	NOAHcopy() {
+	/** 初期状態とゴール状態が与えられない場合のコンストラクタ
+	 * 初期状態とゴール状態はこちらが決めたものに勝手にセットされる
+	*/
+	NOAH() {
 		nPara = new NOAHParameters(initOperators(), initGoalState(),
 				initCurrentState());
-		nPlan = new NOAHPlan();
-	}
-
-	// 蛻晄悄迥ｶ諷九∫岼讓咏憾諷九′謖�ｮ壹＆繧後※縺�ｋ蝣ｴ蜷医�繧ｳ繝ｳ繧ｹ繝医Λ繧ｯ繧ｿ
-	NOAHcopy(ArrayList<String> goalState, ArrayList<String> initialState) {
-		nPara = new NOAHParameters(initOperators(), goalState, initialState);
-		nPlan = new NOAHPlan();
 	}
 
 	/**
-	 * 繧ｪ繝壹Ξ繝ｼ繧ｿ繝ｼ繧貞�譛溷喧
+	 * 初期状態とゴール状態が与えられなる場合のコンストラクタ
+	 * @param goalState　ゴール状態
+	 * @param initialState　初期状態
+	 */
+	NOAH(ArrayList<String> goalState, ArrayList<String> initialState) {
+		nPara = new NOAHParameters(initOperators(), goalState, initialState);
+	}
+
+	/**
+	 * plannerのなごり現在全く使ってない
 	 */
 	private ArrayList<Operator> initOperators() {
 		ArrayList<Operator> operators = new ArrayList<Operator>();
@@ -125,7 +141,7 @@ public class NOAHcopy {
 	}
 
 	/**
-	 * 逶ｮ讓咏憾諷九ｒ蛻晄悄蛹
+	 * 初期状態がコンストラクタで与えられなかったときに使う初期状態
 	 * 
 	 * @return
 	 */
@@ -156,7 +172,7 @@ public class NOAHcopy {
 	}
 
 	/**
-	 * 蛻晄悄迥ｶ諷九ｒ蛻晄悄蛹
+	 * ゴール状態がコンストラクタで与えられなかった時用のゴール状態
 	 * 
 	 * @return
 	 */
@@ -214,7 +230,7 @@ public class NOAHcopy {
 	}
 
 	/**
-	 * 迴ｾ蝨ｨ迥ｶ諷九ｒ繧ｻ繝�ヨ
+	 * GUI上でいじった初期状態を
 	 * 
 	 * @param State
 	 */
@@ -1559,36 +1575,4 @@ public class NOAHcopy {
 		}
 	}
 
-	/**
-	 * 迴ｾ蝨ｨ迥ｶ諷九°繧臥岼讓咏憾諷九∈縺ｮ驕鍋ｭ九ｒNOAH(Nets Of Action Hierarchies)縺ｧ豎ゅａ繧
-	 * multithread繧剃ｽｿ縺翫≧縺ｨ縺励◆縺後ｈ縺上ｏ縺九ｉ縺ｪ縺上↑縺｣縺溘�縺ｧ謾ｾ譽
-	 */
-	public void planningMultiThread() {
-		ArrayList<String> goalState = nPara.getGoalState();
-
-		// 荳弱∴繧峨ｌ縺溘ざ繝ｼ繝ｫ迥ｶ諷九�謨ｰ縺縺代�蟇ｾ蠢懊☆繧亀hread繧剃ｽ懊ｋ
-		NOAHThread[] nt = new NOAHThread[goalState.size()];
-		Thread[] t = new Thread[goalState.size()];
-
-		int count = 0;
-		for (String str : goalState) {
-			nPlan.addPlan(str);
-			nt[count] = new NOAHThread(str, nPara, nPlan);
-			t[count] = new Thread(nt[count]);
-			count++;
-		}
-
-		for (int i = 0; i < count; i++) {
-			t[i].start();
-		}
-
-		for (int i = 0; i < count; i++) {
-			try {
-				t[i].join();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-
-	}
 }
