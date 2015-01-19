@@ -7,6 +7,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
@@ -95,16 +96,25 @@ public class SampleGUI extends JFrame implements ActionListener{
 		//JTabbedPane tab1 = new JTabbedPane();
 		//tab1.add("start",start1);
 		//tab1.add("goal",goal1);
-		
 		JTabbedPane tab = new JTabbedPane();
 		//初期状態と目標状態を決めるページ
 		JPanel page1 = new JPanel();
-		JPanel start1 = new JPanel();//初期状態の制作パネル
-		start1.add(new JLabel("初期状態"));
-		start1.setBackground(Color.RED);
-		JPanel goal1 = new JPanel();//目標状態の制作パネル
-		goal1.add(new JLabel("目標状態"));
-		goal1.setBackground(Color.GREEN);
+		JPanel start = new JPanel();
+		PlannerPanel start1 = new PlannerPanel();//初期状態の制作パネル
+		start1.enableScrollScreen(false);
+		Pattern pat = Pattern.compile("clear (.*)");
+		//Matcher mat = pat.matcher();
+		start.setLayout(new BorderLayout());
+		start.add(BorderLayout.NORTH, new JLabel("初期状態"));
+		start.add("Center", start1);
+		//start1.setBackground(Color.RED);
+		JPanel goal = new JPanel();
+		PlannerPanel goal1 = new PlannerPanel();//目標状態の制作パネル
+		goal1.enableScrollScreen(false);
+		goal.setLayout(new BorderLayout());
+		goal.add("North", new JLabel("目標状態"));
+		goal.add("Center", goal1);
+		//goal1.setBackground(Color.GREEN);
 		JPanel ok = new JPanel();//実行ボタンを配置するパネル
 		JButton okButton = new JButton("OK");
 		ok.add(okButton);
@@ -118,7 +128,7 @@ public class SampleGUI extends JFrame implements ActionListener{
 		graphics.setLayout(gra_layout);
 		JPanel gra_start = new JPanel();//初期状態のエリア
 		gra_start.add(new JLabel("start"));
-		gra_start.setBackground(Color.RED);
+		//gra_start.setBackground(Color.RED);
 		graphics.add(gra_start);
 		for(int i = 1; i < 13; i++){
 			JPanel gra_process = new JPanel();//過程のエリア
