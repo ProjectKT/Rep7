@@ -3,15 +3,15 @@ package gui;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JFrame;
 
-import org.jbox2d.callbacks.ContactImpulse;
 import org.jbox2d.callbacks.ContactListener;
-import org.jbox2d.collision.Manifold;
 import org.jbox2d.collision.shapes.EdgeShape;
 import org.jbox2d.collision.shapes.PolygonShape;
 import org.jbox2d.common.Vec2;
@@ -25,8 +25,18 @@ import org.jbox2d.dynamics.joints.RevoluteJointDef;
 
 public class PlannerPanel extends PhysicsPanel implements PlannerController {
 	
+	interface Settings {
+		// 箱の形状
+		PolygonShape BoxShape = new PolygonShape() {{
+			BoxShape.setAsBox(0.5f, 0.5f);
+		}};
+	}
+	
+	// 操作用ロボット
 	private Robot robot;
+	// 
 	private List<Runnable> manipulations = Collections.synchronizedList(new LinkedList<Runnable>());
+	private Map<String,Box> boxMap = new HashMap<String,Box>();
 
 	public PlannerPanel() {
 		initialize();
@@ -90,6 +100,28 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		robot = new Robot();
 	}
 	
+	// --- interface implementation ---
+
+	@Override
+	public void putBox(String name, String on) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	@Override
+	public void pickup(String target) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void place(String to) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	// --------------------------------
+	
 	@Override
 	public boolean render() {
 		manipulateWorld();
@@ -134,6 +166,28 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		}
 	};
 	
+	private class Box {
+		String name;
+		Body body;
+		
+		public Box(Vec2 pos) {
+			initialize(pos);
+		}
+		
+		private void initialize(Vec2 pos) {
+			BodyDef bf = new BodyDef();
+			bf.position.set(pos);
+			body = createBody(bf);
+			
+			FixtureDef fd = new FixtureDef();
+			fd.shape = Settings.BoxShape;
+			fd.density = 0.5f;
+			fd.friction = 1.0f;
+			
+			body.createFixture(fd);
+		}
+	}
+	
 	private class Robot {
 		Body palm;
 		Joint joint;
@@ -147,7 +201,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			initialize();
 		}
 		
-		void initialize() {
+		private void initialize() {
 			// Body
 			{
 				// TODO
@@ -264,17 +318,5 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		PlannerPanel p = new PlannerPanel();
 		f.getContentPane().add(p);
 		f.setVisible(true);
-	}
-
-	@Override
-	public void pickup(String target) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void place(String to) {
-		// TODO Auto-generated method stub
-		
 	}
 }
