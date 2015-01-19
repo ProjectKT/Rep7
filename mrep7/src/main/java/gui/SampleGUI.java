@@ -135,34 +135,52 @@ public class SampleGUI extends JFrame implements ActionListener{
 		System.out.println("startList"+startList);
 		noah.planning();
 
-		Pattern p1 = Pattern.compile("(.*) on table");
-		Pattern p2 = Pattern.compile("(.*) on (.*)");
-		Pattern p3 = Pattern.compile("clear (.*)");
+		Pattern p1 = Pattern.compile("pick up (.*) from the table");
+		Pattern p2 = Pattern.compile("Place (.*) on (.*)");
+		Pattern p3 = Pattern.compile("remove (.*) from on top (.*)");
+		Pattern p4 = Pattern.compile("put (.*) down on the table");
 				
-		for (String str : ) {
-			Matcher m1 = p1.matcher(str);
-			Matcher m2 = p2.matcher(str);
 
-			if (m1.find()) {
-				if (!objects.contains(m1.group(1))) {
-					objects.add(m1.group(1));
-				}
-				if (!objects.contains(m1.group(2))) {
-					objects.add(m1.group(2));
-				}
-			}
-
-			if (m2.find()) {
-				if (!objects.contains(m2.group(1))) {
-					objects.add(m2.group(1));
-				}
-			}
-
-		}
 		
 		for(String operator : noah.getResult()){
+			System.out.println(operator);
+			Matcher m1 = p1.matcher(operator);
+			Matcher m2 = p2.matcher(operator);
+			Matcher m3 = p3.matcher(operator);
+			Matcher m4 = p4.matcher(operator);
 			
+			if(m1.find()){
+				try {
+					start1.pickup(m1.group(1));
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+			
+			if(m2.find()){
+				start1.putBox(m2.group(1), m2.group(2));
+			}
+			
+			if(m3.find()){
+				try {
+					start1.pickup(m3.group(1));
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+			
+			if(m4.find()){
+				try {
+					start1.pickup(m4.group(1));
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
 		}
+		
 		
 		start.setLayout(new BorderLayout());
 		start.add(BorderLayout.NORTH, new JLabel("初期状態"));
