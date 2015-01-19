@@ -140,7 +140,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		holdingBox = boxMap.get(target);
 		if (holdingBox != null) {
 			final Vec2 pos = holdingBox.body.getWorldCenter();
-			final Vec2 posTo = pos.sub(new Vec2(0, Settings.BoxSize.y*1.5f));
+			final Vec2 posTo = pos.sub(new Vec2(0, Settings.BoxSize.y/2));
 			robot.moveTo(posTo);
 			robot.grab();
 		}
@@ -447,7 +447,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 					try {
 						Vec2 diff = to.sub(palm.getWorldCenter());
 						while (0.01f < diff.length()) {
-							palm.setLinearVelocity(diff);
+							palm.setLinearVelocity(diff.mulLocal(10.0f));
 							Thread.sleep(100);
 							diff = to.sub(palm.getWorldCenter());
 						}
