@@ -250,12 +250,46 @@ public class NOAH {
 		nPara.setGoalState(GoalList);
 	}
 
+	/**
+	 * GUI上で初期状態を取得する時用
+	 * @return
+	 */
 	public ArrayList<String> getCurrentState() {
 		return nPara.getCurrentState();
 	}
 
+	/**
+	 * GUI上でゴール状態を取得する時用
+	 * @return
+	 */
 	public ArrayList<String> getGoalState() {
 		return nPara.getGoalState();
+	}
+	
+	/**
+	 * グローバル変数を初期化するメソッド
+	 */
+	private void initMember(){
+		//最初のプラン
+		plan = new ArrayList<Node>();
+		nodecount = 1;
+		
+		//最終結果のプラン
+		resultPlan =new ArrayList<String>();
+		
+		//JointSのリスト
+		//JointSは前方が一個、後方が複数の結合部
+		ss = new ArrayList<JointS>();
+		
+		//JointSのリスト
+		//JointSは前方が一個、後方が複数の結合部
+		js = new ArrayList<JointJ>();
+
+		/**A on Bが合ったとき
+		 * underにB、overにAが入る
+		*/
+		under = new ArrayList<String>();
+		over = new ArrayList<String>();
 	}
 
 	/**
@@ -349,6 +383,7 @@ public class NOAH {
 		plan = newplan;
 	}
 
+	//tableから一番近いonを行う際のPrace情報
 	ArrayList<Node> headNodes = new ArrayList<Node>();
 
 	/**
@@ -356,12 +391,11 @@ public class NOAH {
 	 */
 	private void checkInterference() {
 		System.out.println(under);
-		// 莉雁屓豕ｨ逶ｮ縺吶ｋ蟷ｲ貂
+		// 一番後ろのJointJをとってくる
 		JointJ j = js.get(0);
 		ArrayList<Node> list = j.getForward();
 		ArrayList<Node> subPlan = new ArrayList<Node>();
 		Pattern p = Pattern.compile("Place (.*) on (.*)");
-		System.out.println("syu");
 		while (subPlan.size() != list.size()) {
 			System.out.println("subPlan" + subPlan.size() + "list"
 					+ list.size());
@@ -411,7 +445,7 @@ public class NOAH {
 	}
 
 	/**
-	 * 莠悟捉逶ｮ莉･髯阪�鬆�ｺ丈ｻ倥￠
+	 * 二回目の順序づけで使うメソッド
 	 */
 	private void checkIF() {
 
@@ -494,7 +528,7 @@ public class NOAH {
 	}
 
 	/**
-	 * 蜀鈴聞繧呈爾縺励げ繝ｩ繝輔�螟牙ｽ｢繧定｡後≧
+	 * 一回目の冗長削除で使うメソッド
 	 */
 	private void checkLengthy() {
 
@@ -533,7 +567,6 @@ public class NOAH {
 					} else {
 
 						System.out.println("not JointS \n" + x);
-						// JointS 縺倥ｃ縺ｪ縺
 					}
 				}
 				clearList.add(((JointJ) node.getForward()).getForward().get(0)
@@ -556,6 +589,9 @@ public class NOAH {
 
 	}
 
+	/**
+	 * 二回目以降の冗長削除で使うメソッド
+	 */
 	private void checkLen() {
 
 		ArrayList<Node> clearList = new ArrayList<Node>();
@@ -611,7 +647,7 @@ public class NOAH {
 	}
 
 	/**
-	 * 縲隧ｳ邏ｰ蛹
+	 * 初回から最後まで詳細化はこのメソッドで行う
 	 */
 	private void refinement() {
 
@@ -623,8 +659,6 @@ public class NOAH {
 
 			if (obj instanceof Node) {
 				if (!currentState.contains(((Node) obj).getNodeName())) {
-					System.out.println("迴ｾ迥ｶ諷九↓隧ｲ蠖薙☆繧九ｂ縺ｮ辟｡縺 :"
-							+ ((Node) obj).getNodeName());
 					Pattern p1 = Pattern.compile("clear (.*)");
 					Matcher m1 = p1.matcher(((Node) obj).getNodeName());
 
@@ -684,6 +718,12 @@ public class NOAH {
 		}
 	}
 
+	/**
+	 * 順序付け、冗長削除、詳細化を繰り返しを行うことで
+	 * Startの後ろのJointSとGoalの前のJointJの間に各作りたい山を作る系列が残るので
+	 * 最後にそれらを一本道に変換する
+	 * @return
+	 */
 	private ArrayList<String> lastOrder() {
 
 		ArrayList<Node> preList = new ArrayList<Node>();
@@ -1423,34 +1463,45 @@ public class NOAH {
 	}
 
 	/**
-	 * 蟷ｲ貂峨�谿区焚�翫→蜀鈴聞縺ｮ邱乗焚s繧堤┌縺上☆
+	 * plannigを行うメソッド
+	 * これを呼ぶ前に初期状態をセットするメソッドsetCurrentStateと
+	 * ゴール状態をセットするメソッドsetGoalStateを使う必要あり
+	 * 結果のArrayListはgetResultで得る
 	 */
 	public void planning() {
+		//グローバル変数の初期化
+		initMember();
+		
+		//ゴールのリストをプランに登録
 		initialPlanning();
 		
+		//プランを展開
 		expandPlan();
 
 		System.out.println("initialState \n");
 		printState();
 
+		//一回目の順序づけ
 		checkInterference();
-		System.out.println("鬆�ｺ丈ｻ倥￠");
+		System.out.println("順序付け終了");
 		printState();
 		checkLengthy();
-		System.out.println("蜀鈴聞蜑企勁");
+		System.out.println("冗長削除終了");
 		printState();
+		System.out.println("詳細化終了");
 		refinement();
 
 		System.out.println("\nAct1 result \n");
 		printState();
 
-		// 莉･荳倶ｺ悟捉逶ｮ莉･髯
+		// 二回目の順序づけ
+		System.out.println("順序付け終了");
 		checkIF();
 
-		System.out.println("\n checkIF");
 		printState();
 		ArrayList<Node> lastPlan = new ArrayList<Node>();
 		lastPlan.addAll(plan);
+		//以下二回目以降の冗長削除、詳細化繰り返し
 		while (true) {
 			checkLen();
 			refinement();
@@ -1477,10 +1528,15 @@ public class NOAH {
 		resultPlan = finalPlan;
 	}
 	
+	/**
+	 * 結果を返すメソッド
+	 * @return
+	 */
 	public ArrayList<String> getResult(){
 		return resultPlan;
 	}
 
+	//途中経過を確認していたメソッド
 	private void printState() {
 		for (JointS joint : ss) {
 
