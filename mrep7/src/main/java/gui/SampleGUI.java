@@ -7,6 +7,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.ButtonGroup;
@@ -133,6 +134,31 @@ public class SampleGUI extends JFrame implements ActionListener{
 		System.out.println("startStart"+startStart);
 		System.out.println("startList"+startList);
 		noah.planning();
+
+		Pattern p1 = Pattern.compile("(.*) on table");
+		Pattern p2 = Pattern.compile("(.*) on (.*)");
+		Pattern p3 = Pattern.compile("clear (.*)");
+				
+		for (String str : ) {
+			Matcher m1 = p1.matcher(str);
+			Matcher m2 = p2.matcher(str);
+
+			if (m1.find()) {
+				if (!objects.contains(m1.group(1))) {
+					objects.add(m1.group(1));
+				}
+				if (!objects.contains(m1.group(2))) {
+					objects.add(m1.group(2));
+				}
+			}
+
+			if (m2.find()) {
+				if (!objects.contains(m2.group(1))) {
+					objects.add(m2.group(1));
+				}
+			}
+
+		}
 		
 		for(String operator : noah.getResult()){
 			
@@ -146,6 +172,25 @@ public class SampleGUI extends JFrame implements ActionListener{
 		JPanel goal = new JPanel();
 		PlannerPanel goal1 = new PlannerPanel();//目標状態の制作パネル
 		goal1.enableScrollScreen(false);
+		
+		ArrayList<String> goalGoal = new ArrayList<String>();
+		
+		for(String object : objects){
+			System.out.println("objects"+object);
+			goal1.putBox(object, null);
+			goalGoal.add("clear " +object);
+		}
+		
+		noah.setCurrentState(goalGoal);
+		noah.setGoalState(goalList);
+		System.out.println("goalGoal"+goalGoal);
+		System.out.println("goalList"+goalList);
+		noah.planning();
+		
+		for(String operator : noah.getResult()){
+			
+		}
+		
 		goal.setLayout(new BorderLayout());
 		goal.add("North", new JLabel("目標状態"));
 		goal.add("Center", goal1);
