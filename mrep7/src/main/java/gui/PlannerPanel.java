@@ -62,6 +62,8 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 	private Box holdingBox = null;
 	// 一番高い位置にあるボックス
 	private Box highestBox = null;
+	// 状態の変化リスナー
+	private StatesChangeListener statesChangeListener = null;
 	
 
 	public PlannerPanel() {
@@ -251,6 +253,29 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 	
 		return states;
 	}
+	
+	@Override
+	public void setStatesChangeListener(StatesChangeListener l) {
+		statesChangeListener = l;
+		if (l != null) {
+			addContactListener(statesWatcher);
+		} else {
+			removeContactListener(statesWatcher);
+		}
+	}
+	
+	private final ContactAdapter statesWatcher = new ContactAdapter() {
+		@Override
+		public void beginContact(Contact contact) { fire(); }
+		@Override
+		public void endContact(Contact contact) { fire(); }
+		
+		private void fire() {
+			if (statesChangeListener != null) {
+				statesChangeListener.onChangeStates(getStates());
+			}
+		}
+	};
 	
 	private String findBox(Body body) {
 		synchronized (boxMap) {

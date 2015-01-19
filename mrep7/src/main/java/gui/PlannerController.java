@@ -28,4 +28,21 @@ public interface PlannerController {
 	 * @return
 	 */
 	public List<String> getStates();
+	
+	/**
+	 * 状態の変化を監視するリスナーを登録する
+	 * @param l
+	 */
+	public void setStatesChangeListener(StatesChangeListener l);
+	
+	/**
+	 * 状態の変化を監視するリスナー
+	 */
+	public interface StatesChangeListener {
+		/**
+		 * 状態が変化したときに呼ばれる
+		 * @param states 状態
+		 */
+		public void onChangeStates(List<String> states);
+	}
 }

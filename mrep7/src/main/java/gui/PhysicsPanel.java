@@ -153,13 +153,22 @@ public class PhysicsPanel extends JPanel {
 		// 地面の定義
 		BodyDef bd = new BodyDef();
 		groundBody = world.createBody(bd);
-		
-		// 描画スレッド開始
-		try {
-			animator.start();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+	}
+	
+	/**
+	 * 描画スレッドを開始する
+	 * @throws InterruptedException
+	 */
+	public void start() throws InterruptedException {
+		animator.start();
+	}
+	
+	/**
+	 * 描画スレッドを停止する
+	 * @throws InterruptedException
+	 */
+	public void stop() throws InterruptedException {
+		animator.stop();
 	}
 	
 	public Body createBody(BodyDef def) {
@@ -418,7 +427,6 @@ public class PhysicsPanel extends JPanel {
 		
 		@Override
 		public boolean reportFixture(Fixture fixture) {
-			System.out.println("report: "+fixture);
 			Body body = fixture.getBody();
 		    if (body.getType() == BodyType.DYNAMIC) {
 		      boolean inside = fixture.testPoint(point);
@@ -504,7 +512,7 @@ public class PhysicsPanel extends JPanel {
 	
 	private ContactListener contactListener = new ContactListener() {
 		@Override
-		public void beginContact(Contact contact) { System.out.println(" --- beginContact: "+contact);
+		public void beginContact(Contact contact) {
 			synchronized (contactListeners) {
 				for (int i = contactListeners.size()-1; i >= 0; i--) {
 					contactListeners.get(i).beginContact(contact);
@@ -512,7 +520,7 @@ public class PhysicsPanel extends JPanel {
 			}
 		}
 		@Override
-		public void endContact(Contact contact) { System.out.println(" --- endContact: "+contact);
+		public void endContact(Contact contact) {
 			synchronized (contactListeners) {
 				for (int i = contactListeners.size()-1; i >= 0; i--) {
 					contactListeners.get(i).endContact(contact);

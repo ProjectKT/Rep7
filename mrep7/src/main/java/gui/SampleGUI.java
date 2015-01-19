@@ -1,5 +1,7 @@
 package gui;
 
+import gui.PlannerController.StatesChangeListener;
+
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -8,6 +10,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,7 +20,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
@@ -33,15 +35,14 @@ public class SampleGUI extends JFrame implements ActionListener{
 	// 
 	JPanel panel = new JPanel();
 	CardLayout layout = new CardLayout();
-	// 
-	JPanel graphics = new JPanel();
-	CardLayout gra_layout = new CardLayout();
+	// Label
+	JLabel stepLabel;
 	// 物体を表示するパネル
-	PlannerPanel plannerPanel = new PlannerPanel();
+	PlannerPanel plannerPanel;
 	// 初期状態
-	PlannerPanel startPanel = new PlannerPanel();
+	PlannerPanel startPanel;
 	// 終了状態
-	PlannerPanel goalPanel = new PlannerPanel();
+	PlannerPanel goalPanel;
 	// Noah
 	NOAH noah;
 	
@@ -64,8 +65,16 @@ public class SampleGUI extends JFrame implements ActionListener{
 		
 		// 初期状態・終了状態を設定
 		initPlanner();
-		initStartState();
-		initGoalState();
+		initPlannerPanel(startList, startPanel);
+		initPlannerPanel(goalList, goalPanel);
+		
+		// 描画開始
+		try {
+			startPanel.start();
+			goalPanel.start();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 		
 		// TODO Planner の出力を元に PlannerPanel のコマンドを呼ぶ操作パネル、レイアウトの作成
 		// 1. 初期状態、目標状態を入れるための入力コンポーネントを用意する
@@ -119,15 +128,33 @@ public class SampleGUI extends JFrame implements ActionListener{
 		//初期状態と目標状態を決めるページ
 		JPanel page1 = new JPanel(new BorderLayout());
 		page1.add(BorderLayout.CENTER, page1_panels);
-		
+
+		startPanel = new PlannerPanel();
 		startPanel.enableScrollScreen(false);
+		startPanel.setStatesChangeListener(new StatesChangeListener() {
+			@Override
+			public void onChangeStates(List<String> states) {
+				startList.clear();
+				startList.addAll(states);
+			}
+		});
+		
 		JPanel start = new JPanel();
 		start.setLayout(new BorderLayout());
 		start.add(BorderLayout.NORTH, new JLabel("初期状態"));
 		start.add(BorderLayout.CENTER, startPanel);
 		page1_panels.add(start);
 		
+		goalPanel = new PlannerPanel();
 		goalPanel.enableScrollScreen(false);
+		goalPanel.setStatesChangeListener(new StatesChangeListener() {
+			@Override
+			public void onChangeStates(List<String> states) {
+				goalList.clear();
+				goalList.addAll(states);
+			}
+		});
+		
 		JPanel goal = new JPanel();
 		goal.setLayout(new BorderLayout());
 		goal.add(BorderLayout.NORTH, new JLabel("目標状態"));
@@ -137,37 +164,19 @@ public class SampleGUI extends JFrame implements ActionListener{
 		JPanel ctrl = new JPanel();
 		page1.add(BorderLayout.SOUTH, ctrl);
 		
-		JButton okButton = new JButton("ok");
+		JButton okButton = new JButton("plan");
+		okButton.addActionListener(this);
 		ctrl.add(okButton);
 		
 		tab.add("select", page1);
 		
 		// - Page 2: 実行結果を表示するページ
-		JPanel page2 = new JPanel();
-		graphics.setLayout(gra_layout);
-		JPanel gra_start = new JPanel();//初期状態のエリア
-		gra_start.add(new JLabel("start"));
-		//gra_start.setBackground(Color.RED);
-		graphics.add(gra_start);
-		for(int i = 1; i < 13; i++){
-			JPanel gra_process = new JPanel();//過程のエリア
-			String s = Integer.toString(i);
-			if(i % 10 == 1){
-				gra_process.add(new JLabel(s+"st process"));
-			}else if(i % 10 == 2){
-				gra_process.add(new JLabel(s+"nd process"));
-			}else if(i % 10 == 3){
-				gra_process.add(new JLabel(s+"rd process"));
-				//gra_process.setBackground(Color.BLUE);
-			}else{		ArrayList<String> startList = new ArrayList<String>();
-				gra_process.add(new JLabel(s+"th process"));
-			}
-			graphics.add(gra_process);
-		}
-		JPanel gra_goal = new JPanel();//目標状態のエリア
-		gra_goal.add(new JLabel("goal"));
-		//gra_goal.setBackground(Color.GREEN);
-		graphics.add(gra_goal);
+		JPanel page2 = new JPanel(new BorderLayout());
+		
+		plannerPanel = new PlannerPanel();
+		page2.add(BorderLayout.CENTER, plannerPanel);
+
+		stepLabel = new JLabel("初期状態");
 		JButton startButton = new JButton("start");//初期状態を表示するボタン
 		startButton.addActionListener(this);
 		startButton.setActionCommand("start");
@@ -185,8 +194,7 @@ public class SampleGUI extends JFrame implements ActionListener{
 		btnPanel.add(prevButton);
 		btnPanel.add(nextButton);
 		btnPanel.add(goalButton);
-		page2.setLayout(new BorderLayout());
-		page2.add(BorderLayout.CENTER, graphics);
+		
 		page2.add(BorderLayout.SOUTH, btnPanel);
 		tab.add("answer", page2);
 		
@@ -284,89 +292,77 @@ public class SampleGUI extends JFrame implements ActionListener{
 		objects = noah.getObjects();
 	}
 	
-	
-	private void initStartState() {
-		ArrayList<String> startStart = new ArrayList<String>();
-
-		for (String object : objects) {
-			System.out.println("objects" + object);
-			startStart.add("clear " + object);
-		}
-		 
-//		if (true) { return; }
-
-		noah.setCurrentState(startStart);
-		noah.setGoalState(startList);
-		System.out.println("startStart" + startStart);
-		System.out.println("startList" + startList);
-		noah.planning();
-
-		Pattern p1 = Pattern.compile("pick up (.*) from the table");
-		Pattern p2 = Pattern.compile("Place (.*) on (.*)");
-		ArrayList<String> exist = new ArrayList<String>();
-		for (String operator : noah.getResult()) {
-			System.out.println(operator);
-			Matcher m1 = p1.matcher(operator);
-			Matcher m2 = p2.matcher(operator);
-
-			if (m1.find()) {
-					exist.add(m1.group(1));
-			}
-
-			if (m2.find()) {
-
-					if(!exist.contains(m2.group(2))){
-						startPanel.putBox(m2.group(2), null);
-					}
-					startPanel.putBox(m2.group(1),m2.group(2));
-
-			}
-
-
-
-		}
-	}
-	
-	private void initGoalState() {
-
-		ArrayList<String> goalGoal = new ArrayList<String>();
+	/**
+	 * PlannerPanel の状態を初期化する
+	 * @param states 初期化する状態
+	 * @param panel パネル
+	 */
+	private void initPlannerPanel(ArrayList<String> states, PlannerPanel panel) {
+		final ArrayList<String> ontableStates = new ArrayList<String>();
 		
 		for(String object : objects){
 			System.out.println("objects"+object);
-			//goalPanel.putBox(object, null);
-			goalGoal.add("clear " +object);
+			ontableStates.add("clear " +object);
 		}
-
 		
-		noah.setCurrentState(goalGoal);
-		noah.setGoalState(goalList);
-		System.out.println("goalGoal"+goalGoal);
-		System.out.println("goalList"+goalList);
+		noah.setCurrentState(ontableStates);
+		noah.setGoalState(states);
 		noah.planning();
+		final ArrayList<String> plan = noah.getResult();
 		
 		Pattern p1 = Pattern.compile("pick up (.*) from the table");
 		Pattern p2 = Pattern.compile("Place (.*) on (.*)");
 		ArrayList<String> exist = new ArrayList<String>();
-		for (String operator : noah.getResult()) {
-			System.out.println(operator);
+		for (String operator : plan) {
 			Matcher m1 = p1.matcher(operator);
 			Matcher m2 = p2.matcher(operator);
 
 			if (m1.find()) {
-					exist.add(m1.group(1));
+				exist.add(m1.group(1));
 			}
 
 			if (m2.find()) {
-
-					if(!exist.contains(m2.group(2))){
-						goalPanel.putBox(m2.group(2), null);
-					}
-					goalPanel.putBox(m2.group(1),m2.group(2));
-
+				if(!exist.contains(m2.group(2))){
+					panel.putBox(m2.group(2), null);
+				}
+				panel.putBox(m2.group(1),m2.group(2));
 			}
-
-
-
+		}
+	}
+	
+	/**
+	 * Grpahics Display の方のプランを作成する
+	 */
+	private void prepareGraphicalPlan() {
+		// TODO
+	}
+	
+	private void textsToStates() {
+		startList.clear();
+		String strs1[] = txtStart.getText().split("\n");
+		for (int i = 0; i < strs1.length; i++) {
+		    startList.add(strs1[i]);
+		}
+		goalList.clear();
+		String strs2[] = txtGoal.getText().split("\n");
+		for (int i = 0; i < strs2.length; i++) {
+		    goalList.add(strs2[i]);
+		}
+	}
+	
+	private void plan() {
+		noah.setCurrentState(startList);
+		noah.setGoalState(goalList);
+		noah.planning();
+		ansList = noah.getResult();
+	}
+	
+	private String nth(int i) {
+		switch (i % 10) {
+		case 1: return String.valueOf(i)+"st";
+		case 2: return String.valueOf(i)+"nd";
+		case 3: return String.valueOf(i)+"rd";
+		default: return String.valueOf(i)+"th";
 		}
 	}
 	
@@ -375,28 +371,12 @@ public class SampleGUI extends JFrame implements ActionListener{
     	String cmd = e.getActionCommand();
     	if(cmd == "graphics"){
     		layout.first(panel);
-    	}else if(cmd.equals("start")){
-    		gra_layout.first(graphics);
-    	}else if(cmd.equals("goal")){
-    		gra_layout.last(graphics);
-    	}else if(cmd.equals("next")){
-    		gra_layout.next(graphics);
-    	}else if(cmd.equals("prev")){
-    		gra_layout.previous(graphics);
+    	}else if(cmd.equals("plan")){
+    		plan();
+    		prepareGraphicalPlan();
     	}else if(cmd.equals("OK")){
-    		startList.clear();
-    		String strs1[] = txtStart.getText().split("\n");
-    		for (int i = 0; i < strs1.length; i++) {
-    		    startList.add(strs1[i]);
-    		}
-    		goalList.clear();
-    		String strs2[] = txtGoal.getText().split("\n");
-    		for (int i = 0; i < strs2.length; i++) {
-    		    goalList.add(strs2[i]);
-    		}
-    		NOAH noah = new NOAH(goalList,startList);
-    		noah.planning();
-    		ansList = noah.getResult();
+    		textsToStates();
+    		plan();
     		for(int i=0;i < ansList.size();i++)
     		txtAnswer.append(ansList.get(i)+"\n");
     		
@@ -418,6 +398,45 @@ public class SampleGUI extends JFrame implements ActionListener{
 	private void loadData(){
 		
 	}
+	
+	private class PlannerStepActionListener implements ActionListener {
+		Thread th;
+		
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			String cmd = e.getActionCommand();
+//			if(cmd.equals("play")) {
+//				start();
+//			}else if(cmd.equals("stop")){
+//	    		stop();
+//	    	}else if(cmd.equals("start")){
+//	    		gra_layout.first(graphics);
+//	    	}else if(cmd.equals("goal")){
+//	    		gra_layout.last(graphics);
+//	    	}else if(cmd.equals("next")){
+//	    		gra_layout.next(graphics);
+//	    	}else if(cmd.equals("prev")){
+//	    		gra_layout.previous(graphics);
+//	    	}
+		}
+		
+		private void start() {
+			if (th == null) {
+				th = new Thread(new Runnable() {
+					@Override
+					public void run() {
+						
+					}
+				});
+			}
+		}
+		private void stop() throws InterruptedException {
+			if (th != null) {
+				th.interrupt();
+				th.join();
+			}
+		}
+	};
 	
 	public static void main(String[] args) {
 		//

@@ -152,23 +152,25 @@ public class NOAH {
 	 */
 	private ArrayList<String> initGoalState() {
 		ArrayList<String> goalList = new ArrayList<String>();
-		/*
-		 * goalList.add("E on A"); goalList.add("C on E");
-		 * goalList.add("B on D");
-		 */
-
-		// goalList.add("4 on 1");
-		// goalList.add("6 on 5");
-		// goalList.add("5 on 2");
-		// goalList.add("2 on 3");
-		goalList.add("1 on 5");
-		goalList.add("5 on 9");
-		goalList.add("2 on 6");
-		goalList.add("6 on 10");
-		goalList.add("3 on 7");
-		goalList.add("7 on 11");
-		goalList.add("4 on 8");
-		goalList.add("8 on 12");
+		
+		goalList.add("clear A");
+		goalList.add("A on 1");
+		goalList.add("clear B");
+		goalList.add("B on 4");
+		goalList.add("clear C");
+		goalList.add("C on 7");
+		
+		goalList.add("clear 13");
+		
+		goalList.add("1 on 2");
+		goalList.add("2 on 3");
+		goalList.add("4 on 5");
+		goalList.add("5 on 6");
+		goalList.add("7 on 8");
+		goalList.add("8 on 9");
+		goalList.add("13 on 10");
+		goalList.add("10 on 11");
+		goalList.add("11 on 12");
 		goalList.add("12 on 14");
 		goalList.add("14 on 15");
 		goalList.add("15 on 16");
@@ -1021,6 +1023,7 @@ System.out.println("order"+orderList);
 						while (true) {
 							Node last = change;
 							j.removeForward(change);
+							//bug
 							change = (Node) change.getForward();
 							if (orderString.contains(change.getNodeName())) {
 								preList.remove(last);
