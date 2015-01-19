@@ -16,7 +16,7 @@ public class NOAHcopy {
 
 	ArrayList<Node> plan = new ArrayList<Node>();
 	int nodecount = 1;
-	// 繝弱�繝峨�邨仙粋諠�ｱ
+	//メンバ
 	ArrayList<JointS> ss = new ArrayList<JointS>();
 	ArrayList<JointJ> js = new ArrayList<JointJ>();
 
