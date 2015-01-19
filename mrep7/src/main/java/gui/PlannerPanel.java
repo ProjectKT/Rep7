@@ -55,12 +55,12 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 
 	public PlannerPanel() {
 		initialize();
-		camera.setCenter(Settings.HomePosition);
+		camera.setCenter(Settings.HomePosition.mul(0.5f));
 	}
 
 	@Override
 	protected float getInitialZoom() {
-		return 30.0f;
+		return 20.0f;
 	}
 
 	private void initialize() {
