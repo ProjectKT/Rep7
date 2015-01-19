@@ -3,15 +3,15 @@ package gui;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JFrame;
 
-import org.jbox2d.callbacks.ContactImpulse;
 import org.jbox2d.callbacks.ContactListener;
-import org.jbox2d.collision.Manifold;
 import org.jbox2d.collision.shapes.EdgeShape;
 import org.jbox2d.collision.shapes.PolygonShape;
 import org.jbox2d.common.Vec2;
@@ -25,8 +25,26 @@ import org.jbox2d.dynamics.joints.RevoluteJointDef;
 
 public class PlannerPanel extends PhysicsPanel implements PlannerController {
 	
+	interface Settings {
+		// 箱の大きさ
+		Vec2 BoxSize = new Vec2(1.0f, 1.0f);
+		// 箱の形状
+		PolygonShape BoxShape = new PolygonShape() {{
+			setAsBox(BoxSize.x/2, BoxSize.y/2);
+		}};
+		// ホームポジション
+		Vec2 HomePosition = new Vec2(-BoxSize.x, -BoxSize.y/2);
+	}
+	
+	// 操作用ロボット
 	private Robot robot;
+	// 描画前に world に対して行う操作のキュー
 	private List<Runnable> manipulations = Collections.synchronizedList(new LinkedList<Runnable>());
+	// 箱とその名前の対応
+	private Map<String,Box> boxMap = new HashMap<String,Box>();
+	// 今持っているボックス
+	private Box holdingBox = null;
+	
 
 	public PlannerPanel() {
 		initialize();
@@ -57,38 +75,108 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		}
 
 		// Boxes
-		{
-			PolygonShape box = new PolygonShape();
-			box.setAsBox(0.5f, 0.5f);
-
-			Body body = null;
-			BodyDef bd = new BodyDef();
-			bd.type = BodyType.DYNAMIC;
-
-			bd.position.set(0.0f, -0.5f);
-			body = createBody(bd);
-			body.createFixture(box, -0.5f);
-
-			bd.position.set(0.0f, -1.5f);
-			body = createBody(bd);
-			body.createFixture(box, -0.5f);
-
-			bd.position.set(0.0f, -2.5f);
-			body = createBody(bd);
-			body.createFixture(box, -0.5f);
-
-			bd.position.set(0.0f, -3.5f);
-			body = createBody(bd);
-			body.createFixture(box, -0.5f);
-
-			bd.position.set(0.0f, -4.5f);
-			body = createBody(bd);
-			body.createFixture(box, -0.5f);
-		}
+//		{
+//			PolygonShape box = new PolygonShape();
+//			box.setAsBox(0.5f, 0.5f);
+//
+//			Body body = null;
+//			BodyDef bd = new BodyDef();
+//			bd.type = BodyType.DYNAMIC;
+//
+//			bd.position.set(0.0f, -0.5f);
+//			body = createBody(bd);
+//			body.createFixture(box, -0.5f);
+//
+//			bd.position.set(0.0f, -1.5f);
+//			body = createBody(bd);
+//			body.createFixture(box, -0.5f);
+//
+//			bd.position.set(0.0f, -2.5f);
+//			body = createBody(bd);
+//			body.createFixture(box, -0.5f);
+//
+//			bd.position.set(0.0f, -3.5f);
+//			body = createBody(bd);
+//			body.createFixture(box, -0.5f);
+//
+//			bd.position.set(0.0f, -4.5f);
+//			body = createBody(bd);
+//			body.createFixture(box, -0.5f);
+//		}
 
 		// Robot
 		robot = new Robot();
 	}
+	
+	// --- interface implementation ---
+
+	@Override
+	public void putBox(final String name, String on) {
+		final int i = boxMap.size();
+		final Vec2 pos = new Vec2(Settings.BoxSize.x * i, -Settings.BoxSize.y/2);
+		
+		// 下敷きのオブジェクトを取得
+		if (on != null && !on.isEmpty()) {
+			// 箱の上に置く
+			Box onBox = boxMap.get(on);
+			if (onBox != null) {
+				pos.set(onBox.body.getWorldCenter());
+			}
+		}
+		
+		Box box = boxMap.get(name);
+		if (box == null) {
+			box = new Box(name, pos);
+			boxMap.put(name, box);
+		} else {
+			final Box fbox = box;
+			manipulations.add(new Runnable() {
+				@Override
+				public void run() {
+					destroyBody(fbox.body);
+					boxMap.remove(fbox);
+					boxMap.put(name, new Box(name, pos));
+				}
+			});
+		}
+	}
+	
+	@Override
+	public void pickup(String target) throws InterruptedException {
+		if (holdingBox != null) {
+			System.out.println("Currently holding the box "+holdingBox.name+".");
+			return;
+		}
+		
+		holdingBox = boxMap.get(target);
+		if (holdingBox != null) {
+			final Vec2 pos = holdingBox.body.getWorldCenter();
+			final Vec2 posTo = pos.sub(new Vec2(0, Settings.BoxSize.y*1.5f));
+			robot.moveTo(posTo);
+		}
+	}
+
+	@Override
+	public void place(String to) throws InterruptedException {
+		if (holdingBox == null) {
+			System.out.println("Currently holding no box.");
+			return;
+		}
+		
+		final Vec2 pos = new Vec2(Settings.HomePosition);
+		if (to != null && !to.isEmpty()) {
+			Box boxOn = boxMap.get(to);
+			if (boxOn != null) {
+				Vec2 posOn = boxOn.body.getWorldCenter();
+				pos.set(posOn).subLocal(new Vec2(0, Settings.BoxSize.y*2f));
+			}
+		}
+		
+		robot.moveTo(pos);
+		robot.release();
+	}
+	
+	// --------------------------------
 	
 	@Override
 	public boolean render() {
@@ -134,6 +222,30 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		}
 	};
 	
+	private class Box {
+		String name;
+		Body body;
+		
+		public Box(String name, Vec2 pos) {
+			this.name = name;
+			initialize(pos);
+		}
+		
+		private void initialize(Vec2 pos) {
+			BodyDef bf = new BodyDef();
+			bf.type = BodyType.DYNAMIC;
+			bf.position.set(pos);
+			body = createBody(bf);
+			
+			FixtureDef fd = new FixtureDef();
+			fd.shape = Settings.BoxShape;
+			fd.density = 0.5f;
+			fd.friction = 1.0f;
+			
+			body.createFixture(fd);
+		}
+	}
+	
 	private class Robot {
 		Body palm;
 		Joint joint;
@@ -147,7 +259,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			initialize();
 		}
 		
-		void initialize() {
+		private void initialize() {
 			// Body
 			{
 				// TODO
@@ -208,16 +320,17 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			palm.setLinearVelocity(vUp.mul(-1).addLocal(palm.getLinearVelocity()));
 		}
 		
-		public void moveTo(final Vec2 worldPosition) throws InterruptedException {
+		public void moveTo(final Vec2 to) throws InterruptedException {
+			System.out.println("robot is moving to "+to);
 			Thread t = new Thread(new Runnable() {
 				@Override
 				public void run() {
 					try {
-						Vec2 diff = worldPosition.sub(palm.getWorldCenter());
+						Vec2 diff = to.sub(palm.getWorldCenter());
 						while (0.01f < diff.length()) {
 							palm.setLinearVelocity(diff);
 							Thread.sleep(100);
-							diff = worldPosition.sub(palm.getWorldCenter());
+							diff = to.sub(palm.getWorldCenter());
 						}
 					} catch (InterruptedException e) {
 					} finally {
@@ -264,17 +377,22 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		PlannerPanel p = new PlannerPanel();
 		f.getContentPane().add(p);
 		f.setVisible(true);
-	}
-
-	@Override
-	public void pickup(String target) {
-		// TODO Auto-generated method stub
 		
-	}
-
-	@Override
-	public void place(String to) {
-		// TODO Auto-generated method stub
+		try { 
+			p.putBox("1", null);
+			p.putBox("2", "1");
+			p.putBox("3", null);
+			
+			Thread.sleep(1000);
+			
+			p.pickup("1");
+			
+			Thread.sleep(1000);
+			
+			p.place("3");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		
 	}
 }
