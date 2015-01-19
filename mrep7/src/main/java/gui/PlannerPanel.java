@@ -2,12 +2,16 @@ package gui;
 
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.swing.JFrame;
 
@@ -20,6 +24,7 @@ import org.jbox2d.dynamics.BodyDef;
 import org.jbox2d.dynamics.BodyType;
 import org.jbox2d.dynamics.FixtureDef;
 import org.jbox2d.dynamics.contacts.Contact;
+import org.jbox2d.dynamics.contacts.ContactEdge;
 import org.jbox2d.dynamics.joints.Joint;
 import org.jbox2d.dynamics.joints.RevoluteJointDef;
 
@@ -33,7 +38,9 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			setAsBox(BoxSize.x/2, BoxSize.y/2);
 		}};
 		// ホームポジション
-		Vec2 HomePosition = new Vec2(-BoxSize.x, -BoxSize.y/2);
+		Vec2 HomePosition = new Vec2(-BoxSize.x, -10.0f);
+		// 積む位置
+		Vec2 PilePosition = new Vec2(-BoxSize.x, -BoxSize.y/2);
 	}
 	
 	// 操作用ロボット
@@ -48,11 +55,12 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 
 	public PlannerPanel() {
 		initialize();
+		camera.setCenter(Settings.HomePosition);
 	}
 
 	@Override
 	protected float getInitialZoom() {
-		return 40.0f;
+		return 30.0f;
 	}
 
 	private void initialize() {
@@ -135,7 +143,8 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 				public void run() {
 					destroyBody(fbox.body);
 					boxMap.remove(fbox);
-					boxMap.put(name, new Box(name, pos));
+					Box box = new Box(name, pos);
+					boxMap.put(name, box);
 				}
 			});
 		}
@@ -153,7 +162,10 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			final Vec2 pos = holdingBox.body.getWorldCenter();
 			final Vec2 posTo = pos.sub(new Vec2(0, Settings.BoxSize.y*1.5f));
 			robot.moveTo(posTo);
+			robot.grab();
 		}
+		
+		robot.moveTo(Settings.HomePosition);
 	}
 
 	@Override
@@ -174,6 +186,60 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		
 		robot.moveTo(pos);
 		robot.release();
+		robot.moveTo(Settings.HomePosition);
+	}
+	
+	public List<String> getStates() {
+		ArrayList<String> states = new ArrayList<String>();
+		
+		synchronized (boxMap) {
+			Iterator<Box> it = boxMap.values().iterator();
+			while (it.hasNext()) {
+				Box box = it.next();
+				Box boxOn = null;
+				
+				ContactEdge edge = box.body.getContactList();
+				while (edge != null) {
+					final Contact contact = edge.contact;
+					// この箱のボディ
+					final Body bodyBox = (contact.getFixtureA().getBody() == box.body) ?
+							contact.getFixtureA().getBody() : contact.getFixtureB().getBody();
+					// 接触しているオブジェクトのボディ
+					final Body bodyObj = (contact.getFixtureA().getBody() == box.body) ?
+							contact.getFixtureB().getBody() : contact.getFixtureA().getBody();
+					
+					if (bodyObj.getWorldCenter().y < bodyBox.getWorldCenter().y) {
+						String boxOnName = findBox(bodyObj);
+						if (boxOnName != null) {
+							boxOn = boxMap.get(boxOnName);
+						}
+					}
+					
+					edge = edge.next;
+				}
+				
+				if (boxOn == null) {
+					states.add(box.name+" on table");
+				} else {
+					states.add(box.name+" on "+boxOn.name);
+				}
+			}
+		}
+	
+		return states;
+	}
+	
+	private String findBox(Body body) {
+		synchronized (boxMap) {
+			Iterator<Entry<String, Box>> it = boxMap.entrySet().iterator();
+			while (it.hasNext()) {
+				Entry<String, Box> entry = it.next();
+				if (entry.getValue().body == body) {
+					return entry.getKey();
+				}
+			}
+		}
+		return null;
 	}
 	
 	// --------------------------------
@@ -286,8 +352,44 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 				shape.set(new Vec2(-PALM_WIDTH/2, 0), new Vec2(PALM_WIDTH/2, 0));
 				palm = createBody(bd);
 				palm.createFixture(fd);
-				
-				addContactListener(grabContactAdapter);
+			}
+		}
+		
+		public void grab() throws InterruptedException {
+			if (!isGrabbing) {
+				ContactEdge it = palm.getContactList();
+				while (it != null) {
+					Contact contact = it.contact;
+					final Body bodyA = contact.getFixtureA().getBody();
+					final Body bodyB = contact.getFixtureB().getBody();
+					
+					if (bodyA == palm || bodyB == palm) {
+						Body hand = (bodyA == palm) ? bodyA : bodyB;
+						Body obj = (bodyA == hand) ? bodyB : bodyA;
+						
+						final RevoluteJointDef jd = new RevoluteJointDef();
+						jd.initialize(hand, obj, hand.getWorldCenter());
+						jd.collideConnected = true;
+						
+						final Object commandLock = new Object();
+						manipulations.add(new Runnable() {
+							@Override
+							public void run() {
+								joint = createJoint(jd);
+								synchronized (commandLock) {
+									commandLock.notifyAll();
+								}
+							}
+						});
+						synchronized (commandLock) {
+							commandLock.wait();
+						}
+						isGrabbing = true;
+						
+						return;
+					}
+					it = it.next;
+				}
 			}
 		}
 		
@@ -303,12 +405,10 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 						}
 					}
 				});
-				isGrabbing = false;
 				synchronized (commandLock) {
 					commandLock.wait();
 				}
-				
-				addContactListener(grabContactAdapter);
+				isGrabbing = false;
 			}
 		}
 		
@@ -342,7 +442,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			t.join();
 		}
 		
-		private ContactListener grabContactAdapter = new ContactAdapter() {
+		private ContactListener stopOnContactAdapter = new ContactAdapter() {
 			@Override
 			public void beginContact(Contact contact) {
 				final Body bodyA = contact.getFixtureA().getBody();
@@ -352,19 +452,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 					Body hand = (bodyA == palm) ? bodyA : bodyB;
 					Body obj = (bodyA == hand) ? bodyB : bodyA;
 					
-					final RevoluteJointDef jd = new RevoluteJointDef();
-					jd.initialize(hand, obj, hand.getWorldCenter());
-					jd.collideConnected = true;
-					
-					manipulations.add(new Runnable() {
-						@Override
-						public void run() {
-							joint = createJoint(jd);
-						}
-					});
-					isGrabbing = true;
-					
-					removeContactListener(this);
+					// TODO 停止する
 				}
 			}
 		};
@@ -374,9 +462,19 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		JFrame f = new JFrame();
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		f.setBounds(0, 0, 1500, 1000);
-		PlannerPanel p = new PlannerPanel();
+		final PlannerPanel p = new PlannerPanel();
 		f.getContentPane().add(p);
 		f.setVisible(true);
+		
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				while (true) {
+					try { Thread.sleep(1000); } catch (Exception e) {}
+					System.out.println(p.getStates());
+				}
+			}
+		}).start();
 		
 		try { 
 			p.putBox("1", null);

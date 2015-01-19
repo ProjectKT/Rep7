@@ -1,5 +1,7 @@
 package gui;
 
+import java.util.List;
+
 public interface PlannerController {
 
 	/**
@@ -20,4 +22,10 @@ public interface PlannerController {
 	 * @param to
 	 */
 	public void place(String to) throws InterruptedException;
+	
+	/**
+	 * 現在の状態を出力する
+	 * @return
+	 */
+	public List<String> getStates();
 }
