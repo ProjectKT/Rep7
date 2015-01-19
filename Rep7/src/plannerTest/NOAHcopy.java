@@ -1263,6 +1263,7 @@ public class NOAHcopy {
 						Node nextNode = null;
 						
 						
+						int stackNum = -1;
 						for(int t = 0; t < tList.size();t++){
 							if(tList.get(t).size() > 1){
 								Node checkStack = tList.get(t).get(1);
@@ -1270,7 +1271,19 @@ public class NOAHcopy {
 								Matcher sMat = p2.matcher(checkStack.getNodeName());
 								
 								if(sMat.find()){
-									
+									stackNum = t;
+									for(Node temp : nodes){
+										Matcher unMat = p3.matcher(temp.getNodeName());
+										
+										if(unMat.find()){
+											if(sMat.group(1).equals(unMat.group(1))){
+												orderList.add(nodes.get(t));
+												orderString.add(nodes.get(t).getNodeName());
+												
+												break;
+											}
+										}
+									}
 								}
 								
 							}
