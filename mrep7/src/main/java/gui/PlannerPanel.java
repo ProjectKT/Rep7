@@ -173,8 +173,6 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		posTo.y = pos.y;
 		robot.moveTo(posTo);
 		robot.release();
-		posTo.y = Settings.HomePosition.y;
-		robot.moveTo(posTo);
 		holdingBox = null;
 	}
 	
