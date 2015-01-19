@@ -37,7 +37,8 @@ public class SampleGUI extends JFrame implements ActionListener{
 	
 	ArrayList<String> startList = new ArrayList<String>();
 	ArrayList<String> goalList = new ArrayList<String>();
-
+	ArrayList<String> objects = new ArrayList<String>();
+	
 	// コンストラクタ
 	public SampleGUI() {
 		initialize();
@@ -91,7 +92,17 @@ public class SampleGUI extends JFrame implements ActionListener{
 		
 		//NOAHを準備
 		NOAH noah = new NOAH();
-		
+		for(String start:noah.getCurrentState()){
+		startList.add(start);
+		}
+		for(String goal:noah.getGoalState()){
+		goalList.add(goal);
+		}
+
+		System.out.println("startList"+startList);
+		System.out.println("goalList"+goalList);
+		objects = noah.getObjects();
+
 		//グラフィックで表示する
 		JPanel card1 = new JPanel();
 		card1.setLayout(new GridLayout());
@@ -105,12 +116,32 @@ public class SampleGUI extends JFrame implements ActionListener{
 		JPanel page1 = new JPanel();
 		JPanel start = new JPanel();
 		PlannerPanel start1 = new PlannerPanel();//初期状態の制作パネル
+		
+
 		start1.enableScrollScreen(false);
-		Pattern pat = Pattern.compile("clear (.*)");
-		//Matcher mat = pat.matcher();
+		
+		ArrayList<String> startStart = new ArrayList<String>();
+		
+		for(String object : objects){
+			System.out.println("objects"+object);
+			start1.putBox(object, null);
+			startStart.add("clear " +object);
+		}
+		
+		noah.setCurrentState(startStart);
+		noah.setGoalState(startList);
+		System.out.println("startStart"+startStart);
+		System.out.println("startList"+startList);
+		noah.planning();
+		
+		for(String operator : noah.getResult()){
+			
+		}
+		
 		start.setLayout(new BorderLayout());
 		start.add(BorderLayout.NORTH, new JLabel("初期状態"));
 		start.add("Center", start1);
+		
 		//start1.setBackground(Color.RED);
 		JPanel goal = new JPanel();
 		PlannerPanel goal1 = new PlannerPanel();//目標状態の制作パネル

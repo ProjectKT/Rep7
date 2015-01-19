@@ -35,6 +35,9 @@ public class NOAH {
 	*/
 	ArrayList<String> under = new ArrayList<String>();
 	ArrayList<String> over = new ArrayList<String>();
+	
+	// 存在しているオブジェクトのリスト
+	ArrayList<String> objects = new ArrayList<String>();
 
 	public static void main(String args[]) {
 		(new NOAH()).planning();
@@ -46,6 +49,7 @@ public class NOAH {
 	public NOAH() {
 		nPara = new NOAHParameters(initOperators(), initGoalState(),
 				initCurrentState());
+		setObjects();
 	}
 
 	/**
@@ -288,6 +292,39 @@ public class NOAH {
 		*/
 		under = new ArrayList<String>();
 		over = new ArrayList<String>();
+		
+		objects = new ArrayList<String>();
+		setObjects();
+	}
+	
+	/**
+	 * オブジェクトの登録
+	 * 
+	 */
+
+	private void setObjects() {
+		Pattern p1 = Pattern.compile("(.*) on (.*)");
+		Pattern p2 = Pattern.compile("clear (.*)");
+		for (String str : getCurrentState()) {
+			Matcher m1 = p1.matcher(str);
+			Matcher m2 = p2.matcher(str);
+
+			if (m1.find()) {
+				if (!objects.contains(m1.group(1))) {
+					objects.add(m1.group(1));
+				}
+				if (!objects.contains(m1.group(2))) {
+					objects.add(m1.group(2));
+				}
+			}
+
+			if (m2.find()) {
+				if (!objects.contains(m2.group(1))) {
+					objects.add(m2.group(1));
+				}
+			}
+
+		}
 	}
 
 	/**
@@ -315,11 +352,15 @@ public class NOAH {
 		Node goal = new Node("Goal", 0, j, null);
 		j.changeBack(goal);
 		// ゴール状態の数分ループ
+		Pattern p = Pattern.compile("(.*) on (.*)");
 		for (String str : goalState) {
+			Matcher m = p.matcher(str);
+			if(m.find()){
 			Node newNode = new Node(str, nodecount++, s, j);
 			plan.add(newNode);
 			s.addBack(newNode);
 			j.addForward(newNode);
+			}
 		}
 		ss.add(s);
 		js.add(j);
@@ -723,7 +764,7 @@ public class NOAH {
 	 * @return
 	 */
 	private ArrayList<String> lastOrder() {
-
+		
 		ArrayList<Node> preList = new ArrayList<Node>();
 		ArrayList<Node> orderList = new ArrayList<Node>();
 		ArrayList<String> orderString = new ArrayList<String>();
@@ -755,9 +796,13 @@ public class NOAH {
 
 			}
 		}
-
+		
+		System.out.println("check1");
+		
+		
 		while (true) {
-
+System.out.println("pre"+preList);
+System.out.println("order"+orderList);
 			Boolean addFrag = false;
 			ArrayList<String> overList = new ArrayList<String>();
 			ArrayList<String> underList = new ArrayList<String>();
@@ -818,6 +863,7 @@ public class NOAH {
 			if (!addFrag) {
 				if (nodeList.size() > 0) {
 					deleteNode = nodeList.get(0);
+					orderList.add(deleteNode);
 				} else {
 					// unstackのみの場合
 
@@ -1473,6 +1519,8 @@ public class NOAH {
 		//ゴールのリストをプランに登録
 		initialPlanning();
 		
+		System.out.println("initialState"+getCurrentState());
+		System.out.println("goalState"+getGoalState());
 		//プランを展開
 		expandPlan();
 
@@ -1493,7 +1541,7 @@ public class NOAH {
 		printState();
 
 		// 二回目の順序づけ
-		System.out.println("順序付け終了");
+		System.out.println("順序付け終了2");
 		checkIF();
 
 		printState();
@@ -1502,7 +1550,9 @@ public class NOAH {
 		//以下二回目以降の冗長削除、詳細化繰り返し
 		while (true) {
 			checkLen();
+			System.out.println("冗長削除終了2+");
 			refinement();
+			System.out.println("詳細化終了2+");
 			if (lastPlan.equals(plan)) {
 				break;
 			} else {
@@ -1514,8 +1564,10 @@ public class NOAH {
 		}
 
 		int count = 0;
-
-		ArrayList<String> finalPlan = planEmbossing(lastOrder());
+		System.out.println("lastOrder前");
+		ArrayList<String> lastOrder = lastOrder();
+		System.out.println("lastOrder終了");
+		ArrayList<String> finalPlan = planEmbossing(lastOrder);
 
 		System.out.println("\nfinalPlan!!!");
 		for (String str : finalPlan) {
@@ -1534,6 +1586,11 @@ public class NOAH {
 		return resultPlan;
 	}
 
+	public ArrayList<String> getObjects(){
+		return objects;
+	}
+
+	
 	//途中経過を確認していたメソッド
 	private void printState() {
 		for (JointS joint : ss) {

@@ -11,40 +11,43 @@ import planner.Operator;
 
 public class NOAH {
 
-	//メンバ
-	
-	//パラメーターを保存するクラス
-	//MultiThreadで実装しようとした頃の名残
+	// メンバ
+
+	// パラメーターを保存するクラス
+	// MultiThreadで実装しようとした頃の名残
 	NOAHParameters nPara;
 
-	//最初のプラン
+	// 最初のプラン
 	ArrayList<Node> plan = new ArrayList<Node>();
 	int nodecount = 1;
-	
-	//最終結果のプラン
-	ArrayList<String> resultPlan =new ArrayList<String>();
-	
-	//JointSのリスト
-	//JointSは前方が一個、後方が複数の結合部
+
+	// 最終結果のプラン
+	ArrayList<String> resultPlan = new ArrayList<String>();
+
+	// JointSのリスト
+	// JointSは前方が一個、後方が複数の結合部
 	ArrayList<JointS> ss = new ArrayList<JointS>();
-	
-	//JointSのリスト
-	//JointSは前方が一個、後方が複数の結合部
+
+	// JointSのリスト
+	// JointSは前方が一個、後方が複数の結合部
 	ArrayList<JointJ> js = new ArrayList<JointJ>();
 
-	/**A on Bが合ったとき
-	 * underにB、overにAが入る
-	*/
+	/**
+	 * A on Bが合ったとき underにB、overにAが入る
+	 */
 	ArrayList<String> under = new ArrayList<String>();
 	ArrayList<String> over = new ArrayList<String>();
+
+	// 存在しているオブジェクトのリスト
+	ArrayList<String> objects = new ArrayList<String>();
 
 	public static void main(String args[]) {
 		(new NOAH()).planning();
 	}
 
-	/** 初期状態とゴール状態が与えられない場合のコンストラクタ
-	 * 初期状態とゴール状態はこちらが決めたものに勝手にセットされる
-	*/
+	/**
+	 * 初期状態とゴール状態が与えられない場合のコンストラクタ 初期状態とゴール状態はこちらが決めたものに勝手にセットされる
+	 */
 	NOAH() {
 		nPara = new NOAHParameters(initOperators(), initGoalState(),
 				initCurrentState());
@@ -52,8 +55,11 @@ public class NOAH {
 
 	/**
 	 * 初期状態とゴール状態が与えられなる場合のコンストラクタ
-	 * @param goalState　ゴール状態
-	 * @param initialState　初期状態
+	 * 
+	 * @param goalState
+	 *            　ゴール状態
+	 * @param initialState
+	 *            　初期状態
 	 */
 	NOAH(ArrayList<String> goalState, ArrayList<String> initialState) {
 		nPara = new NOAHParameters(initOperators(), goalState, initialState);
@@ -197,23 +203,18 @@ public class NOAH {
 		// initialState.add("4 on 5");
 		// initialState.add("5 on 6");
 
-		
-		//initialState.add("clear 1");
+		// initialState.add("clear 1");
 		initialState.add("clear A");
 		initialState.add("A on 1");
-		//initialState.add("clear 4");
+		// initialState.add("clear 4");
 		initialState.add("clear B");
 		initialState.add("B on 4");
-		//initialState.add("clear 7");
+		// initialState.add("clear 7");
 		initialState.add("clear C");
 		initialState.add("C on 7");
-		
-		
+
 		initialState.add("clear 13");
 
-		
-		
-		
 		initialState.add("1 on 2");
 		initialState.add("2 on 3");
 		initialState.add("4 on 5");
@@ -227,8 +228,6 @@ public class NOAH {
 		initialState.add("14 on 15");
 		initialState.add("15 on 16");
 
-		
-		
 		return initialState;
 	}
 
@@ -252,6 +251,7 @@ public class NOAH {
 
 	/**
 	 * GUI上で初期状態を取得する時用
+	 * 
 	 * @return
 	 */
 	public ArrayList<String> getCurrentState() {
@@ -260,48 +260,78 @@ public class NOAH {
 
 	/**
 	 * GUI上でゴール状態を取得する時用
+	 * 
 	 * @return
 	 */
 	public ArrayList<String> getGoalState() {
 		return nPara.getGoalState();
 	}
-	
+
 	/**
 	 * グローバル変数を初期化するメソッド
 	 */
-	private void initMember(){
-		//最初のプラン
+	private void initMember() {
+		// 最初のプラン
 		plan = new ArrayList<Node>();
 		nodecount = 1;
-		
-		//最終結果のプラン
-		resultPlan =new ArrayList<String>();
-		
-		//JointSのリスト
-		//JointSは前方が一個、後方が複数の結合部
+
+		// 最終結果のプラン
+		resultPlan = new ArrayList<String>();
+
+		// JointSのリスト
+		// JointSは前方が一個、後方が複数の結合部
 		ss = new ArrayList<JointS>();
-		
-		//JointSのリスト
-		//JointSは前方が一個、後方が複数の結合部
+
+		// JointSのリスト
+		// JointSは前方が一個、後方が複数の結合部
 		js = new ArrayList<JointJ>();
 
-		/**A on Bが合ったとき
-		 * underにB、overにAが入る
-		*/
+		/**
+		 * A on Bが合ったとき underにB、overにAが入る
+		 */
 		under = new ArrayList<String>();
 		over = new ArrayList<String>();
+		objects = new ArrayList<String>();
+
+		setObjects();
 	}
 
 	/**
-	 * ゴール状態をプランに登録する
-	 * 具体的には
-	 * Goalに[A on B,B on C]があったら
+	 * オブジェクトの登録
 	 * 
-	 *                     |  - A on B - | 
-	 * Start --- JointS ---              ----JointJ --- Goal
-	 *                     |  - B on C - |
-	 *                     
-	 *                     ができる
+	 */
+
+	private void setObjects() {
+		Pattern p1 = Pattern.compile("(.*) on (.*)");
+		Pattern p2 = Pattern.compile("clear (.*)");
+		for (String str : getCurrentState()) {
+			Matcher m1 = p1.matcher(str);
+			Matcher m2 = p2.matcher(str);
+
+			if (m1.find()) {
+				if (objects.contains(m1.group(1))) {
+					objects.add(m1.group(1));
+				}
+				if (objects.contains(m1.group(2))) {
+					objects.add(m1.group(2));
+				}
+			}
+
+			if (m2.find()) {
+				if (objects.contains(m2.group(1))) {
+					objects.add(m2.group(1));
+				}
+			}
+
+		}
+	}
+
+	/**
+	 * ゴール状態をプランに登録する 具体的には Goalに[A on B,B on C]があったら
+	 * 
+	 * | - A on B - | Start --- JointS --- ----JointJ --- Goal | - B on C - |
+	 * 
+	 * ができる
 	 */
 	private void initialPlanning() {
 		ArrayList<String> goalState = nPara.getGoalState();
@@ -310,7 +340,7 @@ public class NOAH {
 		// 先頭のJointSは前がStartノード
 		JointS s = new JointS();
 		s.changeForward("Start");
-		
+
 		// 末尾のJointJを作る
 		// 末尾のJointJは後がGoalノード
 		JointJ j = new JointJ();
@@ -329,15 +359,11 @@ public class NOAH {
 	}
 
 	/**
-	 * ゴール状態のままでは不十分なのでプランを展開する
-	 * 具体的には
-	 * A on Bを
+	 * ゴール状態のままでは不十分なのでプランを展開する 具体的には A on Bを
 	 * 
-	 *         |- Clear A -|
-	 * JointS---           ---JointJ --- Place A on B 
-	 *         |- Clear B -|
-	 *         
-	 *         に展開する
+	 * |- Clear A -| JointS--- ---JointJ --- Place A on B |- Clear B -|
+	 * 
+	 * に展開する
 	 */
 	private void expandPlan() {
 		ArrayList<Node> newplan = new ArrayList<Node>();
@@ -383,7 +409,7 @@ public class NOAH {
 		plan = newplan;
 	}
 
-	//tableから一番近いonを行う際のPrace情報
+	// tableから一番近いonを行う際のPrace情報
 	ArrayList<Node> headNodes = new ArrayList<Node>();
 
 	/**
@@ -719,9 +745,9 @@ public class NOAH {
 	}
 
 	/**
-	 * 順序付け、冗長削除、詳細化を繰り返しを行うことで
-	 * Startの後ろのJointSとGoalの前のJointJの間に各作りたい山を作る系列が残るので
+	 * 順序付け、冗長削除、詳細化を繰り返しを行うことで Startの後ろのJointSとGoalの前のJointJの間に各作りたい山を作る系列が残るので
 	 * 最後にそれらを一本道に変換する
+	 * 
 	 * @return
 	 */
 	private ArrayList<String> lastOrder() {
@@ -1052,8 +1078,7 @@ public class NOAH {
 
 									} else if ((!unMat.group(1).equals(
 											stackMat.group(2)))
-											&&
-											(!unMat.group(2).equals(
+											&& (!unMat.group(2).equals(
 													stackMat.group(2)))) {
 
 										// tugi
@@ -1322,17 +1347,21 @@ public class NOAH {
 								Matcher sMat = p2.matcher(stack);
 
 								if (sMat.find()) {
-									for(int l = 0 ; l < nodes.size() ; l++){
+									for (int l = 0; l < nodes.size(); l++) {
 										Node node = nodes.get(l);
-										
-										Matcher unMat = p3.matcher(node.getNodeName());
-										
-										if(unMat.find()){
-											if(unMat.group(1).equals(sMat.group(1))){
-												if(action == -1){
+
+										Matcher unMat = p3.matcher(node
+												.getNodeName());
+
+										if (unMat.find()) {
+											if (unMat.group(1).equals(
+													sMat.group(1))) {
+												if (action == -1) {
 													action = k;
-												}else{
-													if(sLen.get(stackList.get(action)) > sLen.get(stack)){
+												} else {
+													if (sLen.get(stackList
+															.get(action)) > sLen
+															.get(stack)) {
 														action = k;
 													}
 												}
@@ -1344,12 +1373,12 @@ public class NOAH {
 								}
 							}
 						}
-						
-						if(action != -1){
+
+						if (action != -1) {
 							orderList.add(nodes.get(action));
 							orderString.add(nodes.get(action).getNodeName());
-						}else{
-							for(Node node:nodes){
+						} else {
+							for (Node node : nodes) {
 								orderList.add(node);
 								orderString.add(node.getNodeName());
 							}
@@ -1463,25 +1492,23 @@ public class NOAH {
 	}
 
 	/**
-	 * plannigを行うメソッド
-	 * これを呼ぶ前に初期状態をセットするメソッドsetCurrentStateと
-	 * ゴール状態をセットするメソッドsetGoalStateを使う必要あり
-	 * 結果のArrayListはgetResultで得る
+	 * plannigを行うメソッド これを呼ぶ前に初期状態をセットするメソッドsetCurrentStateと
+	 * ゴール状態をセットするメソッドsetGoalStateを使う必要あり 結果のArrayListはgetResultで得る
 	 */
 	public void planning() {
-		//グローバル変数の初期化
+		// グローバル変数の初期化
 		initMember();
-		
-		//ゴールのリストをプランに登録
+
+		// ゴールのリストをプランに登録
 		initialPlanning();
-		
-		//プランを展開
+
+		// プランを展開
 		expandPlan();
 
 		System.out.println("initialState \n");
 		printState();
 
-		//一回目の順序づけ
+		// 一回目の順序づけ
 		checkInterference();
 		System.out.println("順序付け終了");
 		printState();
@@ -1501,7 +1528,7 @@ public class NOAH {
 		printState();
 		ArrayList<Node> lastPlan = new ArrayList<Node>();
 		lastPlan.addAll(plan);
-		//以下二回目以降の冗長削除、詳細化繰り返し
+		// 以下二回目以降の冗長削除、詳細化繰り返し
 		while (true) {
 			checkLen();
 			refinement();
@@ -1524,19 +1551,24 @@ public class NOAH {
 			System.out.println("count " + (count++) + " : " + str);
 
 		}
-		
+
 		resultPlan = finalPlan;
 	}
-	
+
 	/**
 	 * 結果を返すメソッド
+	 * 
 	 * @return
 	 */
-	public ArrayList<String> getResult(){
+	public ArrayList<String> getResult() {
 		return resultPlan;
 	}
+	
+	public ArrayList<String> getObjects(){
+		return objects;
+	}
 
-	//途中経過を確認していたメソッド
+	// 途中経過を確認していたメソッド
 	private void printState() {
 		for (JointS joint : ss) {
 
