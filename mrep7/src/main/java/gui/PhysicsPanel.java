@@ -14,9 +14,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Random;
 
 import javax.swing.JFrame;
@@ -37,6 +35,8 @@ import org.jbox2d.dynamics.Fixture;
 import org.jbox2d.dynamics.Profile;
 import org.jbox2d.dynamics.World;
 import org.jbox2d.dynamics.contacts.Contact;
+import org.jbox2d.dynamics.joints.Joint;
+import org.jbox2d.dynamics.joints.JointDef;
 import org.jbox2d.dynamics.joints.MouseJoint;
 import org.jbox2d.dynamics.joints.MouseJointDef;
 
@@ -54,7 +54,7 @@ public class PhysicsPanel extends JPanel {
 		// Body を描画するか
 		boolean drawShapes = true;
 		// Joint を描画するか
-		boolean drawJoints = false;
+		boolean drawJoints = true;
 		// AABB を描画するか
 		boolean drawAABBs = false;
 		// COM を描画するか
@@ -74,7 +74,7 @@ public class PhysicsPanel extends JPanel {
 	// 画面を更新する描画ワーカー
 	private Animator animator = new Animator();
 	// World インスタンス
-	protected World world = null;
+	private World world = null;
 	// 地面
 	private Body groundBody;
 	// カメラ
@@ -97,6 +97,9 @@ public class PhysicsPanel extends JPanel {
 	// 再生成しないための作業用オブジェクト
 	private int panelWidth, panelHeight;
 	private Vec2 p1 = new Vec2();
+	
+	// lock
+	private final Object worldLock = new Object();
 
 	public PhysicsPanel() {
 		initialize();
@@ -148,8 +151,32 @@ public class PhysicsPanel extends JPanel {
 		}
 	}
 	
-	public World getWorld() {
-		return world;
+	public Body createBody(BodyDef def) {
+		synchronized(worldLock) {
+			return world.createBody(def);
+		}
+	}
+	
+	public void destroyBody(Body body) {
+		if (body != null) {
+			synchronized(worldLock) {
+				world.destroyBody(body);
+			}
+		}
+	}
+	
+	public Joint createJoint(JointDef def) {
+		synchronized(worldLock) {
+			return world.createJoint(def);
+		}
+	}
+	
+	public void destroyJoint(Joint j) {
+		if (j != null) {
+			synchronized(worldLock) {
+				world.destroyJoint(j);
+			}
+		}
 	}
 	
 	private Body getBodyAt(float x, float y) {
@@ -218,7 +245,7 @@ public class PhysicsPanel extends JPanel {
 		return dbg;
 	}
 	
-	public void step(float hz, int velocityIterations, int positionIterations) {
+	public synchronized void step(float hz, int velocityIterations, int positionIterations) {
 		float timeStep = hz > 0f ? 1f / hz : 0;
 
 		textLine = 20;
@@ -262,7 +289,7 @@ public class PhysicsPanel extends JPanel {
 			textLine += TEXT_LINE_SPACE;
 
 			statsList.clear();
-			Profile p = getWorld().getProfile();
+			Profile p = world.getProfile();
 			p.toDebugStrings(statsList);
 
 			for (String s : statsList) {
@@ -459,7 +486,7 @@ public class PhysicsPanel extends JPanel {
 	
 	private ContactListener contactListener = new ContactListener() {
 		@Override
-		public void beginContact(Contact contact) {
+		public void beginContact(Contact contact) { System.out.println(" --- beginContact: "+contact);
 			synchronized (contactListeners) {
 				for (int i = contactListeners.size()-1; i >= 0; i--) {
 					contactListeners.get(i).beginContact(contact);
@@ -467,7 +494,7 @@ public class PhysicsPanel extends JPanel {
 			}
 		}
 		@Override
-		public void endContact(Contact contact) {
+		public void endContact(Contact contact) { System.out.println(" --- endContact: "+contact);
 			synchronized (contactListeners) {
 				for (int i = contactListeners.size()-1; i >= 0; i--) {
 					contactListeners.get(i).endContact(contact);
