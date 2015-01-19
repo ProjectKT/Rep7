@@ -30,7 +30,7 @@ public class SampleGUI extends JFrame implements ActionListener{
 	JPanel graphics = new JPanel();
 	CardLayout gra_layout = new CardLayout();
 	// 物体を表示するパネル
-	PhysicsPanel physicsPanel = new PhysicsPanel();
+	PlannerPanel plannerPanel = new PlannerPanel();
 
 	// コンストラクタ
 	public SampleGUI() {
@@ -41,6 +41,12 @@ public class SampleGUI extends JFrame implements ActionListener{
 		
 		//set();
 		setVisible(true);
+		
+		// TODO Planner の出力を元に PlannerPanel のコマンドを呼ぶ操作パネル、レイアウトの作成
+		// 1. 初期状態、目標状態を入れるための入力コンポーネントを用意する
+		// 2. 入力された内容を元に Planner を動かし、プランをもらう
+		// 3. 受け取ったプランを元に、 PlannerPanel の操作メソッドを呼び、操作する
+		
 	}
 	
 	// 初期化

@@ -23,7 +23,7 @@ import org.jbox2d.dynamics.contacts.Contact;
 import org.jbox2d.dynamics.joints.Joint;
 import org.jbox2d.dynamics.joints.RevoluteJointDef;
 
-public class PlannerPanel extends PhysicsPanel {
+public class PlannerPanel extends PhysicsPanel implements PlannerController {
 	
 	private Robot robot;
 	private List<Runnable> manipulations = Collections.synchronizedList(new LinkedList<Runnable>());
@@ -264,5 +264,17 @@ public class PlannerPanel extends PhysicsPanel {
 		PlannerPanel p = new PlannerPanel();
 		f.getContentPane().add(p);
 		f.setVisible(true);
+	}
+
+	@Override
+	public void pickup(String target) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void place(String to) {
+		// TODO Auto-generated method stub
+		
 	}
 }
