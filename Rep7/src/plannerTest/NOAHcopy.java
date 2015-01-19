@@ -16,7 +16,7 @@ public class NOAHcopy {
 
 	ArrayList<Node> plan = new ArrayList<Node>();
 	int nodecount = 1;
-	// 繝弱�繝峨�邨仙粋諠�ｱ
+	//メンバ
 	ArrayList<JointS> ss = new ArrayList<JointS>();
 	ArrayList<JointJ> js = new ArrayList<JointJ>();
 
@@ -178,11 +178,23 @@ public class NOAHcopy {
 		// initialState.add("4 on 5");
 		// initialState.add("5 on 6");
 
-		initialState.add("clear 1");
-		initialState.add("clear 4");
-		initialState.add("clear 7");
+		
+		//initialState.add("clear 1");
+		initialState.add("clear A");
+		initialState.add("A on 1");
+		//initialState.add("clear 4");
+		initialState.add("clear B");
+		initialState.add("B on 4");
+		//initialState.add("clear 7");
+		initialState.add("clear C");
+		initialState.add("C on 7");
+		
+		
 		initialState.add("clear 13");
 
+		
+		
+		
 		initialState.add("1 on 2");
 		initialState.add("2 on 3");
 		initialState.add("4 on 5");
@@ -196,6 +208,8 @@ public class NOAHcopy {
 		initialState.add("14 on 15");
 		initialState.add("15 on 16");
 
+		
+		
 		return initialState;
 	}
 
@@ -1260,36 +1274,88 @@ public class NOAHcopy {
 					} else if (stacks.size() == 0) {
 						// unstackだけのとき
 						// ここが重要かもしれない？
-						Node nextNode = null;
-						
-						
-						int stackNum = -1;
-						for(int t = 0; t < tList.size();t++){
-							if(tList.get(t).size() > 1){
-								Node checkStack = tList.get(t).get(1);
-								
-								Matcher sMat = p2.matcher(checkStack.getNodeName());
-								
-								if(sMat.find()){
-									stackNum = t;
-									for(Node temp : nodes){
-										Matcher unMat = p3.matcher(temp.getNodeName());
+
+						ArrayList<String> stackList = new ArrayList<String>();
+						HashMap<String, Integer> sLen = new HashMap<String, Integer>();
+
+						for (int h = 0; h < tList.size(); h++) {
+							stackList.add(null);
+							ArrayList<Node> list = tList.get(h);
+
+							for (int k = 0; k < list.size(); k++) {
+								Node temp = list.get(k);
+								Matcher sMat = p2.matcher(temp.getNodeName());
+
+								if (sMat.find()) {
+									stackList.remove(h);
+									stackList.add(h, sMat.group(1));
+									sLen.put(sMat.group(1), k);
+									break;
+								}
+
+							}
+						}
+
+						/*
+						 * for(int t = 0; t < tList.size();t++){
+						 * if(tList.get(t).size() > 1){ Node checkStack =
+						 * tList.get(t).get(1);
+						 * 
+						 * Matcher sMat = p2.matcher(checkStack.getNodeName());
+						 * 
+						 * if(sMat.find()){ stackNum = t; for(Node temp :
+						 * nodes){ Matcher unMat =
+						 * p3.matcher(temp.getNodeName());
+						 * 
+						 * if(unMat.find()){
+						 * if(sMat.group(1).equals(unMat.group(1))){
+						 * orderList.add(nodes.get(t));
+						 * orderString.add(nodes.get(t).getNodeName());
+						 * 
+						 * break; } } } }
+						 * 
+						 * } }
+						 */
+						int action = -1;
+						for (int k = 0; k < stackList.size(); k++) {
+							if (stackList.get(k) != null) {
+								String stack = stackList.get(k);
+
+								Matcher sMat = p2.matcher(stack);
+
+								if (sMat.find()) {
+									for(int l = 0 ; l < nodes.size() ; l++){
+										Node node = nodes.get(l);
+										
+										Matcher unMat = p3.matcher(node.getNodeName());
 										
 										if(unMat.find()){
-											if(sMat.group(1).equals(unMat.group(1))){
-												orderList.add(nodes.get(t));
-												orderString.add(nodes.get(t).getNodeName());
-												
-												break;
+											if(unMat.group(1).equals(sMat.group(1))){
+												if(action == -1){
+													action = k;
+												}else{
+													if(sLen.get(stackList.get(action)) > sLen.get(stack)){
+														action = k;
+													}
+												}
 											}
 										}
 									}
+								} else {
+
 								}
-								
 							}
 						}
 						
-						
+						if(action != -1){
+							orderList.add(nodes.get(action));
+							orderString.add(nodes.get(action).getNodeName());
+						}else{
+							for(Node node:nodes){
+								orderList.add(node);
+								orderString.add(node.getNodeName());
+							}
+						}
 
 					} else {
 						// stackだけの時

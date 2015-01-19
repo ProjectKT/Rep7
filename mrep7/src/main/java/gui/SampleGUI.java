@@ -6,6 +6,7 @@ import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
@@ -31,6 +32,9 @@ public class SampleGUI extends JFrame implements ActionListener{
 	CardLayout gra_layout = new CardLayout();
 	// 物体を表示するパネル
 	PlannerPanel plannerPanel = new PlannerPanel();
+	
+	ArrayList<String> startList = new ArrayList<String>();
+	ArrayList<String> goalList = new ArrayList<String>();
 
 	// コンストラクタ
 	public SampleGUI() {
@@ -126,7 +130,7 @@ public class SampleGUI extends JFrame implements ActionListener{
 			}else if(i % 10 == 3){
 				gra_process.add(new JLabel(s+"rd process"));
 				//gra_process.setBackground(Color.BLUE);
-			}else{
+			}else{		ArrayList<String> startList = new ArrayList<String>();
 				gra_process.add(new JLabel(s+"th process"));
 			}
 			graphics.add(gra_process);
@@ -162,6 +166,9 @@ public class SampleGUI extends JFrame implements ActionListener{
 		
 		
 		//テキストで表示する
+
+		
+		
 		JPanel card2 = new JPanel();
 		card2.setLayout(new GridLayout(1,4));
 		JTextArea start2 = new JTextArea("aaa");//初期状態のエリア
