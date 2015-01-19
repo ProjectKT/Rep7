@@ -92,7 +92,15 @@
 <!--
  もし自分で独自に決めた仕様があれば，その説明を書く．
 -->
+<pre>
+自分たちはNOAHに基づくプランニングシステムを作りました。
+NOAHとは Nets Of Action Hierarchiesの略称で、直訳すると[動作階層のネット]
 
+STRIPSに基づくサンプルプログラムでは、ある副目標の達成が別の副目標の達成の障害になってしまい、
+解が非効率に、あるいは矛盾が含まれ解にならない事があったので、
+正しく動くプランニングシステムを作りたかったので、NOAHにしました。
+
+</pre>
 <h3>プログラムの構造</h3>
 <!--  どのような設計をしたか．-->
 <p>
@@ -106,19 +114,193 @@
  どう実装したか，ソースコードを詳細に説明する．
  特に重要な箇所はレポートにペーストして説明する．
 -->
-<p>
+<pre>
+今回実装したプログラムではノードを使い、
+初期状態と他のノードとの関係から各ノードの順序を決め、プランを作るようにしました。
 
-</p>
 
+目標状態や処理の一つ一つを、ノードとして、
+初回には、先頭にはスタートのノードとゴールのノードを配置、先頭の後ろに配置するJointS、
+各ノードの間にJointJという結合を表すクラスを配置と結合をして、
+
+①処理ノードが他の処理ノードと干渉が起こる場合があるので、干渉が合ったJointオブジェクトにつながるノードの順序付け、
+②順序付けから分かる優先順位から、優先順位が高いノードのString名と
+同一のString名を持つ優先順位の低いノードの削除(冗長削除)、
+③状態ノードが初期状態に含まれてなければそのノードを展開し、新しいノードを作る(ノードの詳細化)。
+
+上記の①、②、③を繰り返すと、目標状態のブロックを積む塔の数だけ列が出来るので、
+干渉しないように動作の競合解消、無駄な動作が出ないように、動作の効率化または省略を行い、オペレーターの実行順序を決定していきます。
+
+
+特に重要な箇所として、動作の効率化と省略です。
+
+</pre>
 <!--
   ソースコードをはりつける時は <pre> タグを使う
   class="brush: java" でシンタックスハイライトする
   重要な部分のみを貼り付ければ良い
 -->
 <pre class="brush: java">
+			// 元からある山の処理を消す
+			for (JointJ j : jList) {
+				Matcher stackMap = p2.matcher(j.getBack().getNodeName());
+				Matcher unMap;
+				Node change = null;
+				if (stackMap.find()) {
+					for (Node node : j.getForward()) {
+						unMap = p3.matcher(node.getNodeName());
+						if (unMap.find()) {
+							if (stackMap.group(1).equals(unMap.group(1))
+									&& stackMap.group(2).equals(unMap.group(2))) {
+								change = node;
+							}
+						}
+					}
 
+					if (change != null) {
+						System.out.println("success");
+						while (true) {
+							Node last = change;
+							j.removeForward(change);
+							change = (Node) change.getForward();
+							if (orderString.contains(change.getNodeName())) {
+								preList.remove(last);
+							} else {
+								j.addForward(change);
+							}
+
+							Object obj = j.getBack().getBack();
+							System.out.println(obj.getClass().toString());
+							if (obj instanceof Node) {
+								System.out.println("success");
+								j.changeBack((Node) obj);
+							} else {
+								if (obj instanceof JointJ) {
+									JointJ tail = (JointJ) obj;
+									tail.removeForward(j.getBack());
+									jList.remove(tail);
+									break;
+								}
+							}
+
+							stackMap = p2.matcher(j.getBack().getNodeName());
+							unMap = p3.matcher(change.getNodeName());
+							if (stackMap.find() && unMap.find()) {
+								if (stackMap.group(1).equals(unMap.group(1))
+										&& stackMap.group(2).equals(
+												unMap.group(2))) {
+
+								} else {
+									break;
+								}
+							}
+						}
+					}
+
+				}
+			}
 </pre>
 
+<pre>
+このコードでは、
+ある目標のブロックの塔の動作で、
+無駄な動作がある場合にそれを省略するようにしています。
+例えば
+1,remove A from on top B
+2,remove B from on top C
+3,Place B on C
+4,Place A on B
+
+という順番だと、2,3を連続で実行しても無駄なので、
+この処理は消しています。
+2,3を省略することで、1,4が連続して実行され、無駄になるので、
+これも省略できるように対応しています。
+</pre>
+
+<pre class="brush: java">
+else if (stacks.size() == 0) {
+						// unstackだけのとき
+						// ここが重要かもしれない？
+
+						ArrayList<String> stackList = new ArrayList<String>();
+						HashMap<String, Integer> sLen = new HashMap<String, Integer>();
+
+						for (int h = 0; h < tList.size(); h++) {
+							stackList.add(null);
+							ArrayList<Node> list = tList.get(h);
+
+							for (int k = 0; k < list.size(); k++) {
+								Node temp = list.get(k);
+								Matcher sMat = p2.matcher(temp.getNodeName());
+
+								if (sMat.find()) {
+									stackList.remove(h);
+									stackList.add(h, sMat.group(1));
+									sLen.put(sMat.group(1), k);
+									break;
+								}
+
+							}
+						}
+
+						int action = -1;
+						for (int k = 0; k < stackList.size(); k++) {
+							if (stackList.get(k) != null) {
+								String stack = stackList.get(k);
+
+								Matcher sMat = p2.matcher(stack);
+
+								if (sMat.find()) {
+									for(int l = 0 ; l < nodes.size() ; l++){
+										Node node = nodes.get(l);
+										
+										Matcher unMat = p3.matcher(node.getNodeName());
+										
+										if(unMat.find()){
+											if(unMat.group(1).equals(sMat.group(1))){
+												if(action == -1){
+													action = k;
+												}else{
+													if(sLen.get(stackList.get(action)) > sLen.get(stack)){
+														action = k;
+													}
+												}
+											}
+										}
+									}
+								} else {
+
+								}
+							}
+						}
+						
+						if(action != -1){
+							orderList.add(nodes.get(action));
+							orderString.add(nodes.get(action).getNodeName());
+						}else{
+							for(Node node:nodes){
+								orderList.add(node);
+								orderString.add(node.getNodeName());
+							}
+						}
+
+					}
+</pre>
+
+<pre>
+このソース部では、
+1,remove A from on top B
+2,remove C from on top D
+3,Place A on D
+
+となったとき、1で取ったAを一度テーブルの上に置かないといけなくなるので、
+
+1,remove C from on top D
+2,remove A from on top B
+3,Place A on D
+
+という順番に入れ替える事で結果が変わらない（干渉しない）なら入れ替えるという部分です。
+</pre>
 
 <h3>実行例</h3>
 <!-- 実行例を示す．PNGやGIF等の絵を張っても良い．-->
