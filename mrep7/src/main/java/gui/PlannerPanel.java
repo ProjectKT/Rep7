@@ -60,6 +60,8 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 	private Map<String,Box> boxMap = new HashMap<String,Box>();
 	// 今持っているボックス
 	private Box holdingBox = null;
+	// 一番高い位置にあるボックス
+	private Box highestBox = null;
 	
 
 	public PlannerPanel() {
@@ -116,6 +118,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		if (box == null) {
 			box = new Box(name, pos);
 			boxMap.put(name, box);
+			updateHighestBox(box);
 		} else {
 			final Box fbox = box;
 			manipulations.add(new Runnable() {
@@ -125,8 +128,23 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 					boxMap.remove(fbox);
 					Box box = new Box(name, pos);
 					boxMap.put(name, box);
+					updateHighestBox(box);
 				}
 			});
+		}
+	}
+	
+	private void updateHighestBox(Box box) {
+		if (highestBox == null) {
+			highestBox = box;
+		} else {
+			if (box.body.getWorldCenter().y < highestBox.body.getWorldCenter().y) {
+				highestBox = box;
+			}
+		}
+		
+		if (highestBox == box) {
+			Settings.HomePosition.y = highestBox.body.getWorldCenter().y-Settings.BoxSize.y*1.5f;
 		}
 	}
 	
@@ -173,8 +191,11 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		posTo.y = pos.y;
 		robot.moveTo(posTo);
 		robot.release();
+		updateHighestBox(holdingBox);
+		
 		posTo.y = Settings.HomePosition.y;
 		robot.moveTo(posTo);
+		
 		holdingBox = null;
 	}
 	
@@ -427,7 +448,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 						Vec2 diff = to.sub(palm.getWorldCenter());
 						while (0.01f < diff.length()) {
 							palm.setLinearVelocity(diff.mulLocal(20.0f));
-							Thread.sleep(10);
+							Thread.sleep(1);
 							diff = to.sub(palm.getWorldCenter());
 						}
 					} catch (InterruptedException e) {
