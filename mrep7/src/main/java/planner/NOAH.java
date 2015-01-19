@@ -1131,7 +1131,11 @@ System.out.println("order"+orderList);
 						}
 
 						if (!preList.contains(unStack)) {
-							unStack = ((Node) unStack.getForward());
+							if(unStack.getForward() instanceof JointS){
+								preList.remove(unStack);
+							}else{
+								unStack = ((Node) unStack.getForward());
+							}
 						} else {
 							preList.remove(unStack);
 							break;
