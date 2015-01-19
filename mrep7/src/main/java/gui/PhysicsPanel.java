@@ -19,6 +19,7 @@ import java.util.Random;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import org.jbox2d.callbacks.ContactImpulse;
 import org.jbox2d.callbacks.ContactListener;
@@ -51,6 +52,8 @@ public class PhysicsPanel extends JPanel {
 	
 	// 設定
 	public class Settings {
+		// スクロールするか
+		boolean scrollScreen = true;
 		// Body を描画するか
 		boolean drawShapes = true;
 		// Joint を描画するか
@@ -107,6 +110,14 @@ public class PhysicsPanel extends JPanel {
 	
 	protected float getInitialZoom() {
 		return 1.0f;
+	}
+	
+	/**
+	 * マウスドラッグでスクロールをするかどうか
+	 * @param enable true: スクロール有効, false: スクロール向こう
+	 */
+	public void enableScrollScreen(boolean enable) {
+		settings.scrollScreen = enable;
 	}
 	
 	/**
@@ -225,7 +236,7 @@ public class PhysicsPanel extends JPanel {
 	public void paintScreen() {
 		try {
 			Graphics g = this.getGraphics();
-			if ((g != null) && dbImage != null) {
+			if ((g != null) && dbImage != null && isShowing()) {
 				g.drawImage(dbImage, 0, 0, null);
 				Toolkit.getDefaultToolkit().sync();
 				g.dispose();
@@ -271,6 +282,7 @@ public class PhysicsPanel extends JPanel {
 		world.step(timeStep, velocityIterations, positionIterations);
 
 		world.drawDebugData();
+		drawDebugData(debugDraw.getGraphics());
 
 		if (settings.drawStats) {
 			// Vec2.watchCreations = true;
@@ -353,6 +365,10 @@ public class PhysicsPanel extends JPanel {
 //			}
 //		}
 	}
+	
+	protected void drawDebugData(Graphics2D g) {
+		
+	}
 
 	// --------------
 	
@@ -429,10 +445,12 @@ public class PhysicsPanel extends JPanel {
 		@Override
 		public void mouseWheelMoved(MouseWheelEvent e) {
 			updateMouse(e);
-			if (0 < e.getPreciseWheelRotation()) {
-				camera.zoomOut(mouseScreen);
-			} else {
-				camera.zoomIn(mouseScreen);
+			if (settings.scrollScreen) {
+				if (0 < e.getPreciseWheelRotation()) {
+					camera.zoomOut(mouseScreen);
+				} else {
+					camera.zoomIn(mouseScreen);
+				}
 			}
 		}
 		@Override
@@ -443,7 +461,7 @@ public class PhysicsPanel extends JPanel {
 		}
 		@Override
 		public void mouseDragged(MouseEvent e) {
-			if (!draggingBody) {
+			if (!draggingBody && settings.scrollScreen) {
 				camera.move(oldMouseScreen.sub(mouseScreen));
 			}
 			updateMouse(e);

@@ -129,7 +129,7 @@ public class PhysicsDebugDraw extends DebugDraw {
 		g.drawString(s, x, y);
 	}
 
-	private Graphics2D getGraphics() {
+	Graphics2D getGraphics() {
 		return panel.getDBGraphics();
 	}
 
