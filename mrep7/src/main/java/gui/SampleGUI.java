@@ -159,7 +159,12 @@ public class SampleGUI extends JFrame implements ActionListener{
 			}
 			
 			if(m2.find()){
-				start1.putBox(m2.group(1), m2.group(2));
+				try {
+					start1.place(m2.group(2));
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 			}
 			
 			if(m3.find()){
@@ -172,13 +177,15 @@ public class SampleGUI extends JFrame implements ActionListener{
 			}
 			
 			if(m4.find()){
-				try {
-					start1.pickup(m4.group(1));
-				} catch (InterruptedException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
+
+					try {
+						start1.place(null);
+					} catch (InterruptedException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 			}
+
 		}
 		
 		
