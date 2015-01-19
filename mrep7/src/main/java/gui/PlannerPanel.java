@@ -175,6 +175,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			while (it.hasNext()) {
 				Box box = it.next();
 				Box boxOn = null;
+				Box boxAbove = null;
 				
 				ContactEdge edge = box.body.getContactList();
 				while (edge != null) {
@@ -191,17 +192,29 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 						if (boxOnName != null) {
 							boxOn = boxMap.get(boxOnName);
 						}
+					} else if (bodyObj.getWorldCenter().y < bodyBox.getWorldCenter().y){
+						String boxAboveName = findBox(bodyObj);
+						if (boxAboveName != null) {
+							boxAbove = boxMap.get(boxAboveName);
+						}
 					}
 					
 					edge = edge.next;
 				}
 				
 				if (boxOn == null) {
-					states.add(box.name+" on table");
+					states.add("ontable "+box.name);
 				} else {
 					states.add(box.name+" on "+boxOn.name);
 				}
+				if (boxAbove == null) {
+					states.add("clear"+box.name);
+				}
 			}
+		}
+		
+		if (!robot.isGrabbing) {
+			states.add("handEmpty");
 		}
 	
 		return states;
