@@ -140,12 +140,15 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		holdingBox = boxMap.get(target);
 		if (holdingBox != null) {
 			final Vec2 pos = holdingBox.body.getWorldCenter();
-			final Vec2 posTo = pos.sub(new Vec2(0, Settings.BoxSize.y/2f));
+			final Vec2 posTo = new Vec2(pos);
+			posTo.y = Settings.HomePosition.y;
+			robot.moveTo(posTo);
+			posTo.y = pos.y;
 			robot.moveTo(posTo);
 			robot.grab();
+			posTo.y = Settings.HomePosition.y;
+			robot.moveTo(posTo);
 		}
-		
-		robot.moveTo(Settings.HomePosition);
 	}
 
 	@Override
@@ -164,11 +167,15 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			}
 		}
 		
-		robot.moveTo(pos);
+		final Vec2 posTo = new Vec2(pos);
+		posTo.y = Settings.HomePosition.y;
+		robot.moveTo(posTo);
+		posTo.y = pos.y;
+		robot.moveTo(posTo);
 		robot.release();
+		posTo.y = Settings.HomePosition.y;
+		robot.moveTo(posTo);
 		holdingBox = null;
-		
-		robot.moveTo(Settings.HomePosition);
 	}
 	
 	public List<String> getStates() {
