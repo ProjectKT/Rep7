@@ -931,7 +931,7 @@ System.out.println("order"+orderList);
 		System.out.println("第一完了" + orderList);
 
 		// 第二段階
-		// 先頭のunstackの冗長はオーダーリストに突っ込む
+		// 先頭のunstackの冗長削除
 
 		HashMap<String, Node> NodeMap = new HashMap<String, Node>();
 		HashMap<Node, Node> NextMap = new HashMap<Node, Node>();
