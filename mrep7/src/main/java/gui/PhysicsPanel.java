@@ -271,6 +271,7 @@ public class PhysicsPanel extends JPanel {
 		world.step(timeStep, velocityIterations, positionIterations);
 
 		world.drawDebugData();
+		drawDebugData(debugDraw.getGraphics());
 
 		if (settings.drawStats) {
 			// Vec2.watchCreations = true;
@@ -352,6 +353,10 @@ public class PhysicsPanel extends JPanel {
 //				}
 //			}
 //		}
+	}
+	
+	protected void drawDebugData(Graphics2D g) {
+		
 	}
 
 	// --------------

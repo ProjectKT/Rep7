@@ -461,7 +461,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 	public static void main(String[] args) {
 		JFrame f = new JFrame();
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		f.setBounds(0, 0, 1500, 1000);
+		f.setBounds(0, 0, 500, 300);
 		final PlannerPanel p = new PlannerPanel();
 		f.getContentPane().add(p);
 		f.setVisible(true);
