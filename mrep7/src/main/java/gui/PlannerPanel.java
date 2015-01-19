@@ -66,6 +66,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 	private void initialize() {
 		addKeyListener(keyAdapter);
 		
+		// ground
 		Body ground = null;
 		{
 			BodyDef bd = new BodyDef();
@@ -81,36 +82,6 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			shape.set(new Vec2(-20.0f, 0.0f), new Vec2(20.0f, 0.0f));
 			ground.createFixture(fd);
 		}
-
-		// Boxes
-//		{
-//			PolygonShape box = new PolygonShape();
-//			box.setAsBox(0.5f, 0.5f);
-//
-//			Body body = null;
-//			BodyDef bd = new BodyDef();
-//			bd.type = BodyType.DYNAMIC;
-//
-//			bd.position.set(0.0f, -0.5f);
-//			body = createBody(bd);
-//			body.createFixture(box, -0.5f);
-//
-//			bd.position.set(0.0f, -1.5f);
-//			body = createBody(bd);
-//			body.createFixture(box, -0.5f);
-//
-//			bd.position.set(0.0f, -2.5f);
-//			body = createBody(bd);
-//			body.createFixture(box, -0.5f);
-//
-//			bd.position.set(0.0f, -3.5f);
-//			body = createBody(bd);
-//			body.createFixture(box, -0.5f);
-//
-//			bd.position.set(0.0f, -4.5f);
-//			body = createBody(bd);
-//			body.createFixture(box, -0.5f);
-//		}
 
 		// Robot
 		robot = new Robot();
@@ -259,6 +230,8 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			}
 		}
 	}
+	
+	
 
 	private final KeyAdapter keyAdapter = new KeyAdapter() {
 		@Override

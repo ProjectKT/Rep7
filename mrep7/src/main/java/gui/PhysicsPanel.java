@@ -19,6 +19,7 @@ import java.util.Random;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import org.jbox2d.callbacks.ContactImpulse;
 import org.jbox2d.callbacks.ContactListener;
@@ -235,7 +236,7 @@ public class PhysicsPanel extends JPanel {
 	public void paintScreen() {
 		try {
 			Graphics g = this.getGraphics();
-			if ((g != null) && dbImage != null) {
+			if ((g != null) && dbImage != null && isShowing()) {
 				g.drawImage(dbImage, 0, 0, null);
 				Toolkit.getDefaultToolkit().sync();
 				g.dispose();
