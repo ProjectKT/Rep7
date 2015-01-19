@@ -9,33 +9,33 @@ import java.util.regex.Pattern;
 
 public class NOAH {
 
-	//メンバ
-	
-	//パラメーターを保存するクラス
-	//MultiThreadで実装しようとした頃の名残
+	// メンバ
+
+	// パラメーターを保存するクラス
+	// MultiThreadで実装しようとした頃の名残
 	NOAHParameters nPara;
 
-	//最初のプラン
+	// 最初のプラン
 	ArrayList<Node> plan = new ArrayList<Node>();
 	int nodecount = 1;
-	
-	//最終結果のプラン
-	ArrayList<String> resultPlan =new ArrayList<String>();
-	
-	//JointSのリスト
-	//JointSは前方が一個、後方が複数の結合部
+
+	// 最終結果のプラン
+	ArrayList<String> resultPlan = new ArrayList<String>();
+
+	// JointSのリスト
+	// JointSは前方が一個、後方が複数の結合部
 	ArrayList<JointS> ss = new ArrayList<JointS>();
-	
-	//JointSのリスト
-	//JointSは前方が一個、後方が複数の結合部
+
+	// JointSのリスト
+	// JointSは前方が一個、後方が複数の結合部
 	ArrayList<JointJ> js = new ArrayList<JointJ>();
 
-	/**A on Bが合ったとき
-	 * underにB、overにAが入る
-	*/
+	/**
+	 * A on Bが合ったとき underにB、overにAが入る
+	 */
 	ArrayList<String> under = new ArrayList<String>();
 	ArrayList<String> over = new ArrayList<String>();
-	
+
 	// 存在しているオブジェクトのリスト
 	ArrayList<String> objects = new ArrayList<String>();
 
@@ -43,9 +43,9 @@ public class NOAH {
 		(new NOAH()).planning();
 	}
 
-	/** 初期状態とゴール状態が与えられない場合のコンストラクタ
-	 * 初期状態とゴール状態はこちらが決めたものに勝手にセットされる
-	*/
+	/**
+	 * 初期状態とゴール状態が与えられない場合のコンストラクタ 初期状態とゴール状態はこちらが決めたものに勝手にセットされる
+	 */
 	public NOAH() {
 		nPara = new NOAHParameters(initOperators(), initGoalState(),
 				initCurrentState());
@@ -54,8 +54,11 @@ public class NOAH {
 
 	/**
 	 * 初期状態とゴール状態が与えられなる場合のコンストラクタ
-	 * @param goalState　ゴール状態
-	 * @param initialState　初期状態
+	 * 
+	 * @param goalState
+	 *            　ゴール状態
+	 * @param initialState
+	 *            　初期状態
 	 */
 	public NOAH(ArrayList<String> goalState, ArrayList<String> initialState) {
 		nPara = new NOAHParameters(initOperators(), goalState, initialState);
@@ -152,16 +155,19 @@ public class NOAH {
 	 */
 	private ArrayList<String> initGoalState() {
 		ArrayList<String> goalList = new ArrayList<String>();
+
+		goalList.add("clear X");
+		goalList.add("X on A");
 		
-		goalList.add("clear A");
+		//goalList.add("clear A");
 		goalList.add("A on 1");
 		goalList.add("clear B");
 		goalList.add("B on 4");
 		goalList.add("clear C");
 		goalList.add("C on 7");
-		
+
 		goalList.add("clear 13");
-		
+
 		goalList.add("1 on 2");
 		goalList.add("2 on 3");
 		goalList.add("4 on 5");
@@ -201,23 +207,18 @@ public class NOAH {
 		// initialState.add("4 on 5");
 		// initialState.add("5 on 6");
 
-		
-		//initialState.add("clear 1");
+		// initialState.add("clear 1");
 		initialState.add("clear A");
 		initialState.add("A on 1");
-		//initialState.add("clear 4");
+		// initialState.add("clear 4");
 		initialState.add("clear B");
 		initialState.add("B on 4");
-		//initialState.add("clear 7");
+		// initialState.add("clear 7");
 		initialState.add("clear C");
 		initialState.add("C on 7");
-		
-		
+
 		initialState.add("clear 13");
 
-		
-		
-		
 		initialState.add("1 on 2");
 		initialState.add("2 on 3");
 		initialState.add("4 on 5");
@@ -231,8 +232,6 @@ public class NOAH {
 		initialState.add("14 on 15");
 		initialState.add("15 on 16");
 
-		
-		
 		return initialState;
 	}
 
@@ -256,6 +255,7 @@ public class NOAH {
 
 	/**
 	 * GUI上で初期状態を取得する時用
+	 * 
 	 * @return
 	 */
 	public ArrayList<String> getCurrentState() {
@@ -264,41 +264,42 @@ public class NOAH {
 
 	/**
 	 * GUI上でゴール状態を取得する時用
+	 * 
 	 * @return
 	 */
 	public ArrayList<String> getGoalState() {
 		return nPara.getGoalState();
 	}
-	
+
 	/**
 	 * グローバル変数を初期化するメソッド
 	 */
-	private void initMember(){
-		//最初のプラン
+	private void initMember() {
+		// 最初のプラン
 		plan = new ArrayList<Node>();
 		nodecount = 1;
-		
-		//最終結果のプラン
-		resultPlan =new ArrayList<String>();
-		
-		//JointSのリスト
-		//JointSは前方が一個、後方が複数の結合部
+
+		// 最終結果のプラン
+		resultPlan = new ArrayList<String>();
+
+		// JointSのリスト
+		// JointSは前方が一個、後方が複数の結合部
 		ss = new ArrayList<JointS>();
-		
-		//JointSのリスト
-		//JointSは前方が一個、後方が複数の結合部
+
+		// JointSのリスト
+		// JointSは前方が一個、後方が複数の結合部
 		js = new ArrayList<JointJ>();
 
-		/**A on Bが合ったとき
-		 * underにB、overにAが入る
-		*/
+		/**
+		 * A on Bが合ったとき underにB、overにAが入る
+		 */
 		under = new ArrayList<String>();
 		over = new ArrayList<String>();
-		
+
 		objects = new ArrayList<String>();
 		setObjects();
 	}
-	
+
 	/**
 	 * オブジェクトの登録
 	 * 
@@ -330,15 +331,11 @@ public class NOAH {
 	}
 
 	/**
-	 * ゴール状態をプランに登録する
-	 * 具体的には
-	 * Goalに[A on B,B on C]があったら
+	 * ゴール状態をプランに登録する 具体的には Goalに[A on B,B on C]があったら
 	 * 
-	 *                     |  - A on B - | 
-	 * Start --- JointS ---              ----JointJ --- Goal
-	 *                     |  - B on C - |
-	 *                     
-	 *                     ができる
+	 * | - A on B - | Start --- JointS --- ----JointJ --- Goal | - B on C - |
+	 * 
+	 * ができる
 	 */
 	private void initialPlanning() {
 		ArrayList<String> goalState = nPara.getGoalState();
@@ -347,7 +344,7 @@ public class NOAH {
 		// 先頭のJointSは前がStartノード
 		JointS s = new JointS();
 		s.changeForward("Start");
-		
+
 		// 末尾のJointJを作る
 		// 末尾のJointJは後がGoalノード
 		JointJ j = new JointJ();
@@ -357,11 +354,11 @@ public class NOAH {
 		Pattern p = Pattern.compile("(.*) on (.*)");
 		for (String str : goalState) {
 			Matcher m = p.matcher(str);
-			if(m.find()){
-			Node newNode = new Node(str, nodecount++, s, j);
-			plan.add(newNode);
-			s.addBack(newNode);
-			j.addForward(newNode);
+			if (m.find()) {
+				Node newNode = new Node(str, nodecount++, s, j);
+				plan.add(newNode);
+				s.addBack(newNode);
+				j.addForward(newNode);
 			}
 		}
 		ss.add(s);
@@ -370,15 +367,11 @@ public class NOAH {
 	}
 
 	/**
-	 * ゴール状態のままでは不十分なのでプランを展開する
-	 * 具体的には
-	 * A on Bを
+	 * ゴール状態のままでは不十分なのでプランを展開する 具体的には A on Bを
 	 * 
-	 *         |- Clear A -|
-	 * JointS---           ---JointJ --- Place A on B 
-	 *         |- Clear B -|
-	 *         
-	 *         に展開する
+	 * |- Clear A -| JointS--- ---JointJ --- Place A on B |- Clear B -|
+	 * 
+	 * に展開する
 	 */
 	private void expandPlan() {
 		ArrayList<Node> newplan = new ArrayList<Node>();
@@ -424,7 +417,7 @@ public class NOAH {
 		plan = newplan;
 	}
 
-	//tableから一番近いonを行う際のPrace情報
+	// tableから一番近いonを行う際のPrace情報
 	ArrayList<Node> headNodes = new ArrayList<Node>();
 
 	/**
@@ -760,13 +753,13 @@ public class NOAH {
 	}
 
 	/**
-	 * 順序付け、冗長削除、詳細化を繰り返しを行うことで
-	 * Startの後ろのJointSとGoalの前のJointJの間に各作りたい山を作る系列が残るので
+	 * 順序付け、冗長削除、詳細化を繰り返しを行うことで Startの後ろのJointSとGoalの前のJointJの間に各作りたい山を作る系列が残るので
 	 * 最後にそれらを一本道に変換する
+	 * 
 	 * @return
 	 */
 	private ArrayList<String> lastOrder() {
-		
+
 		ArrayList<Node> preList = new ArrayList<Node>();
 		ArrayList<Node> orderList = new ArrayList<Node>();
 		ArrayList<String> orderString = new ArrayList<String>();
@@ -798,13 +791,12 @@ public class NOAH {
 
 			}
 		}
-		
+
 		System.out.println("check1");
-		
-		
+
 		while (true) {
-System.out.println("pre"+preList);
-System.out.println("order"+orderList);
+			System.out.println("pre" + preList);
+			System.out.println("order" + orderList);
 			Boolean addFrag = false;
 			ArrayList<String> overList = new ArrayList<String>();
 			ArrayList<String> underList = new ArrayList<String>();
@@ -822,7 +814,6 @@ System.out.println("order"+orderList);
 					nodeList.add(node);
 				}
 			}
-
 			// stackの下の値から優先度の高いunstackの決定
 			for (Node node : preList) {
 				Matcher unMat = p3.matcher(node.getNodeName());
@@ -904,7 +895,7 @@ System.out.println("order"+orderList);
 							j.removeForward(nextNode);
 							break;
 						}
-						//break;
+						// break;
 					}
 				}
 			}
@@ -1003,6 +994,8 @@ System.out.println("order"+orderList);
 			}
 
 			// 元からある山の処理を消す
+			
+			ArrayList<JointJ> delJ = new ArrayList<JointJ>();
 			for (JointJ j : jList) {
 				Matcher stackMap = p2.matcher(j.getBack().getNodeName());
 				Matcher unMap;
@@ -1021,26 +1014,45 @@ System.out.println("order"+orderList);
 					if (change != null) {
 						System.out.println("success?");
 						while (true) {
+							System.out.println("change    :"+change);
+							System.out.println("change.getfoward   :"+change.getForward());
 							Node last = change;
 							j.removeForward(change);
-							//bug
-							change = (Node) change.getForward();
-							if (orderString.contains(change.getNodeName())) {
+				// bug
+							if (!(change.getForward() instanceof JointS)) {
+								change = (Node) change.getForward();
+								if (orderString.contains(change.getNodeName())) {
+									preList.remove(last);
+								} else {
+									j.addForward(change);
+								}
+
+							}else{
 								preList.remove(last);
-							} else {
-								j.addForward(change);
 							}
 
 							Object obj = j.getBack().getBack();
 							System.out.println(obj.getClass().toString());
 							if (obj instanceof Node) {
-								System.out.println("success");
+								//System.out.println("success");
 								j.changeBack((Node) obj);
 							} else {
 								if (obj instanceof JointJ) {
 									JointJ tail = (JointJ) obj;
+									
+
 									tail.removeForward(j.getBack());
-									jList.remove(tail);
+									Matcher mat = p3.matcher(change.getNodeName());
+									if(mat.find()){
+										for(Node node : j.getForward()){
+											tail.addForward(node);
+										}
+									}else{
+										delJ.add(j);
+									}
+									
+
+									
 									break;
 								}
 							}
@@ -1061,8 +1073,13 @@ System.out.println("order"+orderList);
 
 				}
 			}
+			
+			for(JointJ del:delJ){
+				jList.remove(del);
+			}
+			
 			System.out.println("check");
-			System.out.println(orderString);
+			System.out.println("orderStr" + orderString);
 
 			// 残ったものの順序決定
 			ArrayList<ArrayList<Node>> tList = new ArrayList<ArrayList<Node>>();
@@ -1103,8 +1120,7 @@ System.out.println("order"+orderList);
 
 									} else if ((!unMat.group(1).equals(
 											stackMat.group(2)))
-											&&
-											(!unMat.group(2).equals(
+											&& (!unMat.group(2).equals(
 													stackMat.group(2)))) {
 
 										// tugi
@@ -1131,10 +1147,10 @@ System.out.println("order"+orderList);
 						}
 
 						if (!preList.contains(unStack)) {
-							if(unStack.getForward() instanceof JointS){
+							if (unStack.getForward() instanceof JointS) {
 								preList.remove(unStack);
 								break;
-							}else{
+							} else {
 								unStack = ((Node) unStack.getForward());
 							}
 						} else {
@@ -1152,7 +1168,7 @@ System.out.println("order"+orderList);
 			}
 
 			System.out.println("checkloop");
-			
+
 			ArrayList<Node> nodes = new ArrayList<Node>();
 			ArrayList<String> words = new ArrayList<String>();
 
@@ -1168,13 +1184,14 @@ System.out.println("order"+orderList);
 				nodes.add(list.get(0));
 			}
 			while (true) {
-				System.out.println(orderList);
+				// System.out.println("orderList"+orderList);
+				// System.out.println("orderString"+orderString);
 				for (ArrayList<Node> list : tList) {
-					System.out.println(list);
+					// System.out.println(list);
 				}
-				System.out.println("words"+words);
-				System.out.println("nodes"+nodes);
-
+				//System.out.println("pre"+preList);
+				 //System.out.println("words"+words);
+				// System.out.println("nodes"+nodes);
 				ArrayList<String> over = new ArrayList<String>();
 				ArrayList<String> under = new ArrayList<String>();
 				ArrayList<Node> stacks = new ArrayList<Node>();
@@ -1197,8 +1214,8 @@ System.out.println("order"+orderList);
 					}
 				}
 
-				System.out.println(over);
-				System.out.println(under);
+				// System.out.println(over);
+				// System.out.println(under);
 
 				for (int k = 0; k < stacks.size(); k++) {
 					if (words.contains(over.get(k))
@@ -1380,17 +1397,21 @@ System.out.println("order"+orderList);
 								Matcher sMat = p2.matcher(stack);
 
 								if (sMat.find()) {
-									for(int l = 0 ; l < nodes.size() ; l++){
+									for (int l = 0; l < nodes.size(); l++) {
 										Node node = nodes.get(l);
-										
-										Matcher unMat = p3.matcher(node.getNodeName());
-										
-										if(unMat.find()){
-											if(unMat.group(1).equals(sMat.group(1))){
-												if(action == -1){
+
+										Matcher unMat = p3.matcher(node
+												.getNodeName());
+
+										if (unMat.find()) {
+											if (unMat.group(1).equals(
+													sMat.group(1))) {
+												if (action == -1) {
 													action = k;
-												}else{
-													if(sLen.get(stackList.get(action)) > sLen.get(stack)){
+												} else {
+													if (sLen.get(stackList
+															.get(action)) > sLen
+															.get(stack)) {
 														action = k;
 													}
 												}
@@ -1402,23 +1423,25 @@ System.out.println("order"+orderList);
 								}
 							}
 						}
-						
-						if(action != -1){
+
+						if (action != -1) {
 							orderList.add(nodes.get(action));
 							orderString.add(nodes.get(action).getNodeName());
-							
-							Matcher clearMat = p3.matcher(nodes.get(action).getNodeName());
-							if(clearMat.find()){
+
+							Matcher clearMat = p3.matcher(nodes.get(action)
+									.getNodeName());
+							if (clearMat.find()) {
 								words.add(clearMat.group(2));
 							}
-							
-						}else{
-							for(Node node:nodes){
+
+						} else {
+							for (Node node : nodes) {
 								orderList.add(node);
 								orderString.add(node.getNodeName());
-								
-								Matcher clearMat = p3.matcher(node.getNodeName());
-								if(clearMat.find()){
+
+								Matcher clearMat = p3.matcher(node
+										.getNodeName());
+								if (clearMat.find()) {
 									words.add(clearMat.group(2));
 								}
 							}
@@ -1458,7 +1481,7 @@ System.out.println("order"+orderList);
 					break;
 				}
 			}
-			//ここのwhile loop
+			// ここのwhile loop
 		}
 		System.out.println("lastOrder" + orderList);
 		System.out.println(orderString);
@@ -1532,27 +1555,25 @@ System.out.println("order"+orderList);
 	}
 
 	/**
-	 * plannigを行うメソッド
-	 * これを呼ぶ前に初期状態をセットするメソッドsetCurrentStateと
-	 * ゴール状態をセットするメソッドsetGoalStateを使う必要あり
-	 * 結果のArrayListはgetResultで得る
+	 * plannigを行うメソッド これを呼ぶ前に初期状態をセットするメソッドsetCurrentStateと
+	 * ゴール状態をセットするメソッドsetGoalStateを使う必要あり 結果のArrayListはgetResultで得る
 	 */
 	public void planning() {
-		//グローバル変数の初期化
+		// グローバル変数の初期化
 		initMember();
-		
-		//ゴールのリストをプランに登録
+
+		// ゴールのリストをプランに登録
 		initialPlanning();
-		
-		System.out.println("initialState"+getCurrentState());
-		System.out.println("goalState"+getGoalState());
-		//プランを展開
+
+		System.out.println("initialState" + getCurrentState());
+		System.out.println("goalState" + getGoalState());
+		// プランを展開
 		expandPlan();
 
 		System.out.println("initialState \n");
 		printState();
 
-		//一回目の順序づけ
+		// 一回目の順序づけ
 		checkInterference();
 		System.out.println("順序付け終了");
 		printState();
@@ -1572,7 +1593,7 @@ System.out.println("order"+orderList);
 		printState();
 		ArrayList<Node> lastPlan = new ArrayList<Node>();
 		lastPlan.addAll(plan);
-		//以下二回目以降の冗長削除、詳細化繰り返し
+		// 以下二回目以降の冗長削除、詳細化繰り返し
 		while (true) {
 			checkLen();
 			System.out.println("冗長削除終了2+");
@@ -1594,31 +1615,30 @@ System.out.println("order"+orderList);
 		System.out.println("lastOrder終了");
 		System.out.print(lastOrder);
 		ArrayList<String> finalPlan = planEmbossing(lastOrder);
-		
 
 		System.out.println("\nfinalPlan!!!");
 		for (String str : finalPlan) {
 			System.out.println("count " + (count++) + " : " + str);
 
 		}
-		
+
 		resultPlan = finalPlan;
 	}
-	
+
 	/**
 	 * 結果を返すメソッド
+	 * 
 	 * @return
 	 */
-	public ArrayList<String> getResult(){
+	public ArrayList<String> getResult() {
 		return resultPlan;
 	}
 
-	public ArrayList<String> getObjects(){
+	public ArrayList<String> getObjects() {
 		return objects;
 	}
 
-	
-	//途中経過を確認していたメソッド
+	// 途中経過を確認していたメソッド
 	private void printState() {
 		for (JointS joint : ss) {
 
