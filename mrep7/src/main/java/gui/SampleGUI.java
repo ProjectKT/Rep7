@@ -68,7 +68,7 @@ public class SampleGUI extends JFrame implements ActionListener{
 	// 初期化
 	private void initialize() {		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(10,10,1500,1000);
+		setBounds(10,10,500,600);
 		setTitle("SampleGUI");
 		getContentPane().setLayout(new BorderLayout(0, 0));
 		
