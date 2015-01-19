@@ -166,13 +166,13 @@ public class SampleGUI extends JFrame implements ActionListener{
 		
 		
 		//テキストで表示する
-
-		
+		String startText="aaa\naaa\naaa";
+		String goalText="";
 		
 		JPanel card2 = new JPanel();
 		card2.setLayout(new GridLayout(1,4));
-		JTextArea start2 = new JTextArea("aaa");//初期状態のエリア
-		JTextArea goal2 = new JTextArea("bbb");//目標状態のエリア
+		JTextArea start2 = new JTextArea(startText);//初期状態のエリア
+		JTextArea goal2 = new JTextArea(goalText);//目標状態のエリア
 		JTextArea answer2 = new JTextArea("ccc");//解答のエリア
 		JTabbedPane tab2 = new JTabbedPane();
 		JTabbedPane tab3 = new JTabbedPane();
@@ -198,8 +198,14 @@ public class SampleGUI extends JFrame implements ActionListener{
 		card2.add(panel1);
 		card2.add(panel2);
 		
-		panel.setLayout(layout);
+		String strs[] = startText.split("\n");
+		for (int i = 0; i < strs.length; i++) {
+		    startList.add(strs[i]);
+		}
 		
+		
+		//
+		panel.setLayout(layout);
 		panel.add(card1);
 		panel.add(card2);
 		
@@ -238,7 +244,10 @@ public class SampleGUI extends JFrame implements ActionListener{
     		gra_layout.next(graphics);
     	}else if(cmd.equals("prev")){
     		gra_layout.previous(graphics);
-    	}else{
+    	}else if(cmd.equals("OK")){
+    		
+    	}
+    	else{
     		layout.last(panel);
     	}
         
