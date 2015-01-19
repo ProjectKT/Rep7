@@ -1,5 +1,9 @@
 package gui;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
@@ -14,6 +18,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
 import org.jbox2d.callbacks.ContactListener;
 import org.jbox2d.collision.shapes.EdgeShape;
@@ -37,6 +42,8 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		PolygonShape BoxShape = new PolygonShape() {{
 			setAsBox(BoxSize.x/2, BoxSize.y/2);
 		}};
+		// 箱の名前の描画色
+		Color BoxNameColor = new Color(1.0f, 1.0f, 1.0f);
 		// ホームポジション
 		Vec2 HomePosition = new Vec2(-BoxSize.x, -10.0f);
 		// 積む位置
@@ -179,7 +186,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 					final Body bodyObj = (contact.getFixtureA().getBody() == box.body) ?
 							contact.getFixtureB().getBody() : contact.getFixtureA().getBody();
 					
-					if (bodyObj.getWorldCenter().y < bodyBox.getWorldCenter().y) {
+					if (bodyBox.getWorldCenter().y < bodyObj.getWorldCenter().y) {
 						String boxOnName = findBox(bodyObj);
 						if (boxOnName != null) {
 							boxOn = boxMap.get(boxOnName);
@@ -231,7 +238,31 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		}
 	}
 	
-	
+	@Override
+	protected void drawDebugData(Graphics2D g) {
+		super.drawDebugData(g);
+		
+		Font origFont = g.getFont();
+		
+		// box の名前を表示する
+		synchronized (boxMap) {
+			final Vec2 screenSize = new Vec2();
+			final Vec2 screenCenter = new Vec2();
+			camera.transform.getWorldVectorToScreen(Settings.BoxSize, screenSize);
+			g.setFont(getFont().deriveFont(screenSize.y));
+			g.setColor(Settings.BoxNameColor);
+			
+			Iterator<Entry<String, Box>> it = boxMap.entrySet().iterator();
+			while (it.hasNext()) {
+				Box box = it.next().getValue();
+				camera.transform.getWorldToScreen(box.body.getWorldCenter(), screenCenter);
+				final int w = g.getFontMetrics().stringWidth(box.name);
+				g.drawString(box.name, screenCenter.x - w/2.0f, screenCenter.y + screenSize.y/2);
+			}
+		}
+		
+		g.setFont(origFont);
+	}
 
 	private final KeyAdapter keyAdapter = new KeyAdapter() {
 		@Override
@@ -278,7 +309,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			
 			FixtureDef fd = new FixtureDef();
 			fd.shape = Settings.BoxShape;
-			fd.density = 0.5f;
+//			fd.density = 0.5f; // これを付けると回転するようになる
 			fd.friction = 1.0f;
 			
 			body.createFixture(fd);
