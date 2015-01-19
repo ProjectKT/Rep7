@@ -7,6 +7,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,7 +17,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JTabbedPane;
@@ -57,6 +57,7 @@ public class SampleGUI extends JFrame implements ActionListener{
 		// 初期状態・終了状態を設定
 		initPlanner();
 		initStartState();
+		initGoalState();
 		
 		// TODO Planner の出力を元に PlannerPanel のコマンドを呼ぶ操作パネル、レイアウトの作成
 		// 1. 初期状態、目標状態を入れるための入力コンポーネントを用意する
@@ -266,62 +267,24 @@ public class SampleGUI extends JFrame implements ActionListener{
 			startStart.add("clear " + object);
 		}
 		 
-//		if (true) { return; }
-
 		noah.setCurrentState(startStart);
 		noah.setGoalState(startList);
 		System.out.println("startStart" + startStart);
 		System.out.println("startList" + startList);
 		noah.planning();
 
-		Pattern p1 = Pattern.compile("pick up (.*) from the table");
-		Pattern p2 = Pattern.compile("Place (.*) on (.*)");
-		Pattern p3 = Pattern.compile("remove (.*) from on top (.*)");
-		Pattern p4 = Pattern.compile("put (.*) down on the table");
-		for (String operator : noah.getResult()) {
-			System.out.println(operator);
-			Matcher m1 = p1.matcher(operator);
-			Matcher m2 = p2.matcher(operator);
-			Matcher m3 = p3.matcher(operator);
-			Matcher m4 = p4.matcher(operator);
-
-			if (m1.find()) {
+		final ArrayList<String> result = noah.getResult();
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
 				try {
-					startPanel.pickup(m1.group(1));
-				} catch (InterruptedException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+					applyPlan(result, startPanel);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
 				}
 			}
-
-			if (m2.find()) {
-				try {
-					startPanel.place(m2.group(2));
-				} catch (InterruptedException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-			}
-
-			if (m3.find()) {
-				try {
-					startPanel.pickup(m3.group(1));
-				} catch (InterruptedException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-			}
-
-			if (m4.find()) {
-				try {
-					startPanel.place(null);
-				} catch (InterruptedException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-			}
-
-		}
+		}).start();
+		
 	}
 	
 	private void initGoalState() {
@@ -343,6 +306,36 @@ public class SampleGUI extends JFrame implements ActionListener{
 		
 		for(String operator : noah.getResult()){
 			
+		}
+	}
+	
+	private void applyPlan(List<String> plan, PlannerPanel panel) throws InterruptedException {
+		Pattern p1 = Pattern.compile("pick up (.*) from the table");
+		Pattern p2 = Pattern.compile("Place (.*) on (.*)");
+		Pattern p3 = Pattern.compile("remove (.*) from on top (.*)");
+		Pattern p4 = Pattern.compile("put (.*) down on the table");
+		for (String operator : plan) {
+			System.out.println(operator);
+			Matcher m1 = p1.matcher(operator);
+			Matcher m2 = p2.matcher(operator);
+			Matcher m3 = p3.matcher(operator);
+			Matcher m4 = p4.matcher(operator);
+
+			if (m1.find()) {
+				panel.pickup(m1.group(1));
+			}
+
+			if (m2.find()) {
+				panel.place(m2.group(2));
+			}
+
+			if (m3.find()) {
+				panel.pickup(m3.group(1));
+			}
+
+			if (m4.find()) {
+				startPanel.place(null);
+			}
 		}
 	}
 	

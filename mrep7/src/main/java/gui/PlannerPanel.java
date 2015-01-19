@@ -426,7 +426,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 					try {
 						Vec2 diff = to.sub(palm.getWorldCenter());
 						while (0.01f < diff.length()) {
-							palm.setLinearVelocity(diff.mulLocal(10.0f));
+							palm.setLinearVelocity(diff.mulLocal(20.0f));
 							Thread.sleep(10);
 							diff = to.sub(palm.getWorldCenter());
 						}
