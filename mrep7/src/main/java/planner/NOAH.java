@@ -864,6 +864,7 @@ System.out.println("order"+orderList);
 				if (nodeList.size() > 0) {
 					deleteNode = nodeList.get(0);
 					orderList.add(deleteNode);
+					orderString.add(deleteNode.getNodeName());
 				} else {
 					// unstackのみの場合
 
@@ -896,9 +897,12 @@ System.out.println("order"+orderList);
 							if (!j.getBack().getNodeName().equals("Goal")) {
 								preList.add(j.getBack());
 							}
+							break;
 						} else {
 							j.removeForward(nextNode);
+							break;
 						}
+						//break;
 					}
 				}
 			}
@@ -1567,7 +1571,9 @@ System.out.println("order"+orderList);
 		System.out.println("lastOrder前");
 		ArrayList<String> lastOrder = lastOrder();
 		System.out.println("lastOrder終了");
+		System.out.print(lastOrder);
 		ArrayList<String> finalPlan = planEmbossing(lastOrder);
+		
 
 		System.out.println("\nfinalPlan!!!");
 		for (String str : finalPlan) {
