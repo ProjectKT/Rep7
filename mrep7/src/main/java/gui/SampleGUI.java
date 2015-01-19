@@ -9,7 +9,6 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
-import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -22,6 +21,8 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.border.BevelBorder;
+
+import planner.NOAH;
 
 public class SampleGUI extends JFrame implements ActionListener{
 
@@ -87,6 +88,9 @@ public class SampleGUI extends JFrame implements ActionListener{
 		ButtonGroup group2 = new ButtonGroup();
 		group2.add(rdbtnmntmNewRadioItem_2);
 		group2.add(rdbtnmntmNewRadioItem_3);
+		
+		//NOAHを準備
+		NOAH noah = new NOAH();
 		
 		//グラフィックで表示する
 		JPanel card1 = new JPanel();
