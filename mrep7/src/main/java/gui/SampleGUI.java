@@ -1,25 +1,36 @@
 package gui;
 
-import gui.objects.Box;
-
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Color;
-import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.Box;
 import javax.swing.ButtonGroup;
+import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.border.BevelBorder;
 
-public class SampleGUI extends JFrame{
-	
-	PhysicsPanel physicsPanel = null;
+public class SampleGUI extends JFrame implements ActionListener{
+
+	// 
+	JPanel panel = new JPanel();
+	CardLayout layout = new CardLayout();
+	// 
+	JPanel graphics = new JPanel();
+	CardLayout gra_layout = new CardLayout();
+	// 物体を表示するパネル
+	PhysicsPanel physicsPanel = new PhysicsPanel();
 
 	// コンストラクタ
 	public SampleGUI() {
@@ -47,34 +58,145 @@ public class SampleGUI extends JFrame{
 		mnFile.setForeground(Color.RED);
 		menuBar.add(mnFile);
 		
-		JMenu mnNewMenu = new JMenu("Query");
-		menuBar.add(mnNewMenu);
-		
-		JRadioButtonMenuItem rdbtnmntmNewRadioItem = new JRadioButtonMenuItem("Voise");
-		mnNewMenu.add(rdbtnmntmNewRadioItem);
-		
-		JRadioButtonMenuItem rdbtnmntmNewRadioItem_1 = new JRadioButtonMenuItem("Text");
-		mnNewMenu.add(rdbtnmntmNewRadioItem_1);
-		rdbtnmntmNewRadioItem_1.setSelected(true);
-		
-		ButtonGroup group = new ButtonGroup();
-		group.add(rdbtnmntmNewRadioItem);
-		group.add(rdbtnmntmNewRadioItem_1);
-		
 		JMenu mnNewMenu_1 = new JMenu("State");
 		menuBar.add(mnNewMenu_1);
 		
 		JRadioButtonMenuItem rdbtnmntmNewRadioItem_2 = new JRadioButtonMenuItem("Graphics");
 		rdbtnmntmNewRadioItem_2.setSelected(true);
 		mnNewMenu_1.add(rdbtnmntmNewRadioItem_2);
+		rdbtnmntmNewRadioItem_2.addActionListener(this);
+		rdbtnmntmNewRadioItem_2.setActionCommand("graphics");
+		
 		
 		JRadioButtonMenuItem rdbtnmntmNewRadioItem_3 = new JRadioButtonMenuItem("Text");
 		mnNewMenu_1.add(rdbtnmntmNewRadioItem_3);
+		rdbtnmntmNewRadioItem_3.addActionListener(this);
+		rdbtnmntmNewRadioItem_3.setActionCommand("text");
 		
 		ButtonGroup group2 = new ButtonGroup();
 		group2.add(rdbtnmntmNewRadioItem_2);
 		group2.add(rdbtnmntmNewRadioItem_3);
-
+		
+		//グラフィックで表示する
+		JPanel card1 = new JPanel();
+		card1.setLayout(new GridLayout());
+		//JPanel start1 = new JPanel();//初期状態のエリア
+		//JPanel goal1 = new JPanel();//目標状態のエリア
+		//JTabbedPane tab1 = new JTabbedPane();
+		//tab1.add("start",start1);
+		//tab1.add("goal",goal1);
+		
+		JTabbedPane tab = new JTabbedPane();
+		//初期状態と目標状態を決めるページ
+		JPanel page1 = new JPanel();
+		JPanel start1 = new JPanel();//初期状態の制作パネル
+		start1.add(new JLabel("初期状態"));
+		start1.setBackground(Color.RED);
+		JPanel goal1 = new JPanel();//目標状態の制作パネル
+		goal1.add(new JLabel("目標状態"));
+		goal1.setBackground(Color.GREEN);
+		JPanel ok = new JPanel();//実行ボタンを配置するパネル
+		JButton okButton = new JButton("OK");
+		ok.add(okButton);
+		page1.setLayout(new GridLayout(3,1));
+		page1.add(start1);
+		page1.add(goal1);
+		page1.add(ok);
+		tab.add("select",page1);
+		//実行結果を表示するページ
+		JPanel page2 = new JPanel();
+		graphics.setLayout(gra_layout);
+		JPanel gra_start = new JPanel();//初期状態のエリア
+		gra_start.add(new JLabel("start"));
+		gra_start.setBackground(Color.RED);
+		graphics.add(gra_start);
+		for(int i = 1; i < 13; i++){
+			JPanel gra_process = new JPanel();//過程のエリア
+			String s = Integer.toString(i);
+			if(i % 10 == 1){
+				gra_process.add(new JLabel(s+"st process"));
+			}else if(i % 10 == 2){
+				gra_process.add(new JLabel(s+"nd process"));
+			}else if(i % 10 == 3){
+				gra_process.add(new JLabel(s+"rd process"));
+				//gra_process.setBackground(Color.BLUE);
+			}else{
+				gra_process.add(new JLabel(s+"th process"));
+			}
+			graphics.add(gra_process);
+		}
+		JPanel gra_goal = new JPanel();//目標状態のエリア
+		gra_goal.add(new JLabel("goal"));
+		//gra_goal.setBackground(Color.GREEN);
+		graphics.add(gra_goal);
+		JButton startButton = new JButton("start");//初期状態を表示するボタン
+		startButton.addActionListener(this);
+		startButton.setActionCommand("start");
+		JButton prevButton = new JButton("prev");//前の状態に戻るボタン
+		prevButton.addActionListener(this);
+		prevButton.setActionCommand("prev");
+		JButton nextButton = new JButton("next");//次の状態に進むボタン
+		nextButton.addActionListener(this);
+		nextButton.setActionCommand("next");
+		JButton goalButton = new JButton("goal");//目標状態を表示するボタン
+		goalButton.addActionListener(this);
+		goalButton.setActionCommand("goal");
+		JPanel btnPanel = new JPanel();
+		btnPanel.add(startButton);
+		btnPanel.add(prevButton);
+		btnPanel.add(nextButton);
+		btnPanel.add(goalButton);
+		page2.setLayout(new BorderLayout());
+		page2.add("Center", graphics);
+		page2.add("South", btnPanel);
+		tab.add("answer", page2);
+		card1.add(tab);
+		
+		//card1.add(tab1);
+		
+		
+		//テキストで表示する
+		JPanel card2 = new JPanel();
+		card2.setLayout(new GridLayout(1,4));
+		JTextArea start2 = new JTextArea("aaa");//初期状態のエリア
+		JTextArea goal2 = new JTextArea("bbb");//目標状態のエリア
+		JTextArea answer2 = new JTextArea("ccc");//解答のエリア
+		JTabbedPane tab2 = new JTabbedPane();
+		JTabbedPane tab3 = new JTabbedPane();
+		JTabbedPane tab4 = new JTabbedPane();
+		tab2.add("start",start2);
+		tab3.add("goal",goal2);
+		tab4.add("answer",answer2);
+		JPanel panel1 = new JPanel();
+		JPanel panel2 = new JPanel();
+		JPanel panel3 = new JPanel();
+		JPanel panel4 = new JPanel();
+		JButton button = new JButton("OK");
+		panel1.add(tab2);
+		panel1.add(tab3);
+		panel1.setLayout(new GridLayout());
+		panel2.add(panel3);
+		panel2.add(panel4);
+		panel2.setLayout(new GridLayout());
+		panel3.add(button);
+		panel4.add(tab4);
+		panel4.setLayout(new GridLayout());
+		
+		card2.add(panel1);
+		card2.add(panel2);
+		
+		panel.setLayout(layout);
+		
+		panel.add(card1);
+		panel.add(card2);
+		
+		getContentPane().add(panel,BorderLayout.CENTER);
+		
+		BevelBorder border4 = new BevelBorder(BevelBorder.RAISED);
+		BevelBorder border8 = new BevelBorder(BevelBorder.RAISED);
+		BevelBorder border9 = new BevelBorder(BevelBorder.RAISED);
+		// ---
+		
 		JMenu mnNewMenu_2 = new JMenu("Test");
 		menuBar.add(mnNewMenu_2);
 		
@@ -82,47 +204,32 @@ public class SampleGUI extends JFrame{
 		mntmNewItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				new Box(100, 100).attachTo(physicsPanel);
+//				new Box(100, 100).attachTo(physicsPanel);
 			}
 		});
 		mnNewMenu_2.add(mntmNewItem);
 		
-		JPanel panel = new JPanel();
-		getContentPane().add(panel, BorderLayout.CENTER);
-		panel.setLayout(new BorderLayout(0, 0));
-		
-		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
-		tabbedPane.setPreferredSize(new Dimension(200, 100));
-		panel.add(tabbedPane, BorderLayout.WEST);
-		
-		JPanel panel_1 = new JPanel();
-		tabbedPane.addTab("New tab", null, panel_1, null);
-		
-		JPanel panel_2 = new JPanel();
-		tabbedPane.addTab("New tab", null, panel_2, null);
-		
-		JPanel panel_3 = new JPanel();
-		tabbedPane.addTab("New tab", null, panel_3, null);
-		
-		physicsPanel = new PhysicsPanel();
-		panel.add(physicsPanel, BorderLayout.CENTER);
-		
-		JTabbedPane tabbedPane_2 = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane_2.setPreferredSize(new Dimension(200, 100));
-		panel.add(tabbedPane_2, BorderLayout.EAST);
-		
-		JPanel panel_5 = new JPanel();
-		tabbedPane_2.addTab("New tab", null, panel_5, null);
-		
-		JTabbedPane tabbedPane_3 = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane_3.setPreferredSize(new Dimension(150, 200));
-		panel.add(tabbedPane_3, BorderLayout.SOUTH);
-		
-		JPanel panel_6 = new JPanel();
-		tabbedPane_3.addTab("New tab", null, panel_6, null);
-		
+		//panel.add(physicsPanel, BorderLayout.CENTER);
 	}
+	
+	@Override
+	public void actionPerformed(ActionEvent e) {
+    	String cmd = e.getActionCommand();
+    	if(cmd == "graphics"){
+    		layout.first(panel);
+    	}else if(cmd.equals("start")){
+    		gra_layout.first(graphics);
+    	}else if(cmd.equals("goal")){
+    		gra_layout.last(graphics);
+    	}else if(cmd.equals("next")){
+    		gra_layout.next(graphics);
+    	}else if(cmd.equals("prev")){
+    		gra_layout.previous(graphics);
+    	}else{
+    		layout.last(panel);
+    	}
+        
+    }
 	
 	private void loadData(){
 		

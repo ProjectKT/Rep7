@@ -1259,47 +1259,30 @@ public class NOAHcopy {
 
 					} else if (stacks.size() == 0) {
 						// unstackだけのとき
-						//ここが重要かもしれない？
+						// ここが重要かもしれない？
+						Node nextNode = null;
 						
 						
+						for(int t = 0; t < tList.size();t++){
+							if(tList.get(t).size() > 1){
+								Node checkStack = tList.get(t).get(1);
+								
+								Matcher sMat = p2.matcher(checkStack.getNodeName());
+								
+								if(sMat.find()){
+									
+								}
+								
+							}
+						}
 						
 						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
+
 					} else {
 						// stackだけの時
-						//おそらくこのバターンはありえない
-						//これになる前にクリア条件をみたすはず
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
-						
+						// おそらくこのバターンはありえない
+						// これになる前にクリア条件をみたすはず
+
 					}
 				}
 				nodes.clear();
@@ -1362,16 +1345,17 @@ public class NOAHcopy {
 							+ " from the table");
 					finalPlan.add(str);
 				} else {
-					if(lastType.equals("unstack")){
-					if (lastStr1.equals(sMat.group(1))) {
-						finalPlan.add(str);
+					if (lastType.equals("unstack")) {
+						if (lastStr1.equals(sMat.group(1))) {
+							finalPlan.add(str);
+						} else {
+							finalPlan.add("put " + lastStr1
+									+ " down on the table");
+							finalPlan.add("pick up " + sMat.group(1)
+									+ " from the table");
+							finalPlan.add(str);
+						}
 					} else {
-						finalPlan.add("put " + lastStr1 + " down on the table");
-						finalPlan.add("pick up " + sMat.group(1)
-								+ " from the table");
-						finalPlan.add(str);
-					}
-					}else{
 						finalPlan.add("pick up " + sMat.group(1)
 								+ " from the table");
 						finalPlan.add(str);
@@ -1384,14 +1368,13 @@ public class NOAHcopy {
 			}
 
 			if (rMat.find()) {
-				if(lastType != null){
-				if(lastType.equals("unstack")){
-					finalPlan.add("put " + lastStr1 + " down on the table");
+				if (lastType != null) {
+					if (lastType.equals("unstack")) {
+						finalPlan.add("put " + lastStr1 + " down on the table");
+					}
 				}
-				}
-					finalPlan.add(str);
+				finalPlan.add(str);
 
-				
 				lastType = "unstack";
 				lastStr1 = rMat.group(1);
 				lastStr2 = rMat.group(2);
@@ -1444,13 +1427,13 @@ public class NOAHcopy {
 		}
 
 		int count = 0;
-		
+
 		ArrayList<String> finalPlan = planEmbossing(lastOrder());
-		
+
 		System.out.println("\nfinalPlan!!!");
-		for(String str: finalPlan){
-			System.out.println("count " +(count++)+ " : " +str);
-			
+		for (String str : finalPlan) {
+			System.out.println("count " + (count++) + " : " + str);
+
 		}
 	}
 
