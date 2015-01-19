@@ -1019,7 +1019,7 @@ System.out.println("order"+orderList);
 					}
 
 					if (change != null) {
-						System.out.println("success");
+						System.out.println("success?");
 						while (true) {
 							Node last = change;
 							j.removeForward(change);
@@ -1061,7 +1061,7 @@ System.out.println("order"+orderList);
 
 				}
 			}
-
+			System.out.println("check");
 			System.out.println(orderString);
 
 			// 残ったものの順序決定
@@ -1133,6 +1133,7 @@ System.out.println("order"+orderList);
 						if (!preList.contains(unStack)) {
 							if(unStack.getForward() instanceof JointS){
 								preList.remove(unStack);
+								break;
 							}else{
 								unStack = ((Node) unStack.getForward());
 							}
@@ -1150,6 +1151,8 @@ System.out.println("order"+orderList);
 
 			}
 
+			System.out.println("checkloop");
+			
 			ArrayList<Node> nodes = new ArrayList<Node>();
 			ArrayList<String> words = new ArrayList<String>();
 
@@ -1169,8 +1172,8 @@ System.out.println("order"+orderList);
 				for (ArrayList<Node> list : tList) {
 					System.out.println(list);
 				}
-				System.out.println(words);
-				System.out.println(nodes);
+				System.out.println("words"+words);
+				System.out.println("nodes"+nodes);
 
 				ArrayList<String> over = new ArrayList<String>();
 				ArrayList<String> under = new ArrayList<String>();
@@ -1403,10 +1406,21 @@ System.out.println("order"+orderList);
 						if(action != -1){
 							orderList.add(nodes.get(action));
 							orderString.add(nodes.get(action).getNodeName());
+							
+							Matcher clearMat = p3.matcher(nodes.get(action).getNodeName());
+							if(clearMat.find()){
+								words.add(clearMat.group(2));
+							}
+							
 						}else{
 							for(Node node:nodes){
 								orderList.add(node);
 								orderString.add(node.getNodeName());
+								
+								Matcher clearMat = p3.matcher(node.getNodeName());
+								if(clearMat.find()){
+									words.add(clearMat.group(2));
+								}
 							}
 						}
 
@@ -1444,7 +1458,7 @@ System.out.println("order"+orderList);
 					break;
 				}
 			}
-
+			//ここのwhile loop
 		}
 		System.out.println("lastOrder" + orderList);
 		System.out.println(orderString);
