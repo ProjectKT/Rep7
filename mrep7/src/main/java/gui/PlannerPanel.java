@@ -140,12 +140,15 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		holdingBox = boxMap.get(target);
 		if (holdingBox != null) {
 			final Vec2 pos = holdingBox.body.getWorldCenter();
-			final Vec2 posTo = pos.sub(new Vec2(0, Settings.BoxSize.y/2));
+			final Vec2 posTo = new Vec2(pos);
+			posTo.y = Settings.HomePosition.y;
+			robot.moveTo(posTo);
+			posTo.y = pos.y;
 			robot.moveTo(posTo);
 			robot.grab();
+			posTo.y = Settings.HomePosition.y;
+			robot.moveTo(posTo);
 		}
-		
-		robot.moveTo(Settings.HomePosition);
 	}
 
 	@Override
@@ -160,13 +163,19 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			Box boxOn = boxMap.get(to);
 			if (boxOn != null) {
 				Vec2 posOn = boxOn.body.getWorldCenter();
-				pos.set(posOn).subLocal(new Vec2(0, Settings.BoxSize.y*2f));
+				pos.set(posOn).subLocal(new Vec2(0, Settings.BoxSize.y*1.5f));
 			}
 		}
 		
-		robot.moveTo(pos);
+		final Vec2 posTo = new Vec2(pos);
+		posTo.y = Settings.HomePosition.y;
+		robot.moveTo(posTo);
+		posTo.y = pos.y;
+		robot.moveTo(posTo);
 		robot.release();
-		robot.moveTo(Settings.HomePosition);
+		posTo.y = Settings.HomePosition.y;
+		robot.moveTo(posTo);
+		holdingBox = null;
 	}
 	
 	public List<String> getStates() {
@@ -283,26 +292,6 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		@Override
 		public void keyPressed(KeyEvent e) {
 			switch (e.getKeyCode()) {
-			case KeyEvent.VK_G: {
-				try { robot.moveTo(new Vec2(0,0));; } catch (Exception e0) { e0.printStackTrace(); }
-				e.consume();
-				break;
-			}
-			case KeyEvent.VK_R: {
-				try { robot.release(); } catch (Exception e0) { e0.printStackTrace(); }
-				e.consume();
-				break;
-			}
-			case KeyEvent.VK_UP: {
-				robot.higher();
-				e.consume();
-				break;
-			}
-			case KeyEvent.VK_DOWN: {
-				robot.lower();
-				e.consume();
-				break;
-			}
 			}
 		}
 	};
@@ -337,8 +326,6 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		boolean isGrabbing;
 
 		private static final float PALM_WIDTH = 1.40f;
-		private final Vec2 vLeft = new Vec2(-1.0f, 0);
-		private final Vec2 vUp = new Vec2(0, -1.0f);
 		
 		public Robot() {
 			initialize();
@@ -431,14 +418,6 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			}
 		}
 		
-		public void higher() {
-			palm.setLinearVelocity(vUp.mul(1).addLocal(palm.getLinearVelocity()));
-		}
-		
-		public void lower() {
-			palm.setLinearVelocity(vUp.mul(-1).addLocal(palm.getLinearVelocity()));
-		}
-		
 		public void moveTo(final Vec2 to) throws InterruptedException {
 			System.out.println("robot is moving to "+to);
 			Thread t = new Thread(new Runnable() {
@@ -447,8 +426,8 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 					try {
 						Vec2 diff = to.sub(palm.getWorldCenter());
 						while (0.01f < diff.length()) {
-							palm.setLinearVelocity(diff.mulLocal(10.0f));
-							Thread.sleep(100);
+							palm.setLinearVelocity(diff.mulLocal(20.0f));
+							Thread.sleep(10);
 							diff = to.sub(palm.getWorldCenter());
 						}
 					} catch (InterruptedException e) {
@@ -500,13 +479,15 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			p.putBox("2", "1");
 			p.putBox("3", null);
 			
-			Thread.sleep(1000);
-			
-			p.pickup("1");
-			
-			Thread.sleep(1000);
-			
+			Thread.sleep(500);
+			p.pickup("2");
+			Thread.sleep(500);
 			p.place("3");
+			Thread.sleep(500);
+			p.pickup("1");
+			Thread.sleep(500);
+			p.place("2");
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

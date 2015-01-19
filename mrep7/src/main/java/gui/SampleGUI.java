@@ -68,7 +68,7 @@ public class SampleGUI extends JFrame implements ActionListener{
 	// 初期化
 	private void initialize() {		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(10,10,1500,1000);
+		setBounds(10,10,500,600);
 		setTitle("SampleGUI");
 		getContentPane().setLayout(new BorderLayout(0, 0));
 		
@@ -262,7 +262,6 @@ public class SampleGUI extends JFrame implements ActionListener{
 
 		for (String object : objects) {
 			System.out.println("objects" + object);
-			startPanel.putBox(object, null);
 			startStart.add("clear " + object);
 		}
 		 
@@ -276,50 +275,26 @@ public class SampleGUI extends JFrame implements ActionListener{
 
 		Pattern p1 = Pattern.compile("pick up (.*) from the table");
 		Pattern p2 = Pattern.compile("Place (.*) on (.*)");
-		Pattern p3 = Pattern.compile("remove (.*) from on top (.*)");
-		Pattern p4 = Pattern.compile("put (.*) down on the table");
+		ArrayList<String> exist = new ArrayList<String>();
 		for (String operator : noah.getResult()) {
 			System.out.println(operator);
 			Matcher m1 = p1.matcher(operator);
 			Matcher m2 = p2.matcher(operator);
-			Matcher m3 = p3.matcher(operator);
-			Matcher m4 = p4.matcher(operator);
 
 			if (m1.find()) {
-				try {
-					startPanel.pickup(m1.group(1));
-				} catch (InterruptedException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
+					exist.add(m1.group(1));
 			}
 
 			if (m2.find()) {
-				try {
-					startPanel.place(m2.group(2));
-				} catch (InterruptedException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
+
+					if(!exist.contains(m2.group(2))){
+						startPanel.putBox(m2.group(2), null);
+					}
+					startPanel.putBox(m2.group(1),m2.group(2));
+
 			}
 
-			if (m3.find()) {
-				try {
-					startPanel.pickup(m3.group(1));
-				} catch (InterruptedException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-			}
 
-			if (m4.find()) {
-				try {
-					startPanel.place(null);
-				} catch (InterruptedException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-			}
 
 		}
 	}

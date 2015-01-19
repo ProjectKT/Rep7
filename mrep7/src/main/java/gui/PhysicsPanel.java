@@ -65,7 +65,7 @@ public class PhysicsPanel extends JPanel {
 		// Tree を描画するか
 		boolean drawTree = false;
 		// draw stats
-		public boolean drawStats = true;
+		public boolean drawStats = false;
 		
 		boolean allowSleep = false;
 		public boolean enableWarmStarting = false;
