@@ -44,6 +44,8 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		}};
 		// 箱の名前の描画色
 		Color BoxNameColor = new Color(1.0f, 1.0f, 1.0f);
+		// 地面の大きさ
+		float GroundLength = 1000.0f;
 		// ホームポジション
 		Vec2 HomePosition = new Vec2(-BoxSize.x, -10.0f);
 		// 積む位置
@@ -86,7 +88,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			fd.density = 0.0f;
 			fd.friction = 0.6f;
 
-			shape.set(new Vec2(-20.0f, 0.0f), new Vec2(20.0f, 0.0f));
+			shape.set(new Vec2(-Settings.GroundLength/2, 0.0f), new Vec2(Settings.GroundLength/2, 0.0f));
 			ground.createFixture(fd);
 		}
 
@@ -99,7 +101,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 	@Override
 	public void putBox(final String name, String on) {
 		final int i = boxMap.size();
-		final Vec2 pos = new Vec2(Settings.BoxSize.x * i, -Settings.BoxSize.y/2);
+		final Vec2 pos = new Vec2(Settings.BoxSize.x * 1.5f * i, -Settings.BoxSize.y/2);
 		
 		// 下敷きのオブジェクトを取得
 		if (on != null && !on.isEmpty()) {

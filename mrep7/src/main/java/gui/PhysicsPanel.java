@@ -213,7 +213,7 @@ public class PhysicsPanel extends JPanel {
 	 */
 	public boolean render() {
 		if (dbImage == null) {
-			System.out.println("creating dbImage");
+//			System.out.println("creating dbImage");
 			if (panelWidth <= 0 || panelHeight <= 0) {
 				return false;
 			}
