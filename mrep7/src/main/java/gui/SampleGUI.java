@@ -384,18 +384,17 @@ public class SampleGUI extends JFrame implements ActionListener{
     	}else if(cmd.equals("prev")){
     		gra_layout.previous(graphics);
     	}else if(cmd.equals("OK")){
-    		
+    		startList.clear();
     		String strs1[] = txtStart.getText().split("\n");
     		for (int i = 0; i < strs1.length; i++) {
     		    startList.add(strs1[i]);
     		}
+    		goalList.clear();
     		String strs2[] = txtGoal.getText().split("\n");
     		for (int i = 0; i < strs2.length; i++) {
     		    goalList.add(strs2[i]);
     		}
     		NOAH noah = new NOAH(goalList,startList);
-    		noah.setCurrentState(startList);
-    		noah.setGoalState(goalList);
     		noah.planning();
     		ansList = noah.getResult();
     		for(int i=0;i < ansList.size();i++)
