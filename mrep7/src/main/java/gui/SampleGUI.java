@@ -57,6 +57,7 @@ public class SampleGUI extends JFrame implements ActionListener{
 		// 初期状態・終了状態を設定
 		initPlanner();
 		initStartState();
+		initGoalState();
 		
 		// TODO Planner の出力を元に PlannerPanel のコマンドを呼ぶ操作パネル、レイアウトの作成
 		// 1. 初期状態、目標状態を入れるための入力コンポーネントを用意する
@@ -257,6 +258,7 @@ public class SampleGUI extends JFrame implements ActionListener{
 		objects = noah.getObjects();
 	}
 	
+	
 	private void initStartState() {
 		ArrayList<String> startStart = new ArrayList<String>();
 
@@ -305,7 +307,7 @@ public class SampleGUI extends JFrame implements ActionListener{
 		
 		for(String object : objects){
 			System.out.println("objects"+object);
-			goalPanel.putBox(object, null);
+			//goalPanel.putBox(object, null);
 			goalGoal.add("clear " +object);
 		}
 
@@ -316,8 +318,29 @@ public class SampleGUI extends JFrame implements ActionListener{
 		System.out.println("goalList"+goalList);
 		noah.planning();
 		
-		for(String operator : noah.getResult()){
-			
+		Pattern p1 = Pattern.compile("pick up (.*) from the table");
+		Pattern p2 = Pattern.compile("Place (.*) on (.*)");
+		ArrayList<String> exist = new ArrayList<String>();
+		for (String operator : noah.getResult()) {
+			System.out.println(operator);
+			Matcher m1 = p1.matcher(operator);
+			Matcher m2 = p2.matcher(operator);
+
+			if (m1.find()) {
+					exist.add(m1.group(1));
+			}
+
+			if (m2.find()) {
+
+					if(!exist.contains(m2.group(2))){
+						goalPanel.putBox(m2.group(2), null);
+					}
+					goalPanel.putBox(m2.group(1),m2.group(2));
+
+			}
+
+
+
 		}
 	}
 	
