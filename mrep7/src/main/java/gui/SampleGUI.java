@@ -3,6 +3,7 @@ package gui;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
+import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -19,9 +20,11 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.border.BevelBorder;
+import javax.swing.border.EtchedBorder;
 
 import planner.NOAH;
 
@@ -45,6 +48,11 @@ public class SampleGUI extends JFrame implements ActionListener{
 	ArrayList<String> startList = new ArrayList<String>();
 	ArrayList<String> goalList = new ArrayList<String>();
 	ArrayList<String> objects = new ArrayList<String>();
+	ArrayList<String> ansList = new ArrayList<String>();
+	
+	JTextArea txtStart = new JTextArea("");//初期状態のエリア
+	JTextArea txtGoal = new JTextArea("");//目標状態のエリア
+	JTextArea txtAnswer = new JTextArea("");//解答のエリア
 	
 	// コンストラクタ
 	public SampleGUI() {
@@ -185,48 +193,66 @@ public class SampleGUI extends JFrame implements ActionListener{
 		
 		// --- Card2: テキストで表示する
 		JPanel card2 = new JPanel();
-		card2.setLayout(new GridLayout(1,4));
+		card2.setLayout(new GridLayout());
 		
-		String startText="aaa\naaa\naaa";
-		String goalText="";
+		EtchedBorder border = new EtchedBorder();
 		
-		JTextArea start2 = new JTextArea(startText);//初期状態のエリア
-		JTextArea goal2 = new JTextArea(goalText);//目標状態のエリア
-		JTextArea answer2 = new JTextArea("ccc");//解答のエリア
+
 		
+		//
 		JTabbedPane tab2 = new JTabbedPane();
-		tab2.add("start",start2);
+		JPanel sPanel = new JPanel();//初期状態等の変更ページ
+		sPanel.setLayout(new GridLayout());
+		JPanel aPanel = new JPanel();//解答ページ
+		aPanel.setLayout(new BorderLayout());
 		
-		JTabbedPane tab3 = new JTabbedPane();
-		tab3.add("goal",goal2);
+		tab2.add("select",sPanel);
+		tab2.add("answer",aPanel);
 		
-		JTabbedPane tab4 = new JTabbedPane();
-		tab4.add("answer",answer2);
+		
+		JPanel startPanel = new JPanel();//初期状態エリア用のパネル
+		JScrollPane scroll1 = new JScrollPane(txtStart);
+		startPanel.setLayout(new BorderLayout());
+		startPanel.add(new JLabel("start"),BorderLayout.NORTH);
+		startPanel.add(scroll1,BorderLayout.CENTER);
+		startPanel.setBorder(border);
+		
+		JPanel goalPanel = new JPanel();//目標状態エリア用のパネル
+		JScrollPane scroll2 = new JScrollPane(txtGoal);
+		goalPanel.setLayout(new BorderLayout());
+		goalPanel.add(new JLabel("goal"),BorderLayout.NORTH);
+		goalPanel.add(scroll2,BorderLayout.CENTER);
+		goalPanel.setBorder(border);
+		
+		JPanel buttonPanel = new JPanel();//ボタン用のパネル
+		buttonPanel.setLayout(new FlowLayout());
+		JButton OK = new JButton("ok");
+		OK.addActionListener(this);
+		OK.setActionCommand("OK");
+		JButton RESET = new JButton("reset");
+		RESET.addActionListener(this);
+		RESET.setActionCommand("RESET");
+		JButton GtoS = new JButton("GtoS");
+		GtoS.addActionListener(this);
+		GtoS.setActionCommand("GtoS");
+		
+		buttonPanel.add(OK);
+		buttonPanel.add(RESET);
+		buttonPanel.add(GtoS);
+		buttonPanel.setBorder(border);
 
-		JButton button = new JButton("OK");
+		JPanel answerPanel = new JPanel();//目標状態エリア用のパネル
+		JScrollPane scroll3 = new JScrollPane(txtAnswer);
+		answerPanel.setLayout(new BorderLayout());
+		answerPanel.add(scroll3,BorderLayout.CENTER);
+		answerPanel.setBorder(border);
 		
-		JPanel panel1 = new JPanel(new GridLayout());
-		panel1.add(tab2);
-		panel1.add(tab3);
-
-		JPanel panel4 = new JPanel();
-		panel4.add(tab4);
+		sPanel.add(startPanel);
+		sPanel.add(goalPanel);
+		sPanel.add(buttonPanel);
+		aPanel.add(answerPanel);
 		
-		JPanel panel3 = new JPanel(new GridLayout());
-		panel3.add(button);
-		
-		JPanel panel2 = new JPanel(new GridLayout());
-		panel2.add(panel3);
-		panel2.add(panel4);
-		
-		card2.add(panel1);
-		card2.add(panel2);
-		
-		String strs[] = startText.split("\n");
-		for (int i = 0; i < strs.length; i++) {
-		    startList.add(strs[i]);
-		}
-		
+		card2.add(tab2);
 		
 		//
 		panel.setLayout(layout);
@@ -336,10 +362,34 @@ public class SampleGUI extends JFrame implements ActionListener{
     		gra_layout.previous(graphics);
     	}else if(cmd.equals("OK")){
     		
-    	}
-    	else{
+    		String strs1[] = txtStart.getText().split("\n");
+    		for (int i = 0; i < strs1.length; i++) {
+    		    startList.add(strs1[i]);
+    		}
+    		String strs2[] = txtGoal.getText().split("\n");
+    		for (int i = 0; i < strs2.length; i++) {
+    		    goalList.add(strs2[i]);
+    		}
+    		NOAH noah = new NOAH(goalList,startList);
+    		noah.setCurrentState(startList);
+    		noah.setGoalState(goalList);
+    		noah.planning();
+    		ansList = noah.getResult();
+    		for(int i=0;i < ansList.size();i++)
+    		txtAnswer.append(ansList.get(i)+"\n");
+    		
+    	}else if(cmd.equals("RESET")){
+    		txtStart.setText("");
+    		txtGoal.setText("");
+    		txtAnswer.setText("");
+    		
+    	}else if(cmd.equals("GtoS")){
+    		txtStart.setText(txtGoal.getText());
+    		txtGoal.setText("");
+    	}else if(cmd.equals("text")){
     		layout.last(panel);
     	}
+
         
     }
 	

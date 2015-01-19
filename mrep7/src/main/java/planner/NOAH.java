@@ -57,7 +57,7 @@ public class NOAH {
 	 * @param goalState　ゴール状態
 	 * @param initialState　初期状態
 	 */
-	NOAH(ArrayList<String> goalState, ArrayList<String> initialState) {
+	public NOAH(ArrayList<String> goalState, ArrayList<String> initialState) {
 		nPara = new NOAHParameters(initOperators(), goalState, initialState);
 	}
 
