@@ -180,15 +180,16 @@ public class NOAH {
 		
 		goalList.add("A on 1");
 		goalList.add("clear 4");
-		goalList.add("clear 7");
+		goalList.add("clear 8");
 		goalList.add("clear 13");
+		goalList.add("clear 9");
 
 		goalList.add("1 on 2");
 		goalList.add("2 on 3");
 		goalList.add("4 on 5");
 		goalList.add("5 on 6");
-		goalList.add("7 on 8");
-		goalList.add("8 on 9");
+		goalList.add("7 on A");
+		goalList.add("8 on 7");
 		goalList.add("13 on 10");
 		goalList.add("10 on 11");
 		goalList.add("11 on 12");
@@ -367,8 +368,13 @@ public class NOAH {
 		JointJ j = new JointJ();
 		Node goal = new Node("Goal", 0, j, null);
 		j.changeBack(goal);
+		
+		ArrayList<String> clearObjects = new ArrayList<String>();
+		
 		// ゴール状態の数分ループ
 		Pattern p = Pattern.compile("(.*) on (.*)");
+		Pattern p2 = Pattern.compile("ontable (.*)");
+		Pattern p3 = Pattern.compile("clear (.*)");
 		for (String str : goalState) {
 			Matcher m = p.matcher(str);
 			if (m.find()) {
@@ -377,6 +383,22 @@ public class NOAH {
 				s.addBack(newNode);
 				j.addForward(newNode);
 			}
+			Matcher m3 = p3.matcher(str);
+			if(m3.find()){
+				clearObjects.add(m3.group(1));
+			}
+		}
+		
+		for(String str:goalState){
+		Matcher m2 = p2.matcher(str);
+		if(m2.find()){
+			if(clearObjects.contains(m2.group(1))){
+				Node newNode = new Node(str, nodecount++, s, j);
+				plan.add(newNode);
+				s.addBack(newNode);
+				j.addForward(newNode);
+			}
+		}
 		}
 		ss.add(s);
 		js.add(j);
