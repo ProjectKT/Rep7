@@ -95,7 +95,7 @@ public class PhysicsPanel extends JPanel {
 	private final LinkedList<String> textList = new LinkedList<String>();
 	private final ArrayList<String> statsList = new ArrayList<String>();
 	
-	// 再生成しないための作業用オブジェクト
+	// 再生成しないための作業用変数
 	private int panelWidth, panelHeight;
 	private Vec2 p1 = new Vec2();
 	

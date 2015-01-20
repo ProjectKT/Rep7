@@ -72,8 +72,6 @@ public class SampleGUI extends JFrame implements ActionListener{
 		
 		// 初期状態・終了状態を設定
 		initPlanner();
-		initPlannerPanel(startList, startPanel);
-		initPlannerPanel(goalList, goalPanel);
 		
 		// TODO Planner の出力を元に PlannerPanel のコマンドを呼ぶ操作パネル、レイアウトの作成
 		// 1. 初期状態、目標状態を入れるための入力コンポーネントを用意する
@@ -146,7 +144,7 @@ public class SampleGUI extends JFrame implements ActionListener{
 		page1.add(BorderLayout.CENTER, page1_panels);
 
 		startPanel = new PlannerPanel();
-		startPanel.enableScrollScreen(false);
+//		startPanel.enableScrollScreen(false);
 		startPanel.setStatesChangeListener(new StatesChangeListener() {
 			@Override
 			public void onChangeStates(List<String> states) {
@@ -162,7 +160,7 @@ public class SampleGUI extends JFrame implements ActionListener{
 		page1_panels.add(start);
 		
 		goalPanel = new PlannerPanel();
-		goalPanel.enableScrollScreen(false);
+//		goalPanel.enableScrollScreen(false);
 		goalPanel.setStatesChangeListener(new StatesChangeListener() {
 			@Override
 			public void onChangeStates(List<String> states) {
@@ -321,14 +319,26 @@ public class SampleGUI extends JFrame implements ActionListener{
 	private void initPlanner() {
 		//NOAHを準備
 		noah = new NOAH();
+		
+		// 初期状態の準備
+		final ArrayList<String> startList = new ArrayList<String>();
 		for (String start : noah.getCurrentState()) {
 			startList.add(start);
 		}
 		Collections.sort(startList);
+		initPlannerPanel(startList, startPanel);
+		this.startList.clear();
+		this.startList.addAll(startList);
+		
+		// 目標状態の準備
+		final ArrayList<String> goalList = new ArrayList<String>();
 		for (String goal : noah.getGoalState()) {
 			goalList.add(goal);
 		}
 		Collections.sort(goalList);
+		initPlannerPanel(goalList, goalPanel);
+		this.goalList.clear();
+		this.goalList.addAll(goalList);
 		
 		System.out.println("startList"+startList);
 		System.out.println("goalList"+goalList);
@@ -339,50 +349,14 @@ public class SampleGUI extends JFrame implements ActionListener{
 	 * PlannerPanel の状態を初期化する
 	 * @param states 初期化する状態
 	 * @param panel パネル
+	 * @throws InterruptedException 
 	 */
 	private synchronized void initPlannerPanel(ArrayList<String> states, PlannerPanel panel) {
-		final ArrayList<String> onTableStates = new ArrayList<String>();
-		
-		for(String object : objects){
-			onTableStates.add("clear " +object);
+		try {
+			panel.initBoxes(states);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
-		
-		ArrayList<String> onlyClear = new ArrayList<String>();
-		onlyClear.addAll(objects);
-		
-		noah.setCurrentState(onTableStates);
-		noah.setGoalState(states);
-		noah.planning();
-		final ArrayList<String> plan = noah.getResult();
-		
-		Pattern p1 = Pattern.compile("pick up (.*) from the table");
-		Pattern p2 = Pattern.compile("Place (.*) on (.*)");
-		ArrayList<String> exist = new ArrayList<String>();
-		
-		try { panel.clear(); } catch (InterruptedException e) { e.printStackTrace(); }
-		try { panel.stopAnimating(); } catch (InterruptedException e) { e.printStackTrace(); }
-		for (String operator : plan) {
-			Matcher m1 = p1.matcher(operator);
-			Matcher m2 = p2.matcher(operator);
-
-			if (m1.find()) {
-				exist.add(m1.group(1));
-			}
-
-			if (m2.find()) {
-				onlyClear.remove(m2.group(2));
-				if(!exist.contains(m2.group(2))){
-					panel.putBox(m2.group(2), null);
-				}
-				panel.putBox(m2.group(1),m2.group(2));
-				onlyClear.remove(m2.group(1));
-			}
-		}
-		for(String str : onlyClear){
-			panel.putBox(str, null);
-		}
-
-		try { panel.startAnimating(); } catch (InterruptedException e) { e.printStackTrace(); }
 	}
 	
 	private void textsToStates() {
@@ -555,6 +529,7 @@ public class SampleGUI extends JFrame implements ActionListener{
 		private void stop() throws InterruptedException {
 			if (th != null) {
 				loop = false;
+				th.interrupt();
 				th.join();
 				th = null;
 			}
@@ -576,8 +551,7 @@ public class SampleGUI extends JFrame implements ActionListener{
 					execute(op);
 				}
 			} catch (InterruptedException e) {
-				System.out.println("An error occured while executing the operation: "+op);
-				e.printStackTrace();
+				System.out.println("PlannerStepExecutor: thread interrupted.");
 			}
 			th = null;
 		}

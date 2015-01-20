@@ -2,8 +2,12 @@ package gui;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -11,6 +15,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.JFrame;
 
@@ -18,7 +24,9 @@ import org.jbox2d.callbacks.ContactListener;
 import org.jbox2d.collision.Manifold;
 import org.jbox2d.collision.shapes.EdgeShape;
 import org.jbox2d.collision.shapes.PolygonShape;
-import org.jbox2d.collision.shapes.Shape;
+import org.jbox2d.common.MathUtils;
+import org.jbox2d.common.Rot;
+import org.jbox2d.common.Transform;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.BodyDef;
@@ -32,26 +40,31 @@ import org.jbox2d.dynamics.joints.RevoluteJointDef;
 public class PlannerPanel extends PhysicsPanel implements PlannerController {
 	
 	interface Settings {
-		// 箱の大きさ
-		Vec2 BoxSize = new Vec2(1.0f, 1.0f);
-		// 箱の形状
-		PolygonShape BoxShape = new PolygonShape() {{
-			setAsBox(BoxSize.x/2, BoxSize.y/2);
-		}};
-		// 箱の名前の描画色
-		Color BoxNameColor = new Color(1.0f, 1.0f, 1.0f);
-		// ロボットの形
-		Shape RobotArmShape = new PolygonShape() {{
-			setAsBox(BoxSize.x/2 + 0.5f, 0.2f);
-		}};
+		// テーブルの設定
+		interface Table {
+			// 表面の大きさ
+			Vec2 surfaceSize = new Vec2(100.0f, 0.5f);
+			Vec2 legLeftSize = new Vec2(0.5f, 20.0f);
+			Vec2 legRightSize = new Vec2(0.5f, 20.0f);
+			float density = 1.0f;
+		}
+		// 箱の設定
+		interface Box {
+			// 箱の大きさ
+			Vec2 size = new Vec2(1.0f, 1.0f);
+			// 箱の形状
+			PolygonShape shape = new PolygonShape() {{
+				setAsBox(size.x/2, size.y/2);
+			}};
+			// 箱の名前の描画色
+			Color nameColor = new Color(1.0f, 1.0f, 1.0f);
+		}
 		// ロボットの速度
 		float RobotOperationSpeed = 20.0f;
-		// 地面の大きさ
-		float GroundLength = 1000.0f;
 		// ホームポジション
-		Vec2 HomePosition = new Vec2(-BoxSize.x*2.5f, -10.0f);
+		Vec2 HomePosition = new Vec2(-Box.size.x*2.5f, -10.0f);
 		// 積む位置
-		Vec2 PilePosition = new Vec2(-BoxSize.x, -BoxSize.y/2);
+		Vec2 PilePosition = new Vec2(-Box.size.x, -Box.size.y/2);
 	}
 	
 	// テーブルのボディ
@@ -71,10 +84,12 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 	// 状態の変化リスナー
 	private StatesChangeListener statesChangeListener = null;
 	// 状態の表示フラグ
-	private boolean showStates = false;
+	private boolean showStates = true; //FIXME
 	// 描画前に world に対して行う操作のキュー
 	private List<Runnable> manipulations = Collections.synchronizedList(new LinkedList<Runnable>());
 	
+	// 再生成しないための変数
+	private int panelWidth, panelHeight;
 
 	public PlannerPanel() {
 		initialize();
@@ -88,27 +103,79 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 
 	private void initialize() {
 		addContactListener(statesWatcher);
+		addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentResized(ComponentEvent e) {
+				// update
+				panelWidth = getWidth();
+				panelHeight = getHeight();
+			}
+		});
 		
-		// table の形を作る
-		table = null;
+		// ground を作る
 		{
 			BodyDef bd = new BodyDef();
+			bd.position.x = 0;
+			bd.position.y = Settings.Table.surfaceSize.y
+					+MathUtils.max(Settings.Table.legLeftSize.y,Settings.Table.legRightSize.y);
+			
+			EdgeShape shape = new EdgeShape();
+			shape.set(new Vec2(-500.0f, 0), new Vec2(500.0f, 0));
+			
+			Body ground = createBody(bd);
+			ground.createFixture(shape, 0);
+		}
+		
+		// table を作る
+		table = null;
+		{	
+			BodyDef bd = new BodyDef();
+			bd.position.x = 0;
+			bd.position.y = Settings.Table.surfaceSize.y/2;
+			bd.type = BodyType.DYNAMIC;
 			table = createBody(bd);
 
-			EdgeShape shape = new EdgeShape();
+			// --- 表面
+			PolygonShape surfaceShape = new PolygonShape();
+			surfaceShape.setAsBox(Settings.Table.surfaceSize.x/2, Settings.Table.surfaceSize.y/2);
 
-			FixtureDef fd = new FixtureDef();
-			fd.shape = shape;
-			fd.density = 0.0f;
-			fd.friction = 0.6f;
+			table.createFixture(surfaceShape, Settings.Table.density);
+			
+			// --- 足
+			Transform xfLeft = new Transform();
+			xfLeft.p.x = Settings.Table.surfaceSize.x*(-0.8f)/2;
+			xfLeft.p.y = Settings.Table.surfaceSize.y/2+Settings.Table.legLeftSize.y/2;
+			
+			Vec2 vertices[] = new Vec2[4];
+			vertices[0] = Transform.mul(xfLeft, new Vec2(-Settings.Table.legLeftSize.x/2, -Settings.Table.legLeftSize.y/2));
+			vertices[1] = Transform.mul(xfLeft, new Vec2( Settings.Table.legLeftSize.x/2, -Settings.Table.legLeftSize.y/2));
+			vertices[2] = Transform.mul(xfLeft, new Vec2( Settings.Table.legLeftSize.x/2,  Settings.Table.legLeftSize.y/2));
+			vertices[3] = Transform.mul(xfLeft, new Vec2(-Settings.Table.legLeftSize.x/2,  Settings.Table.legLeftSize.y/2));
+			PolygonShape legLeftShape = new PolygonShape();
+			legLeftShape.set(vertices, 4);
+			
+			table.createFixture(legLeftShape, Settings.Table.density);
 
-			shape.set(new Vec2(-Settings.GroundLength/2, 0.0f), new Vec2(Settings.GroundLength/2, 0.0f));
-			table.createFixture(fd);
+			Transform xfRight = new Transform();
+			xfRight.p.x = Settings.Table.surfaceSize.x*(0.8f)/2;
+			xfRight.p.y = Settings.Table.surfaceSize.y/2+Settings.Table.legRightSize.y/2;
+
+			vertices[0] = Transform.mul(xfRight, new Vec2(-Settings.Table.legRightSize.x/2, -Settings.Table.legRightSize.y/2));
+			vertices[1] = Transform.mul(xfRight, new Vec2( Settings.Table.legRightSize.x/2, -Settings.Table.legRightSize.y/2));
+			vertices[2] = Transform.mul(xfRight, new Vec2( Settings.Table.legRightSize.x/2,  Settings.Table.legRightSize.y/2));
+			vertices[3] = Transform.mul(xfRight, new Vec2(-Settings.Table.legRightSize.x/2,  Settings.Table.legRightSize.y/2));
+			PolygonShape legRightShape = new PolygonShape();
+			legRightShape.set(vertices, 4);
+			
+			table.createFixture(legRightShape, Settings.Table.density);
 		}
 		tablePtr = 0;
 
 		// Robot を作る
 		robot = new Robot();
+		
+		holdingBox = null;
+		states.clear();
 	}
 	
 	private void updateStates() {
@@ -187,7 +254,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			highestBoxY = box.body.getWorldCenter().y;
 			
 			// 少し余裕を持ってホームポジションを highestBox より上の位置に変える
-			Settings.HomePosition.y = highestBoxY-Settings.BoxSize.y*2.0f;
+			Settings.HomePosition.y = highestBoxY-Settings.Box.size.y*2.0f;
 		}
 	}
 	
@@ -196,6 +263,74 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 	}
 	
 	// --- interface implementation ---
+	
+	@Override
+	public void initBoxes(List<String> states) throws InterruptedException {
+		// ---
+		class Processor {
+			final HashMap<String,String> map;
+			final ArrayList<String> keys;
+			public Processor(List<String> states) {
+				System.out.println(states);
+				final Pattern p1 = Pattern.compile("ontable (.*)");
+				final Pattern p2 = Pattern.compile("(.*) on (.*)");
+				final HashMap<String,String> map = new HashMap<String,String>();
+				final ArrayList<String> keys = new ArrayList<String>();
+				for (String s : states) {
+					Matcher m;
+					
+					m = p1.matcher(s);
+					if (m.find()) {
+						final String s1 = m.group(1);
+						map.put(s1, null);
+						continue;
+					}
+					
+					m = p2.matcher(s);
+					if (m.find()) {
+						final String s1 = m.group(1);
+						final String s2 = m.group(2);
+						map.put(s1, s2);
+						if (!map.containsKey(s2)) {
+							map.put(s2, null);
+						}
+					}
+				}
+				keys.addAll(map.keySet());
+				this.map = map;
+				this.keys = keys;
+			}
+			public void process() {
+				while (0 < keys.size()) {
+					final String key = keys.get(0);
+					process(key);
+				}
+			}
+			private void process(String key) {
+				if (!keys.contains(key)) return;
+				
+				final String on = map.get(key);
+				if (on == null) {
+					putBox(key, null);
+				} else {
+					process(on);
+					putBox(key, on);
+				}
+				keys.remove(key);
+			}
+		}
+		// ---
+
+		final boolean animate = isAnimating();
+		stopAnimating();
+		
+		clear();
+		new Processor(states).process();
+		
+		if (animate) {
+			startAnimating();
+		}
+	}
 
 	@Override
 	public void putBox(final String name, String on) {
@@ -204,10 +339,10 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		
 		if (onBox == null) {
 			final int n = nextTable();
-			pos.set(Settings.BoxSize.x * 2.5f * n, -Settings.BoxSize.y/2);
+			pos.set(Settings.Box.size.x * 2.5f * n, -Settings.Box.size.y/2);
 		} else {
 			pos.set(onBox.body.getWorldCenter());
-			pos.addLocal(0, -Settings.BoxSize.y);
+			pos.addLocal(0, -Settings.Box.size.y);
 		}
 		
 		Box box = boxMap.get(name);
@@ -258,7 +393,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			// 箱の中心位置
 			final Vec2 pos = holdingBox.body.getWorldCenter();
 			// ロボット手のひらの移動先
-			final Vec2 posTo = new Vec2(pos).addLocal(0, -Settings.BoxSize.y/2);
+			final Vec2 posTo = new Vec2(pos).addLocal(0, -Settings.Box.size.y/2);
 			
 			// 他の箱にぶつけないように手のひらを移動する
 			posTo.y = Settings.HomePosition.y;
@@ -282,10 +417,10 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		
 		if (onBox == null) {
 			final int n = nextTable();
-			pos.set(Settings.BoxSize.x * 2.5f * n, -Settings.BoxSize.y);
+			pos.set(Settings.Box.size.x * 2.5f * n, -Settings.Box.size.y);
 		} else {
 			pos.set(onBox.body.getWorldCenter());
-			pos.addLocal(0, -Settings.BoxSize.y*1.5f);
+			pos.addLocal(0, -Settings.Box.size.y*1.5f);
 		}
 		
 		final Vec2 posTo = new Vec2(pos);
@@ -296,11 +431,10 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		posTo.y = pos.y;
 		robot.moveTo(posTo);
 		robot.release();
-		updateHighestBoxY(holdingBox);
-		
 		posTo.y = Settings.HomePosition.y;
 		robot.moveTo(posTo);
-		
+
+		updateHighestBoxY(holdingBox);
 		holdingBox = null;
 	}
 	
@@ -383,9 +517,9 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		synchronized (boxMap) {
 			final Vec2 screenSize = new Vec2();
 			final Vec2 screenCenter = new Vec2();
-			camera.transform.getWorldVectorToScreen(Settings.BoxSize, screenSize);
+			camera.transform.getWorldVectorToScreen(Settings.Box.size, screenSize);
 			g.setFont(getFont().deriveFont(screenSize.y));
-			g.setColor(Settings.BoxNameColor);
+			g.setColor(Settings.Box.nameColor);
 			
 			Iterator<Entry<String, Box>> it = boxMap.entrySet().iterator();
 			while (it.hasNext()) {
@@ -400,12 +534,23 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 	}
 	
 	private void drawStates(Graphics2D g) {
-		int size = g.getFont().getSize();
+		final FontMetrics metrics = g.getFontMetrics();
+		final int size = metrics.getHeight();
+		final int height = panelHeight;
+		int maxStringWidth = 0;
 		synchronized (states) {
-			int i = 0;
-			for (Iterator<String> it = states.iterator(); it.hasNext(); i++) {
+			int x = 0, y = 0;
+			for (Iterator<String> it = states.iterator(); it.hasNext();) {
 				String state = it.next();
-				g.drawString(state, 0, i*size);
+				final int stringWidth = metrics.stringWidth(state);
+				if (maxStringWidth < stringWidth) maxStringWidth = stringWidth;
+				g.drawString(state, x, y);
+				y += size;
+				if (height < y) {
+					x += maxStringWidth+20;
+					y = 0;
+					maxStringWidth = 0;
+				}
 			}
 		}
 	}
@@ -429,7 +574,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			body = createBody(bf);
 			
 			FixtureDef fd = new FixtureDef();
-			fd.shape = Settings.BoxShape;
+			fd.shape = Settings.Box.shape;
 //			fd.density = 0.5f; // これを付けると回転するようになる
 			fd.friction = 1.0f;
 			
@@ -463,14 +608,33 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 				BodyDef bd = new BodyDef();
 				bd.type = BodyType.KINEMATIC;
 				bd.position.set(Settings.HomePosition);
-				
-				FixtureDef fd = new FixtureDef();
-				fd.shape = Settings.RobotArmShape;
-				fd.density = 0.2f;
-				fd.friction = 0.5f;
+				bd.angle = MathUtils.PI;
 
+				Transform xf1 = new Transform();
+				xf1.q.set(0.3524f * MathUtils.PI);
+				Rot.mulToOut(xf1.q, new Vec2(1.0f, 0.0f), xf1.p);
+
+			    Vec2[] vertices = new Vec2[3];
+
+			    PolygonShape triangle1 = new PolygonShape();
+			    vertices[0] = Transform.mul(xf1, new Vec2(-1.0f, 0.0f));
+			    vertices[1] = Transform.mul(xf1, new Vec2(1.0f, 0.0f));
+			    vertices[2] = Transform.mul(xf1, new Vec2(0.0f, 0.5f));
+			    triangle1.set(vertices, 3);
+
+			    Transform xf2 = new Transform();
+			    xf2.q.set(-0.3524f * MathUtils.PI);
+			    Rot.mulToOut(xf2.q, new Vec2(-1.0f, 0.0f), xf2.p);
+
+			    PolygonShape triangle2 = new PolygonShape();
+			    vertices[0] = Transform.mul(xf2, new Vec2(-1.0f, 0.0f));
+			    vertices[1] = Transform.mul(xf2, new Vec2(1.0f, 0.0f));
+			    vertices[2] = Transform.mul(xf2, new Vec2(0.0f, 0.5f));
+			    triangle2.set(vertices, 3);
+				
 				palm = createBody(bd);
-				palm.createFixture(fd);
+				palm.createFixture(triangle1, 0.2f);
+				palm.createFixture(triangle2, 0.2f);
 			}
 			
 			// Arm
@@ -479,8 +643,8 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 //				bd.type = BodyType.DYNAMIC;
 //				bd.position.set(0, -8.0f);
 //				
-//				EdgeShape shape = new EdgeShape();
-//				shape.set(new Vec2(0,-2.0f), new Vec2(0,0));
+//				PolygonShape shape = new PolygonShape();
+//				shape.set
 //				
 //				FixtureDef fd = new FixtureDef();
 //				fd.shape = shape;
@@ -576,7 +740,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 				public void run() {
 					try {
 						Vec2 diff = to.sub(palm.getWorldCenter());
-						while (0.01f < diff.length()) {
+						while (0.001f < diff.length()) {
 							palm.setLinearVelocity(diff.mulLocal(Settings.RobotOperationSpeed));
 							Thread.sleep(1);
 							diff = to.sub(palm.getWorldCenter());
@@ -618,43 +782,54 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		f.getContentPane().add(p);
 		f.setVisible(true);
 		
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				while (true) {
-					try { Thread.sleep(1000); } catch (Exception e) {}
-					System.out.println(p.getStates());
-				}
-			}
-		}).start();
+//		new Thread(new Runnable() {
+//			@Override
+//			public void run() {
+//				while (true) {
+//					try { Thread.sleep(1000); } catch (Exception e) {}
+//					System.out.println(p.getStates());
+//				}
+//			}
+//		}).start();
 		
 		p.showStates(true);
 		
-		try { 
-			p.stopAnimating();
-			p.putBox("1", null);
-			p.putBox("2", "1");
-			p.putBox("3", null);
-			p.startAnimating();
+		List<String> states = Arrays.asList(new String[] {
+				"1 on 2",
+				"2 on 3",
+				"A on B",
+				"B on 4",
+				"4 on 5",
+				"5 on 6",
+				"C on 7",
+				"7 on 8",
+				"8 on 9",
+				"13 on 10",
+				"10 on 11",
+				"11 on 12",
+				"12 on 14",
+				"14 on 15",
+				"15 on 16"
+		});
+		
+		try {
+			p.initBoxes(states);
 			
-//			Thread.sleep(2000);
-//			p.putBox("1", "2");
+//			Thread.sleep(500);
+//			p.pickup("2");
+//			Thread.sleep(500);
+//			p.place("3");
+//			Thread.sleep(500);
+//			p.pickup("1");
+//			Thread.sleep(500);
+//			p.place("2");
 			
-			Thread.sleep(500);
-			p.pickup("2");
-			Thread.sleep(500);
-			p.place("3");
-			Thread.sleep(500);
-			p.pickup("1");
-			Thread.sleep(500);
-			p.place("2");
-			
-			Thread.sleep(1000);
-			p.clear();
-			
-			p.stopAnimating();
-			p.putBox("a", null);
-			p.startAnimating();
+//			Thread.sleep(1000);
+//			p.clear();
+//			
+//			p.stopAnimating();
+//			p.putBox("a", null);
+//			p.startAnimating();
 			
 		} catch (Exception e) {
 			e.printStackTrace();

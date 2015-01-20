@@ -5,11 +5,19 @@ import java.util.List;
 public interface PlannerController {
 
 	/**
+	 * プランナーの状態リストから箱を設置する
+	 * @param states
+	 * @throws InterruptedException 
+	 */
+	public void initBoxes(List<String> states) throws InterruptedException;
+	
+	/**
 	 * 箱を作って置く
 	 * @param name 箱の名前
 	 * @param on 下敷きになるオブジェクトの名前, null か空白なら table 上
+	 * @throws InterruptedException 
 	 */
-	public void putBox(String name, String on);
+	public void putBox(String name, String on) throws InterruptedException;
 	
 	/**
 	 * オブジェクトを消して最初の状態に戻す
