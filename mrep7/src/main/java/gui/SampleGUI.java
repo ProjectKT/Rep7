@@ -213,6 +213,7 @@ public class SampleGUI extends JFrame implements ActionListener{
 		plannerStepExecutor.updateStepLabel();
 		page2_panel.add(BorderLayout.NORTH, stepLabel);
 		plannerPanel = new PlannerPanel();
+		plannerPanel.showStates(true);
 		page2_panel.add(BorderLayout.CENTER, plannerPanel);
 		page2.add(BorderLayout.CENTER, page2_panel);
 
@@ -417,6 +418,10 @@ public class SampleGUI extends JFrame implements ActionListener{
     		plan();
     		plannerStepExecutor.initialize();
     		tab1.setSelectedIndex(1);
+    		
+    		for (String op : ansList) {
+    			System.out.println("ans --- "+op);
+    		}
     	}else if(cmd.equals("OK")){
     		textsToStates();
     		plan();
@@ -446,7 +451,8 @@ public class SampleGUI extends JFrame implements ActionListener{
 	private class PlannerStepExecutor implements ActionListener, Runnable {
 		final Pattern p1 = Pattern.compile("pick up (.*) from the table");
 		final Pattern p2 = Pattern.compile("remove (.*) from (.*)");
-		final Pattern p3 = Pattern.compile("Place (.*) on (.*)");
+		final Pattern p3 = Pattern.compile("put (.*) down on the table");
+		final Pattern p4 = Pattern.compile("Place (.*) on (.*)");
 		
 		int ptr = 0;
 		boolean loop = false;
@@ -522,13 +528,22 @@ public class SampleGUI extends JFrame implements ActionListener{
 				return;
 			}
 			
-			// Place (.*) on (.*)
+			// put (.*) down on the table
 			m = p3.matcher(op);
+			if (m.find()) {
+				plannerPanel.place(null);
+				return;
+			}
+			
+			// Place (.*) on (.*)
+			m = p4.matcher(op);
 			if (m.find()) {
 				String name = m.group(2);
 				plannerPanel.place(name);
 				return;
 			}
+			
+			
 		}
 		
 		private void start() {

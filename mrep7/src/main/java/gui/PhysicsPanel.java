@@ -139,8 +139,8 @@ public class PhysicsPanel extends JPanel {
 		
 		// パネル初期化
 		setFocusable(true);
-//	    setBackground(Color.black);
-	    setPreferredSize(new Dimension(INIT_WIDTH, INIT_HEIGHT));
+		setBackground(Color.black);
+		setPreferredSize(new Dimension(INIT_WIDTH, INIT_HEIGHT));
 		updateSize(getWidth(), getHeight());
 		textLine = 0;
 		
@@ -327,6 +327,15 @@ public class PhysicsPanel extends JPanel {
 		world.drawDebugData();
 		drawDebugData(debugDraw.getGraphics());
 
+		if (mouseJoint != null) {
+			mouseJoint.getAnchorB(p1);
+			Vec2 p2 = mouseJoint.getTarget();
+
+			debugDraw.drawSegment(p1, p2, Color3f.BLUE);
+		}
+	}
+	
+	protected void drawDebugData(Graphics2D g) {
 		if (settings.drawStats) {
 			// Vec2.watchCreations = true;
 			debugDraw.drawString(5, textLine, "Engine Info", Color3f.GREEN);
@@ -363,54 +372,6 @@ public class PhysicsPanel extends JPanel {
 			}
 			textList.clear();
 		}
-
-		if (mouseJoint != null) {
-			mouseJoint.getAnchorB(p1);
-			Vec2 p2 = mouseJoint.getTarget();
-
-			debugDraw.drawSegment(p1, p2, Color3f.BLUE);
-		}
-
-//		if (settings.getSetting(TestbedSettings.DrawContactPoints).enabled) {
-//			final float k_impulseScale = 0.1f;
-//			final float axisScale = 0.3f;
-//
-//			for (int i = 0; i < pointCount; i++) {
-//
-//				ContactPoint point = points[i];
-//
-//				if (point.state == PointState.ADD_STATE) {
-//					debugDraw.drawPoint(point.position, 10f, color1);
-//				} else if (point.state == PointState.PERSIST_STATE) {
-//					debugDraw.drawPoint(point.position, 5f, color2);
-//				}
-//
-//				if (settings.getSetting(TestbedSettings.DrawContactNormals).enabled) {
-//					p1.set(point.position);
-//					p2.set(point.normal).mulLocal(axisScale).addLocal(p1);
-//					debugDraw.drawSegment(p1, p2, color3);
-//
-//				} else if (settings
-//						.getSetting(TestbedSettings.DrawContactImpulses).enabled) {
-//					p1.set(point.position);
-//					p2.set(point.normal).mulLocal(k_impulseScale)
-//							.mulLocal(point.normalImpulse).addLocal(p1);
-//					debugDraw.drawSegment(p1, p2, color5);
-//				}
-//
-//				if (settings.getSetting(TestbedSettings.DrawFrictionImpulses).enabled) {
-//					Vec2.crossToOutUnsafe(point.normal, 1, tangent);
-//					p1.set(point.position);
-//					p2.set(tangent).mulLocal(k_impulseScale)
-//							.mulLocal(point.tangentImpulse).addLocal(p1);
-//					debugDraw.drawSegment(p1, p2, color5);
-//				}
-//			}
-//		}
-	}
-	
-	protected void drawDebugData(Graphics2D g) {
-		
 	}
 
 	// --------------
@@ -600,8 +561,6 @@ public class PhysicsPanel extends JPanel {
 	private class Animator implements Runnable {
 		Thread thread;
 		boolean loop;
-		long pt = 0;
-		long ct = 0;
 		
 		/**
 		 * 描画ループを開始する
@@ -632,20 +591,16 @@ public class PhysicsPanel extends JPanel {
 		
 		@Override
 		public void run() {
-			long beforeTime, afterTime, timeSpent, sleepTime;
+			long beforeTime, afterTime, sleepTime;
 			beforeTime = System.nanoTime();
 			sleepTime = 0;
 			
 			try {
-				pt = System.nanoTime();
 				while (loop) {
-					ct = System.nanoTime();
-					timeSpent = ct - pt;
 					if (render()) {
 						step(FPS, 8, 8);
 						paintScreen();
 					}
-					pt = ct;
 					
 					afterTime = System.nanoTime();
 					
@@ -657,7 +612,7 @@ public class PhysicsPanel extends JPanel {
 					beforeTime = System.nanoTime();
 				}
 			} catch (InterruptedException e) {
-				System.out.println("Animator thread interrupted. Stopped animating.");
+				
 			}
 		}
 	}
@@ -666,7 +621,7 @@ public class PhysicsPanel extends JPanel {
 	public static void main(String[] args) {
 		JFrame f = new JFrame();
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		f.setBounds(0, 0, 1500, 1000);
+		f.setBounds(0, 0, 500, 300);
 		PhysicsPanel p = new PhysicsPanel();
 		f.getContentPane().add(p);
 		f.setVisible(true);
