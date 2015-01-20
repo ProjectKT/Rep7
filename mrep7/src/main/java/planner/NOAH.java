@@ -38,6 +38,9 @@ public class NOAH {
 
 	// 存在しているオブジェクトのリスト
 	ArrayList<String> objects = new ArrayList<String>();
+	
+	//クリアの数
+	int clearNum = 0;
 
 	public static void main(String args[]) {
 		(new NOAH()).planning();
@@ -183,6 +186,7 @@ public class NOAH {
 		goalList.add("clear 8");
 		goalList.add("clear 13");
 		goalList.add("clear 9");
+		goalList.add("ontable 9");
 
 		goalList.add("1 on 2");
 		goalList.add("2 on 3");
@@ -316,6 +320,8 @@ public class NOAH {
 
 		objects = new ArrayList<String>();
 		setObjects();
+		
+		clearNum =0;
 	}
 
 	/**
@@ -376,6 +382,7 @@ public class NOAH {
 		Pattern p2 = Pattern.compile("ontable (.*)");
 		Pattern p3 = Pattern.compile("clear (.*)");
 		for (String str : goalState) {
+			System.out.println(str);
 			Matcher m = p.matcher(str);
 			if (m.find()) {
 				Node newNode = new Node(str, nodecount++, s, j);
@@ -393,7 +400,8 @@ public class NOAH {
 		Matcher m2 = p2.matcher(str);
 		if(m2.find()){
 			if(clearObjects.contains(m2.group(1))){
-				Node newNode = new Node(str, nodecount++, s, j);
+				Node newNode = new Node("clear "+m2.group(1), nodecount++, s, j);
+				System.out.println("alone objects: "+newNode.getNodeName());
 				plan.add(newNode);
 				s.addBack(newNode);
 				j.addForward(newNode);
@@ -404,6 +412,7 @@ public class NOAH {
 		js.add(j);
 
 	}
+
 
 	/**
 	 * ゴール状態のままでは不十分なのでプランを展開する 具体的には A on Bを
@@ -449,7 +458,10 @@ public class NOAH {
 					newplan.add(newNode2);
 					newplan.add(newNode3);
 				}
-
+			}else{
+				System.out.println("ontalbe       "+node);
+				newplan.add(node);
+				clearNum++;
 			}
 		}
 		plan.clear();
@@ -466,12 +478,16 @@ public class NOAH {
 		System.out.println(under);
 		// 一番後ろのJointJをとってくる
 		JointJ j = js.get(0);
+		
+		//最後のJの前に直接つながるクリアの数
+		
 		ArrayList<Node> list = j.getForward();
 		ArrayList<Node> subPlan = new ArrayList<Node>();
 		Pattern p = Pattern.compile("Place (.*) on (.*)");
-		while (subPlan.size() != list.size()) {
-			System.out.println("subPlan" + subPlan.size() + "list"
-					+ list.size());
+		while ((subPlan.size() + clearNum) != list.size()) {
+			System.out.println("subPlanSize "+subPlan.size()+" jF ");
+		//	System.out.println("subPlan" + subPlan.size() + "list"
+			//		+ list.size());
 			for (Node node : list) {
 				Matcher m = p.matcher(node.getNodeName());
 				if (m.find()) {
@@ -482,6 +498,7 @@ public class NOAH {
 							subPlan.add(0, node);
 						}
 					}
+				
 				}
 			}
 

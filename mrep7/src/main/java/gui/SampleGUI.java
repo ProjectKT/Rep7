@@ -347,6 +347,9 @@ public class SampleGUI extends JFrame implements ActionListener{
 			onTableStates.add("clear " +object);
 		}
 		
+		ArrayList<String> onlyClear = new ArrayList<String>();
+		onlyClear.addAll(objects);
+		
 		noah.setCurrentState(onTableStates);
 		noah.setGoalState(states);
 		noah.planning();
@@ -367,12 +370,18 @@ public class SampleGUI extends JFrame implements ActionListener{
 			}
 
 			if (m2.find()) {
+				onlyClear.remove(m2.group(2));
 				if(!exist.contains(m2.group(2))){
 					panel.putBox(m2.group(2), null);
 				}
 				panel.putBox(m2.group(1),m2.group(2));
+				onlyClear.remove(m2.group(1));
 			}
 		}
+		for(String str : onlyClear){
+			panel.putBox(str, null);
+		}
+
 		try { panel.startAnimating(); } catch (InterruptedException e) { e.printStackTrace(); }
 	}
 	
