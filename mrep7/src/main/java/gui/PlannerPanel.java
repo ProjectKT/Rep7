@@ -19,6 +19,7 @@ import javax.swing.JFrame;
 
 import org.jbox2d.callbacks.ContactListener;
 import org.jbox2d.collision.Manifold;
+import org.jbox2d.collision.shapes.CircleShape;
 import org.jbox2d.collision.shapes.EdgeShape;
 import org.jbox2d.collision.shapes.PolygonShape;
 import org.jbox2d.collision.shapes.Shape;
@@ -26,6 +27,7 @@ import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.BodyDef;
 import org.jbox2d.dynamics.BodyType;
+import org.jbox2d.dynamics.Fixture;
 import org.jbox2d.dynamics.FixtureDef;
 import org.jbox2d.dynamics.contacts.Contact;
 import org.jbox2d.dynamics.contacts.ContactEdge;
@@ -44,7 +46,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		// 箱の名前の描画色
 		Color BoxNameColor = new Color(1.0f, 1.0f, 1.0f);
 		// ロボットの形
-		Shape RobotShape = new PolygonShape() {{
+		Shape RobotArmShape = new PolygonShape() {{
 			setAsBox(BoxSize.x/2 + 0.5f, 0.2f);
 		}};
 		// ロボットの速度
@@ -61,8 +63,6 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 	private Body table;
 	// 操作用ロボット
 	private Robot robot;
-	// 描画前に world に対して行う操作のキュー
-	private List<Runnable> manipulations = Collections.synchronizedList(new LinkedList<Runnable>());
 	// 箱とその名前の対応
 	private Map<String,Box> boxMap = new HashMap<String,Box>();
 	// 今持っているボックス
@@ -75,6 +75,8 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 	private StatesChangeListener statesChangeListener = null;
 	// 状態の表示フラグ
 	private boolean showStates = false;
+	// 描画前に world に対して行う操作のキュー
+	private List<Runnable> manipulations = Collections.synchronizedList(new LinkedList<Runnable>());
 	
 
 	public PlannerPanel() {
@@ -90,7 +92,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 	private void initialize() {
 		addContactListener(statesWatcher);
 		
-		// table
+		// table の形を作る
 		table = null;
 		{
 			BodyDef bd = new BodyDef();
@@ -107,7 +109,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			table.createFixture(fd);
 		}
 
-		// Robot
+		// Robot を作る
 		robot = new Robot();
 	}
 	
@@ -399,6 +401,9 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		}
 	}
 	
+	/**
+	 * 箱クラス
+	 */
 	private class Box {
 		String name;
 		Body body;
@@ -423,24 +428,23 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		}
 	}
 	
+	/**
+	 * ロボットのクラス
+	 */
 	private class Robot {
+		// ロボットの手のひらの Body
 		Body palm;
+		// 手のひらで物を持つために使う Joint
 		Joint joint;
+		// 今物を持っているかどうかを表すフラグ
 		boolean isGrabbing;
 
-		private static final float PALM_WIDTH = 1.40f;
-		
 		public Robot() {
 			initialize();
 		}
 		
 		private void initialize() {
 			// Body
-			{
-				// TODO
-			}
-			
-			// Arm
 			{
 				// TODO
 			}
@@ -452,36 +456,63 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 				bd.position.set(0, -8.0f);
 				
 				FixtureDef fd = new FixtureDef();
-				fd.shape = Settings.RobotShape;
+				fd.shape = Settings.RobotArmShape;
 				fd.density = 0.2f;
 				fd.friction = 0.5f;
 
 				palm = createBody(bd);
 				palm.createFixture(fd);
 			}
+			
+			// Arm
+			{
+//				BodyDef bd = new BodyDef();
+//				bd.type = BodyType.DYNAMIC;
+//				bd.position.set(0, -8.0f);
+//				
+//				EdgeShape shape = new EdgeShape();
+//				shape.set(new Vec2(0,-2.0f), new Vec2(0,0));
+//				
+//				FixtureDef fd = new FixtureDef();
+//				fd.shape = shape;
+//				
+//				Body arm = createBody(bd);
+//				arm.createFixture(fd);
+//				
+//				RevoluteJointDef jd = new RevoluteJointDef();
+//				jd.initialize(arm, palm, palm.getWorldCenter());
+//				
+//				createJoint(jd);
+			}
 		}
 		
+		/**
+		 * 今接触している物を持つ
+		 * @throws InterruptedException
+		 */
 		public void grab() throws InterruptedException {
 			if (!isGrabbing) {
+				// 接触している Body を探す
 				ContactEdge it = palm.getContactList();
 				while (it != null) {
 					Contact contact = it.contact;
-					final Body bodyA = contact.getFixtureA().getBody();
-					final Body bodyB = contact.getFixtureB().getBody();
 					
-					if (bodyA == palm || bodyB == palm) {
-						Body hand = (bodyA == palm) ? bodyA : bodyB;
-						Body obj = (bodyA == hand) ? bodyB : bodyA;
-						Manifold manifold = contact.getManifold();
+					// 接触していたら
+					if (contact.isTouching()) {
+						final Body bodyA = contact.getFixtureA().getBody();
+						final Body bodyB = contact.getFixtureB().getBody();
+						final Manifold manifold = contact.getManifold();
 						
 						final RevoluteJointDef jd = new RevoluteJointDef();
-						jd.initialize(hand, obj, hand.getWorldPoint(manifold.localPoint));
+						jd.initialize(bodyA, bodyB, palm.getWorldPoint(manifold.localPoint));
 						jd.collideConnected = true;
 						
+						// ワールド描画時を避けてワールドを操作
 						final Object commandLock = new Object();
 						manipulations.add(new Runnable() {
 							@Override
 							public void run() {
+								// Body をつなげる Joint を追加する
 								joint = createJoint(jd);
 								synchronized (commandLock) {
 									commandLock.notifyAll();
@@ -500,12 +531,18 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			}
 		}
 		
+		/**
+		 * 今持っている物を離す
+		 * @throws InterruptedException
+		 */
 		public void release() throws InterruptedException {
 			if (isGrabbing) {
+				// ワールド描画時を避けてワールドを操作
 				final Object commandLock = new Object();
 				manipulations.add(new Runnable() {
 					@Override
 					public void run() {
+						// Body をつなげる Joint を削除する
 						destroyJoint(joint);
 						synchronized (commandLock) {
 							commandLock.notifyAll();
@@ -519,6 +556,11 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			}
 		}
 		
+		/**
+		 * 特定の位置に移動する
+		 * @param to
+		 * @throws InterruptedException
+		 */
 		public void moveTo(final Vec2 to) throws InterruptedException {
 			final Thread t = new Thread(new Runnable() {
 				@Override
