@@ -159,47 +159,17 @@ public class NOAH {
 	private ArrayList<String> initGoalState() {
 		ArrayList<String> goalList = new ArrayList<String>();
 
-		// goalList.add("clear X");
-		// goalList.add("X on A");
-		/*
-		 * goalList.add("clear A"); goalList.add("A on 1");
-		 * goalList.add("clear B"); goalList.add("B on 4");
-		 * goalList.add("clear C"); goalList.add("C on 7");
-		 * 
-		 * goalList.add("clear 13");
-		 * 
-		 * goalList.add("1 on 2"); goalList.add("2 on 3");
-		 * goalList.add("4 on 5"); goalList.add("5 on 6");
-		 * goalList.add("7 on 8"); goalList.add("8 on 9");
-		 * goalList.add("13 on 10"); goalList.add("10 on 11");
-		 * goalList.add("11 on 12"); goalList.add("12 on 14");
-		 * goalList.add("14 on 15"); goalList.add("15 on 16");
-		 */
-		goalList.add("clear A");
-
-		goalList.add("clear B");
-		goalList.add("B on C");
+		goalList.add("clear 2");
+		goalList.add("clear 1");
 
 		
-		goalList.add("A on 1");
-		goalList.add("clear 4");
-		goalList.add("clear 8");
-		goalList.add("clear 13");
-		goalList.add("clear 9");
-		goalList.add("ontable 9");
+		goalList.add("2 on 5");
+		goalList.add("1 on 4");
+		goalList.add("4 on 3");
+		goalList.add("3 on 6");
 
-		goalList.add("1 on 2");
-		goalList.add("2 on 3");
-		goalList.add("4 on 5");
-		goalList.add("5 on 6");
-		goalList.add("7 on A");
-		goalList.add("8 on 7");
-		goalList.add("13 on 10");
-		goalList.add("10 on 11");
-		goalList.add("11 on 12");
-		goalList.add("12 on 14");
-		goalList.add("14 on 15");
-		goalList.add("15 on 16");
+
+
 		return goalList;
 	}
 
@@ -218,41 +188,14 @@ public class NOAH {
 		 * initialState.add("D on E");
 		 */
 
-		// initialState.add("clear 1");
-		// initialState.add("clear 4");
-
-		// initialState.add("1 on 2");
-		// initialState.add("2 on 3");
-		// initialState.add("4 on 5");
-		// initialState.add("5 on 6");
-
-		// initialState.add("clear X");
-		// initialState.add("X on A");
-
 		initialState.add("clear 1");
-		initialState.add("clear A");
-		initialState.add("A on B");
-		// initialState.add("clear 4");
-		// initialState.add("clear B");
-		initialState.add("B on 4");
-		// initialState.add("clear 7");
-		initialState.add("clear C");
-		initialState.add("C on 7");
-
-		initialState.add("clear 13");
+		initialState.add("clear 4");
 
 		initialState.add("1 on 2");
 		initialState.add("2 on 3");
 		initialState.add("4 on 5");
 		initialState.add("5 on 6");
-		initialState.add("7 on 8");
-		initialState.add("8 on 9");
-		initialState.add("13 on 10");
-		initialState.add("10 on 11");
-		initialState.add("11 on 12");
-		initialState.add("12 on 14");
-		initialState.add("14 on 15");
-		initialState.add("15 on 16");
+
 
 		return initialState;
 	}
@@ -1109,6 +1052,7 @@ public class NOAH {
 			//
 			ArrayList<JointJ> delJ = new ArrayList<JointJ>();
 			for (JointJ j : jList) {
+				boolean unMatHit = false;
 				Matcher stackMap = p2.matcher(j.getBack().getNodeName());
 				Matcher unMap;
 				Node change = null;
@@ -1116,6 +1060,7 @@ public class NOAH {
 					for (Node node : j.getForward()) {
 						unMap = p3.matcher(node.getNodeName());
 						if (unMap.find()) {
+							unMatHit = true;
 							if (stackMap.group(1).equals(unMap.group(1))
 									&& stackMap.group(2).equals(unMap.group(2))) {
 								change = node;
@@ -1210,21 +1155,27 @@ public class NOAH {
 							}
 						}
 					} else {
+						// unstackに該当するものが無いとき、
 						// stackは見つかったけどunstackが見つかってない時
-						System.out.println("if no-unstack  then add :"
-								+ j.getBack());
-						boolean exist = false;
-						for (Node node : preList) {
-							String pre = node.getNodeName();
-							if (pre.equals(j.getBack().getNodeName())) {
-								exist = true;
+						
+						
+						if(unMatHit){
+							
+						}else{
+							System.out.println("if no-unstack  then add :"
+									+ j.getBack());
+							boolean exist = false;
+							for (Node node : preList) {
+								String pre = node.getNodeName();
+								if (pre.equals(j.getBack().getNodeName())) {
+									exist = true;
+								}
+							}
+							if (!exist) {
+								System.out.println("    add preList" + j.getBack());
+								preList.add(j.getBack());
 							}
 						}
-						if (!exist) {
-							System.out.println("    add preList" + j.getBack());
-							preList.add(j.getBack());
-						}
-
 					}
 
 				}
@@ -1243,6 +1194,9 @@ public class NOAH {
 			System.out.println("orderStr" + orderString);
 
 			System.out.println("jList :" + jList);
+			for(JointJ j : jList){
+				System.out.println("j.back  :"+j.getBack()+"\nj.foward :"+j.getForward());
+			}
 
 			// 残ったものの順序決定
 			ArrayList<ArrayList<Node>> tList = new ArrayList<ArrayList<Node>>();
@@ -1330,11 +1284,12 @@ public class NOAH {
 
 					}
 
-					System.out.println("add temp " + temp);
 
-					tList.add(temp);
-					System.out.println("temp" + temp);
 				}
+				System.out.println("add temp " + temp);
+
+				tList.add(temp);
+				System.out.println("temp" + temp);
 
 			}
 
