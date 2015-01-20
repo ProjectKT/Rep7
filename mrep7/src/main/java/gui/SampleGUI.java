@@ -138,6 +138,8 @@ public class SampleGUI extends JFrame implements ActionListener{
 		page1.add(BorderLayout.SOUTH, ctrl);
 		
 		JButton okButton = new JButton("ok");
+		okButton.addActionListener(this);
+		okButton.setActionCommand("ok");
 		ctrl.add(okButton);
 		
 		tab.add("select", page1);
