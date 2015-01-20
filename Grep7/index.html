@@ -30,6 +30,27 @@
     });
   </script>
 
+  <style>
+h3 {
+  margin-top: 40px;
+}
+h4 {
+  margin-top: 50px;
+  padding-left: 7px;
+  border-left: 10px #050 double;
+  color: #335030;
+}
+h4.headless {
+  margin-top: 0;
+}
+table.table {
+  margin: auto;
+}
+table.table thead tr:last-child th {
+  border-bottom: 1px #000 solid;
+}
+  </style>
+
   <title>知能プログラミング演習IIグループ作成 レポート</title>
 </head>
 
@@ -103,43 +124,128 @@ STRIPSに基づくサンプルプログラムでは、ある副目標の達成�
 </pre>
 <h3>プログラムの構造</h3>
 <!--  どのような設計をしたか．-->
+<h4 class="headless">NOAH プランナー</h4>
 <p>
+NOAH プランナーの大まかなプログラムの構造は次の通りです。
+</p>
+<table class="table table-striped">
+	<thead>
+		<tr>
+			<th>クラス/インタフェース</th>
+			<th>説明</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>Node</td>
+			<td>ここに説明を記述</td>
+		</tr>
+		<tr>
+			<td>JointJ</td>
+			<td>ここに説明を記述</td>
+		</tr>
+		<tr>
+			<td>JointS</td>
+			<td>ここに説明を記述</td>
+		</tr>
+		<tr>
+			<td>Operator</td>
+			<td>ここに説明を記述</td>
+		</tr>
+		<tr>
+			<td>NOAHParameters</td>
+			<td>ここに説明を記述</td>
+		</tr>
+		<tr>
+			<td>NOAH</td>
+			<td>ここに説明を記述</td>
+		</tr>
+		<tr>
+			<td>Unifier</td>
+			<td>ここに説明を記述</td>
+		</tr>
+	</tbody>
+</table>
 
+<h4>ブロックワールドのグラフィカルな表示</h4>
 
+<p>
+現実味のあるブロックワールドを表現するために、重力やその他抗力の働く環境を再現できるよう、物理エンジンのライブラリ <code>JBox2D</code> を用いた。このライブラリを使ってブロックワールドを描画するために、次のようなクラス、インタフェースを作成した。
 </p>
 
+<table class="table table-striped">
+	<thead>
+		<tr>
+			<th>クラス/インタフェース</th>
+			<th>説明</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>Camera</td>
+			<td>カメラの位置、方向などの情報を格納するためのクラス</td>
+		</tr>
+		<tr>
+			<td>PhysicsDebugDraw</td>
+			<td>JBox2D で用いる、各コンポーネントを描画する際に利用するクラス</td>
+		</tr>
+		<tr>
+			<td>PhysicsPanel</td>
+			<td>JBox2D を用いて物理ワールドを描画するパネルのクラス</td>
+		</tr>
+		<tr>
+			<td>PlannerPanel</td>
+			<td>PhysicsPanel を使ってブロックワールドを描画するパネルのクラス</td>
+		</tr>
+		<tr>
+			<td>PlannerController</td>
+			<td>プランナーと結合するためのインタフェース定義</td>
+		</tr>
+		<tr>
+			<td>SampleGUI</td>
+			<td>プランナーと GUI を結合したもの</td>
+		</tr>
+	</tbody>
+</table>
+<p>
+これらの大半は、使用しているライブラリ <code>JBox2D</code> を使う上で必要な設定や描画周りであるが、クラス <code>PlannerPanel</code> において、ブロックワールド内のブロックを操作するための処理を実装している。その <code>PlannerPanel</code> に対して行うことができる操作を、インタフェース <code>PlannerController</code> に定義し、NOAH プランナーとの結合を可能にしている。最終的に <code>SampleGUI</code> クラスにて、<code>PlannerPanel</code> と NOAH プランナーを使い、グラフィカルにプランニングを表現する GUI を構成している。
+</p>
 
 <h3>実装の説明</h3>
 <!--
  どう実装したか，ソースコードを詳細に説明する．
  特に重要な箇所はレポートにペーストして説明する．
 -->
-<pre>
+
+
+<h4 class="headless">NOAH プランナー</h4>
+
+<p>
 今回実装したプログラムではノードを使い、
 初期状態と他のノードとの関係から各ノードの順序を決め、プランを作るようにしました。
+</p>
 
-
+<p>
 目標状態や処理の一つ一つを、ノードとして、
 初回には、先頭にはスタートのノードとゴールのノードを配置、先頭の後ろに配置するJointS、
 各ノードの間にJointJという結合を表すクラスを配置と結合をして、
+</p>
 
-①処理ノードが他の処理ノードと干渉が起こる場合があるので、干渉が合ったJointオブジェクトにつながるノードの順序付け、
-②順序付けから分かる優先順位から、優先順位が高いノードのString名と
-同一のString名を持つ優先順位の低いノードの削除(冗長削除)、
-③状態ノードが初期状態に含まれてなければそのノードを展開し、新しいノードを作る(ノードの詳細化)。
+<ol>
+<li>処理ノードが他の処理ノードと干渉が起こる場合があるので、干渉が合ったJointオブジェクトにつながるノードの順序付け、</li>
+<li>順序付けから分かる優先順位から、優先順位が高いノードのString名と
+同一のString名を持つ優先順位の低いノードの削除(冗長削除)、</li>
+<li>状態ノードが初期状態に含まれてなければそのノードを展開し、新しいノードを作る(ノードの詳細化)。</li>
+</ol>
 
-上記の①、②、③を繰り返すと、目標状態のブロックを積む塔の数だけ列が出来るので、
+<p>
+上記の 1,2,3 を繰り返すと、目標状態のブロックを積む塔の数だけ列が出来るので、
 干渉しないように動作の競合解消、無駄な動作が出ないように、動作の効率化または省略を行い、オペレーターの実行順序を決定していきます。
 
 
 特に重要な箇所として、動作の効率化と省略です。
+</p>
 
-</pre>
-<!--
-  ソースコードをはりつける時は <pre> タグを使う
-  class="brush: java" でシンタックスハイライトする
-  重要な部分のみを貼り付ければ良い
--->
 <pre class="brush: java">
 			// 元からある山の処理を消す
 			for (JointJ j : jList) {
@@ -201,21 +307,27 @@ STRIPSに基づくサンプルプログラムでは、ある副目標の達成�
 			}
 </pre>
 
-<pre>
+<p>
 このコードでは、
 ある目標のブロックの塔の動作で、
 無駄な動作がある場合にそれを省略するようにしています。
-例えば
-1,remove A from on top B
-2,remove B from on top C
-3,Place B on C
-4,Place A on B
+</p>
 
+<p>
+例えば
+</p>
+<ol>
+<li>remove A from on top B</li>
+<li>2,remove B from on top C</li>
+<li>3,Place B on C</li>
+<li>4,Place A on B</li>
+</ol>
+<p>
 という順番だと、2,3を連続で実行しても無駄なので、
 この処理は消しています。
 2,3を省略することで、1,4が連続して実行され、無駄になるので、
 これも省略できるように対応しています。
-</pre>
+</p>
 
 <pre class="brush: java">
 else if (stacks.size() == 0) {
@@ -287,30 +399,46 @@ else if (stacks.size() == 0) {
 					}
 </pre>
 
-<pre>
+<p>
 このソース部では、
-1,remove A from on top B
-2,remove C from on top D
-3,Place A on D
-
+</p>
+<ol>
+<li>1,remove A from on top B</li>
+<li>2,remove C from on top D</li>
+<li>3,Place A on D</li>
+</ol>
+<p>
 となったとき、1で取ったAを一度テーブルの上に置かないといけなくなるので、
-
-1,remove C from on top D
-2,remove A from on top B
-3,Place A on D
-
+</p>
+<ol>
+<li>1,remove C from on top D</li>
+<li>2,remove A from on top B</li>
+<li>3,Place A on D</li>
+</ol>
+<p>
 という順番に入れ替える事で結果が変わらない（干渉しない）なら入れ替えるという部分です。
-</pre>
+</p>
+
+<h4>ブロックワールドのグラフィカルな表示</h4>
+
+<p>
+<b>プログラムの構造</b>で述べたように、今回はブロックワールドの表現を行うにあたり、物理エンジンのライブラリを用いている。このライブラリを使って画面上に描画を行うために、ライブラリが用意している <code>DebugDraw</code> という描画のために必要なメソッド定義を持った抽象クラスを実装することで、ライブラリ側にその実装を使って描画させ、簡易的に画面を構成している。
+</p>
+<p>
+その他、今回林(政)が作成したプログラムの大半が、このライブラリを使う上で必要なものであり、これらは課題を行う上で特筆すべき点ではないため、詳細な説明は記述していない。
+</p>
+<p>
+この、物理エンジンを使ったワールドに対して、ブロックを配置し、それらを移動する操作は、「プログラムの構造」で前述した通り<code>PlannerPanel</code> が持っている。これに関して、<a href="../../../../cjh15113/workspace/kprep/rep7/index.html">個人のページ</a>にて、詳細な説明を記述した。
+</p>
 
 <h3>実行例</h3>
 <!-- 実行例を示す．PNGやGIF等の絵を張っても良い．-->
 <p>
 
-
 </p>
 
 <!-- 画像ファイルを貼る場合は <img> タグを使う -->
-<img src="./hoge/image.png"/>
+<!--<img src="./hoge/image.png"/>-->
 
 <p>
 
@@ -324,8 +452,7 @@ else if (stacks.size() == 0) {
  例: 今回はできなかったが，更に〜の機能を追加すべきである．なぜなら，...
 -->
 <p>
-
-
+考察は各個人のページに記述されている。
 </p>
 
 
@@ -336,8 +463,7 @@ else if (stacks.size() == 0) {
 <!-- 感想を書く．-->
 <!-- 例: 〜が面白かった，〜がわからなかった，〜を作ってみたい，講義・演習に関する要望，など．-->
 <p>
-
-
+感想は各個人のページに記述されている
 </p>
 
 
@@ -348,6 +474,7 @@ else if (stacks.size() == 0) {
   <li><a href = "http://dancorkill.home.comcast.net/~dancorkill/pubs/distributed-NOAH.html">Hierarchical Planning in a Distributed Environment - Daniel D.Corkill (February 1979)</a></li>
   <li><a href = "http://www-cs-students.stanford.edu/~pdoyle/quail/notes/pdoyle/planning.html">AI Qual Summary: Planning</a></li>
   <li>知能プログラミング論 第五回 講義資料 -プラン表現と問題解決-(火曜9-10限)</li>
+  <li><a href="http://www.jbox2d.org/">JBox2D: A Java Physics Engine</a></li>
 </ul>
 </body>
 </html>
