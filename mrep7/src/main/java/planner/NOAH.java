@@ -210,11 +210,11 @@ public class NOAH {
 		//initialState.add("clear X");
 		//initialState.add("X on A");
 
-		// initialState.add("clear 1");
+		 initialState.add("clear 1");
 		 initialState.add("clear A");
-		initialState.add("A on 1");
+		initialState.add("A on B");
 		// initialState.add("clear 4");
-		initialState.add("clear B");
+		//initialState.add("clear B");
 		initialState.add("B on 4");
 		// initialState.add("clear 7");
 		initialState.add("clear C");
@@ -1026,10 +1026,13 @@ public class NOAH {
 							}
 						}
 					}
-
+					System.out.println("Stack = ? :"+j.getBack());
+					System.out.println("change = ?  :"+change);
 					if (change != null) {
 						System.out.println("success?");
 						while (true) {
+							Boolean onlyStack = false;
+							//スタックだけが残る場合を考えて、Unstack側が空になったとき、フラグを立てておく
 							System.out.println("change  消すUN  :"+change);
 							System.out.println("change  消すST  :"+j.getBack());
 							System.out.println("消すUNの前のもの :"+change.getForward());
@@ -1042,17 +1045,20 @@ public class NOAH {
 								change = (Node) change.getForward();
 								if (orderString.contains(change.getNodeName())) {
 									preList.remove(last);
+									onlyStack = true;
 								} else {
 									Matcher clearMat = p1.matcher(change.getNodeName());
 									
 									if(clearMat.find()){
 										preList.remove(last);
+										onlyStack = true;
 									}else{
 										j.addForward(change);
 									}
 								}
 
 							}else{
+								onlyStack = true;
 								preList.remove(last);
 							}
 
@@ -1060,9 +1066,16 @@ public class NOAH {
 							System.out.println(obj.getClass().toString());
 							if (obj instanceof Node) {
 								//System.out.println("success");
-								j.changeBack((Node) obj);
+								if(onlyStack){
+									preList.add((Node) obj);
+									break;
+								}else{
+									j.changeBack((Node) obj);
+								}
 							} else {
 								if (obj instanceof JointJ) {
+									//ここのifにて、stackだけが残る場合を考えなければならない
+									
 									JointJ tail = (JointJ) obj;
 									
 
@@ -1098,6 +1111,10 @@ public class NOAH {
 								}
 							}
 						}
+					}else{
+						//stackは見つかったけどunstackが見つかってない時
+						System.out.println("if no-unstack  then add :"+j.getBack());
+						preList.add(j.getBack());
 					}
 
 				}
