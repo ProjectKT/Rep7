@@ -49,6 +49,8 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		PolygonShape RobotShape = new PolygonShape() {{
 			setAsBox(BoxSize.x/2 + 0.5f, 0.2f);
 		}};
+		// ロボットの速度
+		float RobotOperationSpeed = 20.0f;
 		// 地面の大きさ
 		float GroundLength = 1000.0f;
 		// ホームポジション
@@ -184,6 +186,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			Box onBox = boxMap.get(on);
 			if (onBox != null) {
 				pos.set(onBox.body.getWorldCenter());
+				pos.addLocal(0, -Settings.BoxSize.y);
 			}
 		}
 		
@@ -197,11 +200,8 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			manipulations.add(new Runnable() {
 				@Override
 				public void run() {
-					destroyBody(fbox.body);
-					boxMap.remove(fbox);
-					Box box = new Box(name, pos);
-					boxMap.put(name, box);
-					updateHighestBox(box);
+					fbox.body.setTransform(pos, 0);
+					updateHighestBox(fbox);
 				}
 			});
 		}
@@ -217,7 +217,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		}
 		
 		if (highestBox == box) {
-			Settings.HomePosition.y = highestBox.body.getWorldCenter().y-Settings.BoxSize.y*1.5f;
+			//Settings.HomePosition.y = highestBox.body.getWorldCenter().y-Settings.BoxSize.y*1.5f;
 		}
 	}
 	
@@ -506,10 +506,11 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 					try {
 						Vec2 diff = to.sub(palm.getWorldCenter());
 						while (0.01f < diff.length()) {
-							palm.setLinearVelocity(diff.mulLocal(20.0f));
+							palm.setLinearVelocity(diff.mulLocal(Settings.RobotOperationSpeed));
 							Thread.sleep(1);
 							diff = to.sub(palm.getWorldCenter());
 						}
+						palm.setTransform(to, palm.getAngle());
 					} catch (InterruptedException e) {
 					} finally {
 						palm.setLinearVelocity(new Vec2(0, 0));
@@ -560,6 +561,9 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			p.putBox("2", "1");
 			p.putBox("3", null);
 			p.start();
+			
+//			Thread.sleep(2000);
+//			p.putBox("1", "2");
 			
 			Thread.sleep(500);
 			p.pickup("2");
