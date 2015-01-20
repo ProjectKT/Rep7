@@ -227,7 +227,7 @@ public class SampleGUI extends JFrame implements ActionListener{
 		
 		JPanel buttonPanel = new JPanel();//ボタン用のパネル
 		buttonPanel.setLayout(new FlowLayout());
-		JButton OK = new JButton("ok");
+		JButton OK = new JButton("OK");
 		OK.addActionListener(this);
 		OK.setActionCommand("OK");
 		JButton RESET = new JButton("reset");
@@ -237,9 +237,9 @@ public class SampleGUI extends JFrame implements ActionListener{
 		GtoS.addActionListener(this);
 		GtoS.setActionCommand("GtoS");
 		
-		buttonPanel.add(OK);
 		buttonPanel.add(RESET);
 		buttonPanel.add(GtoS);
+		buttonPanel.add(OK);
 		buttonPanel.setBorder(border);
 
 		JPanel answerPanel = new JPanel();//目標状態エリア用のパネル
