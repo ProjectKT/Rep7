@@ -196,6 +196,7 @@ public class NOAH {
 		goalList.add("12 on 14");
 		goalList.add("14 on 15");
 		goalList.add("15 on 16");
+		
 		return goalList;
 	}
 
@@ -213,7 +214,8 @@ public class NOAH {
 		 * initialState.add("A on B"); initialState.add("B on C");
 		 * initialState.add("D on E");
 		 */
-/*
+
+		/*
 		initialState.add("clear 1");
 		initialState.add("clear 4");
 
@@ -1161,8 +1163,11 @@ public class NOAH {
 								// System.out.println("success");
 								if (onlyStack) {
 									preList.add((Node) obj);
+									System.out.println("delBack "+j.getBack()+" add preList "+obj);
+									j.changeBack((Node)obj);
 									break;
 								} else {
+									System.out.println("changeBack "+j.getBack()+" to "+obj);
 									j.changeBack((Node) obj);
 								}
 							} else {
