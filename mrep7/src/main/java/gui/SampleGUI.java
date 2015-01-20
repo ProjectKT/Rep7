@@ -1,7 +1,5 @@
 package gui;
 
-import gui.PlannerController.StatesChangeListener;
-
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -10,7 +8,6 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,6 +17,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
@@ -35,18 +33,17 @@ public class SampleGUI extends JFrame implements ActionListener{
 	// 
 	JPanel panel = new JPanel();
 	CardLayout layout = new CardLayout();
-	// Label
-	JLabel stepLabel;
+	// 
+	JPanel graphics = new JPanel();
+	CardLayout gra_layout = new CardLayout();
 	// 物体を表示するパネル
-	PlannerPanel plannerPanel;
+	PlannerPanel plannerPanel = new PlannerPanel();
 	// 初期状態
-	PlannerPanel startPanel;
+	PlannerPanel startPanel = new PlannerPanel();
 	// 終了状態
-	PlannerPanel goalPanel;
+	PlannerPanel goalPanel = new PlannerPanel();
 	// Noah
 	NOAH noah;
-	// PlannerStepExecutor
-	final PlannerStepExecutor plannerStepExecutor = new PlannerStepExecutor();
 	
 	ArrayList<String> startList = new ArrayList<String>();
 	ArrayList<String> goalList = new ArrayList<String>();
@@ -67,8 +64,8 @@ public class SampleGUI extends JFrame implements ActionListener{
 		
 		// 初期状態・終了状態を設定
 		initPlanner();
-		initPlannerPanel(startList, startPanel);
-		initPlannerPanel(goalList, goalPanel);
+		initStartState();
+		initGoalState();
 		
 		// TODO Planner の出力を元に PlannerPanel のコマンドを呼ぶ操作パネル、レイアウトの作成
 		// 1. 初期状態、目標状態を入れるための入力コンポーネントを用意する
@@ -80,7 +77,7 @@ public class SampleGUI extends JFrame implements ActionListener{
 	// 初期化
 	private void initialize() {		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(10,10,550,600);
+		setBounds(10,10,500,600);
 		setTitle("SampleGUI");
 		getContentPane().setLayout(new BorderLayout(0, 0));
 		
@@ -122,33 +119,15 @@ public class SampleGUI extends JFrame implements ActionListener{
 		//初期状態と目標状態を決めるページ
 		JPanel page1 = new JPanel(new BorderLayout());
 		page1.add(BorderLayout.CENTER, page1_panels);
-
-		startPanel = new PlannerPanel();
-		startPanel.enableScrollScreen(false);
-		startPanel.setStatesChangeListener(new StatesChangeListener() {
-			@Override
-			public void onChangeStates(List<String> states) {
-				startList.clear();
-				startList.addAll(states);
-			}
-		});
 		
+		startPanel.enableScrollScreen(false);
 		JPanel start = new JPanel();
 		start.setLayout(new BorderLayout());
 		start.add(BorderLayout.NORTH, new JLabel("初期状態"));
 		start.add(BorderLayout.CENTER, startPanel);
 		page1_panels.add(start);
 		
-		goalPanel = new PlannerPanel();
 		goalPanel.enableScrollScreen(false);
-		goalPanel.setStatesChangeListener(new StatesChangeListener() {
-			@Override
-			public void onChangeStates(List<String> states) {
-				goalList.clear();
-				goalList.addAll(states);
-			}
-		});
-		
 		JPanel goal = new JPanel();
 		goal.setLayout(new BorderLayout());
 		goal.add(BorderLayout.NORTH, new JLabel("目標状態"));
@@ -158,48 +137,56 @@ public class SampleGUI extends JFrame implements ActionListener{
 		JPanel ctrl = new JPanel();
 		page1.add(BorderLayout.SOUTH, ctrl);
 		
-		JButton okButton = new JButton("plan");
-		okButton.addActionListener(this);
+		JButton okButton = new JButton("ok");
 		ctrl.add(okButton);
 		
 		tab.add("select", page1);
 		
 		// - Page 2: 実行結果を表示するページ
-		JPanel page2 = new JPanel(new BorderLayout());
-
-		JPanel page2_panel = new JPanel(new BorderLayout());
-		stepLabel = new JLabel("初期状態");
-		page2_panel.add(BorderLayout.NORTH, stepLabel);
-		plannerPanel = new PlannerPanel();
-		page2_panel.add(BorderLayout.CENTER, plannerPanel);
-		page2.add(BorderLayout.CENTER, page2_panel);
-
-		JButton playButton = new JButton("play");//初期状態を表示するボタン
-		playButton.addActionListener(plannerStepExecutor);
-		playButton.setActionCommand("play");
-		JButton pauseButton = new JButton("pause");//初期状態を表示するボタン
-		pauseButton.addActionListener(plannerStepExecutor);
-		pauseButton.setActionCommand("pause");
+		JPanel page2 = new JPanel();
+		graphics.setLayout(gra_layout);
+		JPanel gra_start = new JPanel();//初期状態のエリア
+		gra_start.add(new JLabel("start"));
+		//gra_start.setBackground(Color.RED);
+		graphics.add(gra_start);
+		for(int i = 1; i < 13; i++){
+			JPanel gra_process = new JPanel();//過程のエリア
+			String s = Integer.toString(i);
+			if(i % 10 == 1){
+				gra_process.add(new JLabel(s+"st process"));
+			}else if(i % 10 == 2){
+				gra_process.add(new JLabel(s+"nd process"));
+			}else if(i % 10 == 3){
+				gra_process.add(new JLabel(s+"rd process"));
+				//gra_process.setBackground(Color.BLUE);
+			}else{		ArrayList<String> startList = new ArrayList<String>();
+				gra_process.add(new JLabel(s+"th process"));
+			}
+			graphics.add(gra_process);
+		}
+		JPanel gra_goal = new JPanel();//目標状態のエリア
+		gra_goal.add(new JLabel("goal"));
+		//gra_goal.setBackground(Color.GREEN);
+		graphics.add(gra_goal);
 		JButton startButton = new JButton("start");//初期状態を表示するボタン
-		startButton.addActionListener(plannerStepExecutor);
+		startButton.addActionListener(this);
 		startButton.setActionCommand("start");
 		JButton prevButton = new JButton("prev");//前の状態に戻るボタン
-		prevButton.addActionListener(plannerStepExecutor);
+		prevButton.addActionListener(this);
 		prevButton.setActionCommand("prev");
 		JButton nextButton = new JButton("next");//次の状態に進むボタン
-		nextButton.addActionListener(plannerStepExecutor);
+		nextButton.addActionListener(this);
 		nextButton.setActionCommand("next");
 		JButton goalButton = new JButton("goal");//目標状態を表示するボタン
-		goalButton.addActionListener(plannerStepExecutor);
+		goalButton.addActionListener(this);
 		goalButton.setActionCommand("goal");
 		JPanel btnPanel = new JPanel();
-		btnPanel.add(playButton);
-		btnPanel.add(pauseButton);
 		btnPanel.add(startButton);
 		btnPanel.add(prevButton);
 		btnPanel.add(nextButton);
 		btnPanel.add(goalButton);
-		
+		page2.setLayout(new BorderLayout());
+		page2.add(BorderLayout.CENTER, graphics);
 		page2.add(BorderLayout.SOUTH, btnPanel);
 		tab.add("answer", page2);
 		
@@ -222,6 +209,7 @@ public class SampleGUI extends JFrame implements ActionListener{
 		
 		tab2.add("select",sPanel);
 		tab2.add("answer",aPanel);
+		
 		
 		JPanel startPanel = new JPanel();//初期状態エリア用のパネル
 		JScrollPane scroll1 = new JScrollPane(txtStart);
@@ -296,80 +284,89 @@ public class SampleGUI extends JFrame implements ActionListener{
 		objects = noah.getObjects();
 	}
 	
-	/**
-	 * PlannerPanel の状態を初期化する
-	 * @param states 初期化する状態
-	 * @param panel パネル
-	 */
-	private synchronized void initPlannerPanel(ArrayList<String> states, PlannerPanel panel) {
-		final ArrayList<String> ontableStates = new ArrayList<String>();
-		
-		for(String object : objects){
-			System.out.println("objects"+object);
-			ontableStates.add("clear " +object);
+	
+	private void initStartState() {
+		ArrayList<String> startStart = new ArrayList<String>();
+
+		for (String object : objects) {
+			System.out.println("objects" + object);
+			startStart.add("clear " + object);
 		}
-		
-		noah.setCurrentState(ontableStates);
-		noah.setGoalState(states);
+		 
+//		if (true) { return; }
+
+		noah.setCurrentState(startStart);
+		noah.setGoalState(startList);
+		System.out.println("startStart" + startStart);
+		System.out.println("startList" + startList);
 		noah.planning();
-		final ArrayList<String> plan = noah.getResult();
-		
+
 		Pattern p1 = Pattern.compile("pick up (.*) from the table");
 		Pattern p2 = Pattern.compile("Place (.*) on (.*)");
 		ArrayList<String> exist = new ArrayList<String>();
-		
-		try { panel.stop(); } catch (InterruptedException e) { e.printStackTrace(); }
-		for (String operator : plan) {
+		for (String operator : noah.getResult()) {
+			System.out.println(operator);
 			Matcher m1 = p1.matcher(operator);
 			Matcher m2 = p2.matcher(operator);
 
 			if (m1.find()) {
-				exist.add(m1.group(1));
+					exist.add(m1.group(1));
 			}
 
 			if (m2.find()) {
-				if(!exist.contains(m2.group(2))){
-					panel.putBox(m2.group(2), null);
-				}
-				panel.putBox(m2.group(1),m2.group(2));
+
+					if(!exist.contains(m2.group(2))){
+						startPanel.putBox(m2.group(2), null);
+					}
+					startPanel.putBox(m2.group(1),m2.group(2));
+
 			}
-		}
-		try { panel.start(); } catch (InterruptedException e) { e.printStackTrace(); }
-	}
-	
-	/**
-	 * Grpahics Display の方のプランを作成する
-	 */
-	private void prepareGraphicalPlan() {
-		plannerStepExecutor.initialize();
-	}
-	
-	private void textsToStates() {
-		startList.clear();
-		String strs1[] = txtStart.getText().split("\n");
-		for (int i = 0; i < strs1.length; i++) {
-		    startList.add(strs1[i]);
-		}
-		goalList.clear();
-		String strs2[] = txtGoal.getText().split("\n");
-		for (int i = 0; i < strs2.length; i++) {
-		    goalList.add(strs2[i]);
+
+
+
 		}
 	}
 	
-	private void plan() {
-		noah.setCurrentState(startList);
+	private void initGoalState() {
+
+		ArrayList<String> goalGoal = new ArrayList<String>();
+		
+		for(String object : objects){
+			System.out.println("objects"+object);
+			//goalPanel.putBox(object, null);
+			goalGoal.add("clear " +object);
+		}
+
+		
+		noah.setCurrentState(goalGoal);
 		noah.setGoalState(goalList);
+		System.out.println("goalGoal"+goalGoal);
+		System.out.println("goalList"+goalList);
 		noah.planning();
-		ansList = noah.getResult();
-	}
-	
-	private String nth(int i) {
-		switch (i % 10) {
-		case 1: return String.valueOf(i)+"st";
-		case 2: return String.valueOf(i)+"nd";
-		case 3: return String.valueOf(i)+"rd";
-		default: return String.valueOf(i)+"th";
+		
+		Pattern p1 = Pattern.compile("pick up (.*) from the table");
+		Pattern p2 = Pattern.compile("Place (.*) on (.*)");
+		ArrayList<String> exist = new ArrayList<String>();
+		for (String operator : noah.getResult()) {
+			System.out.println(operator);
+			Matcher m1 = p1.matcher(operator);
+			Matcher m2 = p2.matcher(operator);
+
+			if (m1.find()) {
+					exist.add(m1.group(1));
+			}
+
+			if (m2.find()) {
+
+					if(!exist.contains(m2.group(2))){
+						goalPanel.putBox(m2.group(2), null);
+					}
+					goalPanel.putBox(m2.group(1),m2.group(2));
+
+			}
+
+
+
 		}
 	}
 	
@@ -378,12 +375,30 @@ public class SampleGUI extends JFrame implements ActionListener{
     	String cmd = e.getActionCommand();
     	if(cmd == "graphics"){
     		layout.first(panel);
-    	}else if(cmd.equals("plan")){
-    		plan();
-    		prepareGraphicalPlan();
+    	}else if(cmd.equals("start")){
+    		gra_layout.first(graphics);
+    	}else if(cmd.equals("goal")){
+    		gra_layout.last(graphics);
+    	}else if(cmd.equals("next")){
+    		gra_layout.next(graphics);
+    	}else if(cmd.equals("prev")){
+    		gra_layout.previous(graphics);
+    	}else if(cmd.equals("ok")){
+    		
     	}else if(cmd.equals("OK")){
-    		textsToStates();
-    		plan();
+    		startList.clear();
+    		String strs1[] = txtStart.getText().split("\n");
+    		for (int i = 0; i < strs1.length; i++) {
+    		    startList.add(strs1[i]);
+    		}
+    		goalList.clear();
+    		String strs2[] = txtGoal.getText().split("\n");
+    		for (int i = 0; i < strs2.length; i++) {
+    		    goalList.add(strs2[i]);
+    		}
+    		NOAH noah = new NOAH(goalList,startList);
+    		noah.planning();
+    		ansList = noah.getResult();
     		for(int i=0;i < ansList.size();i++)
     		txtAnswer.append(ansList.get(i)+"\n");
     		
@@ -405,118 +420,6 @@ public class SampleGUI extends JFrame implements ActionListener{
 	private void loadData(){
 		
 	}
-	
-	private class PlannerStepExecutor implements ActionListener, Runnable {
-		final Pattern p1 = Pattern.compile("pick up (.*) from the table");
-		final Pattern p2 = Pattern.compile("remove (.*) from (.*)");
-		final Pattern p3 = Pattern.compile("Place (.*) on (.*)");
-		
-		int ptr = 0;
-		boolean loop = false;
-		Thread th;
-		
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			String cmd = e.getActionCommand();
-			if(cmd.equals("play")) {
-				start();
-			}else if(cmd.equals("pause")){
-	    		try { stop(); } catch (Exception e0) { e0.printStackTrace(); }
-	    	}else if(cmd.equals("start")){
-	    		initPlannerPanel(startList, plannerPanel);
-	    		ptr = 0;
-	    	}else if(cmd.equals("goal")){
-	    		initPlannerPanel(goalList, plannerPanel);
-	    		ptr = ansList.size()-1;
-	    	}else if(cmd.equals("next")){
-	    		if (ptr < ansList.size()) {
-	    			String op = ansList.get(ptr);
-	    			try { execute(op); } catch (InterruptedException e0) { e0.printStackTrace(); }
-	    			ptr++;
-	    		}
-	    	}else if(cmd.equals("prev")){
-	    		if (0 < ptr) {
-	    			ptr--;
-	    			String op = ansList.get(ptr);
-	    			try { execute(op); } catch (InterruptedException e0) { e0.printStackTrace(); }
-	    		}
-	    	}
-		}
-		
-		public void initialize() {
-			try { stop(); } catch (InterruptedException e) { }
-			ptr = 0;
-			loop = false;
-			initPlannerPanel(startList, plannerPanel);
-		}
-		
-		private void execute(String op) throws InterruptedException {
-			Matcher m;
-			
-			// ラベル更新
-			stepLabel.setText(nth(ptr)+" process");
-			
-			// pickup (.*) from the table
-			m = p1.matcher(op);
-			if (m.find()) {
-				String name = m.group(1);
-				plannerPanel.pickup(name);
-				return;
-			}
-			
-			// remove (.*) from (.*)
-			m = p2.matcher(op);
-			if (m.find()) {
-				String name = m.group(1);
-				plannerPanel.pickup(name);
-				return;
-			}
-			
-			// Place (.*) on (.*)
-			m = p3.matcher(op);
-			if (m.find()) {
-				String name = m.group(2);
-				plannerPanel.place(name);
-				return;
-			}
-		}
-		
-		private void start() {
-			if (th == null) {
-				loop = true;
-				th = new Thread(this);
-				th.start();
-			}
-		}
-		private void stop() throws InterruptedException {
-			if (th != null) {
-				loop = false;
-				th.join();
-				th = null;
-			}
-		}
-		
-		@Override
-		public void run() {
-			String op = null;
-			try {
-				while (loop) {
-					synchronized (ansList) {
-						op = (0 <= ptr && ptr < ansList.size()) ? ansList.get(ptr) : null;
-					}
-					if (op == null) {
-						break;
-					}
-					execute(op);
-					
-					ptr++;
-				}
-			} catch (InterruptedException e) {
-				System.out.println("An error occured while executing the operation: "+op);
-				e.printStackTrace();
-			}
-		}
-	};
 	
 	public static void main(String[] args) {
 		//
