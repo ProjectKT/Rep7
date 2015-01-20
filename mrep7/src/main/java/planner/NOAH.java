@@ -1282,13 +1282,13 @@ public class NOAH {
 
 					}
 
+					System.out.println("add temp " + temp);
 
+					tList.add(temp);
+					System.out.println("temp" + temp);
 				}
 
-				System.out.println("add temp " + temp);
 
-				tList.add(temp);
-				System.out.println("temp" + temp);
 			}
 
 			System.out.println("preList" + preList);
@@ -1297,6 +1297,19 @@ public class NOAH {
 					ArrayList<Node> temp = new ArrayList<Node>();
 					temp.add(node);
 
+					Node next = node;
+					
+					while(true){
+						if(next.getBack() instanceof Node){
+							next = ((Node) next.getBack());
+							temp.add(next);
+							
+						}else{
+							break;
+						}
+						
+					}
+					
 					System.out.println("temp at 1 :" + temp);
 					tList.add(temp);
 				}
@@ -1449,6 +1462,20 @@ public class NOAH {
 											} else {
 												break;
 											}
+										}
+									}
+								}
+							}else{
+								//すでにクリアで何かの上にあるとき
+								for(Node unstack : unstacks){
+									Matcher unSt = p3.matcher(unstack.getNodeName());
+									if(unSt.find()){
+										if(unSt.group(1).equals(underS)){
+											orderList.add(unstack);
+											orderString.add(unstack.getNodeName());
+											okflag1 = true;
+											words.add(unSt.group(2));
+											break;
 										}
 									}
 								}
