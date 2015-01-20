@@ -52,7 +52,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		// 地面の大きさ
 		float GroundLength = 1000.0f;
 		// ホームポジション
-		Vec2 HomePosition = new Vec2(-BoxSize.x, -10.0f);
+		Vec2 HomePosition = new Vec2(-BoxSize.x*2.5f, -10.0f);
 		// 積む位置
 		Vec2 PilePosition = new Vec2(-BoxSize.x, -BoxSize.y/2);
 	}
@@ -65,8 +65,8 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 	private Map<String,Box> boxMap = new HashMap<String,Box>();
 	// 今持っているボックス
 	private Box holdingBox = null;
-	// 一番高い位置にあるボックス
-	private Box highestBox = null;
+	// 一番高い位置にあるボックスの Y
+	private float highestBoxY = 0;
 	// 現在の状態
 	private ArrayList<String> states = new ArrayList<String>();
 	// 状態の変化リスナー
@@ -173,18 +173,12 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		Collections.sort(states);
 	}
 	
-	private void updateHighestBox(Box box) {
-		if (highestBox == null) {
-			highestBox = box;
-		} else {
-			if (box.body.getWorldCenter().y < highestBox.body.getWorldCenter().y) {
-				highestBox = box;
-			}
-		}
-		
-		if (highestBox == box) {
+	private void updateHighestBoxY(Box box) {
+		if (box.body.getWorldCenter().y < highestBoxY) {
+			highestBoxY = box.body.getWorldCenter().y;
+			
 			// 少し余裕を持ってホームポジションを highestBox より上の位置に変える
-			Settings.HomePosition.y = highestBox.body.getWorldCenter().y-Settings.BoxSize.y*2.0f;
+			Settings.HomePosition.y = highestBoxY-Settings.BoxSize.y*2.0f;
 		}
 	}
 	
@@ -209,14 +203,14 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		if (box == null) {
 			box = new Box(name, pos);
 			boxMap.put(name, box);
-			updateHighestBox(box);
+			updateHighestBoxY(box);
 		} else {
 			final Box fbox = box;
 			manipulations.add(new Runnable() {
 				@Override
 				public void run() {
 					fbox.body.setTransform(pos, 0);
-					updateHighestBox(fbox);
+					updateHighestBoxY(fbox);
 				}
 			});
 		}
@@ -283,7 +277,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		posTo.y = pos.y;
 		robot.moveTo(posTo);
 		robot.release();
-		updateHighestBox(holdingBox);
+		updateHighestBoxY(holdingBox);
 		
 		posTo.y = Settings.HomePosition.y;
 		robot.moveTo(posTo);
