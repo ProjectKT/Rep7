@@ -214,7 +214,8 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		}
 		
 		if (highestBox == box) {
-			//Settings.HomePosition.y = highestBox.body.getWorldCenter().y-Settings.BoxSize.y*1.5f;
+			// 少し余裕を持ってホームポジションを highestBox より上の位置に変える
+			Settings.HomePosition.y = highestBox.body.getWorldCenter().y-Settings.BoxSize.y*2.0f;
 		}
 	}
 	
@@ -251,7 +252,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			Box boxOn = boxMap.get(to);
 			if (boxOn != null) {
 				Vec2 posOn = boxOn.body.getWorldCenter();
-				pos.set(posOn).addLocal(0, Settings.BoxSize.y*1.5f);
+				pos.set(posOn).addLocal(0, -Settings.BoxSize.y*1.5f);
 			}
 		}
 		
