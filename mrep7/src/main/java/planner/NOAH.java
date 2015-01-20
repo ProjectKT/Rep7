@@ -156,8 +156,8 @@ public class NOAH {
 	private ArrayList<String> initGoalState() {
 		ArrayList<String> goalList = new ArrayList<String>();
 
-		goalList.add("clear X");
-		goalList.add("X on A");
+//		goalList.add("clear X");
+	//	goalList.add("X on A");
 		
 		goalList.add("clear A");
 		goalList.add("A on 1");
@@ -1213,19 +1213,7 @@ public class NOAH {
 			
 			System.out.println("tList :"+tList);
 
-			if(tList.size() == 0){
-				Object next = ss.get(0);
-				
-				while(true){
-					if(((JointS)next).getBack().size() == 1){
-						Object obj = ((JointS)next).getBack().get(0);
-						if(obj instanceof Node){
-							
-						}
-					}
-					
-				}
-			}
+
 			
 			ArrayList<Node> nodes = new ArrayList<Node>();
 			ArrayList<String> words = new ArrayList<String>();
