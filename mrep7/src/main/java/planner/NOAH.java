@@ -1015,7 +1015,7 @@ public class NOAH {
 				//
 				// ここでは不要になったJがでるが消すかどうか審議中
 				//
-
+				//j.removeForward(node);
 			} else {
 				j.removeForward(node);
 			}
@@ -1027,6 +1027,9 @@ public class NOAH {
 			ArrayList<JointJ> jList = new ArrayList<JointJ>();
 
 			for (Node node : preList) {
+				Matcher unSt = p3.matcher(node.getNodeName());
+				
+				if(unSt.find()){
 				Object z = node.getBack();
 				while (true) {
 					if (!(z instanceof JointJ)) {
@@ -1038,6 +1041,7 @@ public class NOAH {
 						break;
 					}
 
+				}
 				}
 			}
 
@@ -1196,6 +1200,7 @@ public class NOAH {
 			ArrayList<ArrayList<Node>> tList = new ArrayList<ArrayList<Node>>();
 			System.out.println("jlistsize" + jList.size());
 			for (JointJ j : jList) {
+				System.out.println("j forward: "+j.getForward());
 				ArrayList<Node> temp = new ArrayList<Node>();
 				Node next = j.getBack();
 				while (true) {
@@ -1261,20 +1266,25 @@ public class NOAH {
 						if (!preList.contains(unStack)) {
 							if (unStack.getForward() instanceof JointS) {
 								preList.remove(unStack);
+								System.out.println("remove 1 "+unStack);
 								break;
 							} else {
 								unStack = ((Node) unStack.getForward());
 							}
 						} else {
+							Matcher unSt = p3.matcher(unStack.getNodeName());
+							if(unSt.find()){
 							preList.remove(unStack);
+							}
+							System.out.println("remove 2 "+unStack);
 							break;
 						}
 
 					}
 
 
-
 				}
+
 				System.out.println("add temp " + temp);
 
 				tList.add(temp);
@@ -1354,6 +1364,7 @@ public class NOAH {
 
 				// clearがあった時
 				if (clearflag) {
+					System.out.println("clear   "+stacks.get(clearNodeIndex));
 					boolean flag1 = true;
 					for (Node node : unstacks) {
 						Matcher unstack = p3.matcher(node.getNodeName());
@@ -1361,6 +1372,8 @@ public class NOAH {
 						if (unstack.find()) {
 							if (unstack.group(1).equals(
 									over.get(clearNodeIndex))) {
+								System.out.println("clear   type1");
+								System.out.println("clear   "+node);
 								orderList.add(node);
 								orderString.add(node.getNodeName());
 								// unstackの下をclearにする
@@ -1377,6 +1390,7 @@ public class NOAH {
 					}
 					// 床においてあるものを載せるとき
 					if (flag1) {
+						System.out.println("clear   type2");
 						orderList.add(stacks.get(clearNodeIndex));
 						orderString.add(stacks.get(clearNodeIndex)
 								.getNodeName());
