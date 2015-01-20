@@ -191,7 +191,6 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		if (box == null) {
 			box = new Box(name, pos);
 			boxMap.put(name, box);
-			updateStates();
 			updateHighestBox(box);
 		} else {
 			final Box fbox = box;
@@ -202,7 +201,6 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 					boxMap.remove(fbox);
 					Box box = new Box(name, pos);
 					boxMap.put(name, box);
-					updateStates();
 					updateHighestBox(box);
 				}
 			});
