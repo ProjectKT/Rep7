@@ -20,6 +20,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
@@ -52,7 +53,9 @@ public class SampleGUI extends JFrame implements ActionListener{
 	ArrayList<String> goalList = new ArrayList<String>();
 	ArrayList<String> objects = new ArrayList<String>();
 	ArrayList<String> ansList = new ArrayList<String>();
-	
+
+	JTabbedPane tab1 = new JTabbedPane();
+	JTabbedPane tab2 = new JTabbedPane();
 	JTextArea txtStart = new JTextArea("");//初期状態のエリア
 	JTextArea txtGoal = new JTextArea("");//目標状態のエリア
 	JTextArea txtAnswer = new JTextArea("");//解答のエリア
@@ -115,8 +118,6 @@ public class SampleGUI extends JFrame implements ActionListener{
 		card1.setLayout(new BorderLayout());
 		
 		// - Page 1
-		JTabbedPane tab = new JTabbedPane();
-		
 		JPanel page1_panels = new JPanel(new GridLayout(2,1));
 		
 		//初期状態と目標状態を決めるページ
@@ -160,9 +161,10 @@ public class SampleGUI extends JFrame implements ActionListener{
 		
 		JButton okButton = new JButton("plan");
 		okButton.addActionListener(this);
+		okButton.setActionCommand("plan");
 		ctrl.add(okButton);
 		
-		tab.add("select", page1);
+		tab1.add("select", page1);
 		
 		// - Page 2: 実行結果を表示するページ
 		JPanel page2 = new JPanel(new BorderLayout());
@@ -201,9 +203,9 @@ public class SampleGUI extends JFrame implements ActionListener{
 		btnPanel.add(goalButton);
 		
 		page2.add(BorderLayout.SOUTH, btnPanel);
-		tab.add("answer", page2);
+		tab1.add("answer", page2);
 		
-		card1.add(tab);
+		card1.add(tab1);
 		
 		// --- Card2: テキストで表示する
 		JPanel card2 = new JPanel();
@@ -214,7 +216,7 @@ public class SampleGUI extends JFrame implements ActionListener{
 
 		
 		//
-		JTabbedPane tab2 = new JTabbedPane();
+
 		JPanel sPanel = new JPanel();//初期状態等の変更ページ
 		sPanel.setLayout(new GridLayout());
 		JPanel aPanel = new JPanel();//解答ページ
@@ -302,14 +304,13 @@ public class SampleGUI extends JFrame implements ActionListener{
 	 * @param panel パネル
 	 */
 	private synchronized void initPlannerPanel(ArrayList<String> states, PlannerPanel panel) {
-		final ArrayList<String> ontableStates = new ArrayList<String>();
+		final ArrayList<String> onTableStates = new ArrayList<String>();
 		
 		for(String object : objects){
-			System.out.println("objects"+object);
-			ontableStates.add("clear " +object);
+			onTableStates.add("clear " +object);
 		}
 		
-		noah.setCurrentState(ontableStates);
+		noah.setCurrentState(onTableStates);
 		noah.setGoalState(states);
 		noah.planning();
 		final ArrayList<String> plan = noah.getResult();
@@ -335,13 +336,6 @@ public class SampleGUI extends JFrame implements ActionListener{
 			}
 		}
 		try { panel.start(); } catch (InterruptedException e) { e.printStackTrace(); }
-	}
-	
-	/**
-	 * Grpahics Display の方のプランを作成する
-	 */
-	private void prepareGraphicalPlan() {
-		plannerStepExecutor.initialize();
 	}
 	
 	private void textsToStates() {
@@ -380,12 +374,14 @@ public class SampleGUI extends JFrame implements ActionListener{
     		layout.first(panel);
     	}else if(cmd.equals("plan")){
     		plan();
-    		prepareGraphicalPlan();
+    		plannerStepExecutor.initialize();
+    		tab1.setSelectedIndex(1);
     	}else if(cmd.equals("OK")){
     		textsToStates();
     		plan();
     		for(int i=0;i < ansList.size();i++)
     		txtAnswer.append(ansList.get(i)+"\n");
+    		tab2.setSelectedIndex(1);
     		
     	}else if(cmd.equals("RESET")){
     		txtStart.setText("");
