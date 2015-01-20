@@ -1237,6 +1237,7 @@ public class NOAH {
 				jList.remove(del);
 			}
 
+			jList.remove(js.get(0));
 			System.out.println("check");
 			System.out.println("pre  :" + preList);
 			System.out.println("orderStr" + orderString);
