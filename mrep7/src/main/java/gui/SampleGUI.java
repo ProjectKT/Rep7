@@ -302,14 +302,13 @@ public class SampleGUI extends JFrame implements ActionListener{
 	 * @param panel パネル
 	 */
 	private synchronized void initPlannerPanel(ArrayList<String> states, PlannerPanel panel) {
-		final ArrayList<String> ontableStates = new ArrayList<String>();
+		final ArrayList<String> onTableStates = new ArrayList<String>();
 		
 		for(String object : objects){
-			System.out.println("objects"+object);
-			ontableStates.add("clear " +object);
+			onTableStates.add("clear " +object);
 		}
 		
-		noah.setCurrentState(ontableStates);
+		noah.setCurrentState(onTableStates);
 		noah.setGoalState(states);
 		noah.planning();
 		final ArrayList<String> plan = noah.getResult();

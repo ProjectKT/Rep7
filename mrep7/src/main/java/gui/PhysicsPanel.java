@@ -570,6 +570,7 @@ public class PhysicsPanel extends JPanel {
 	 */
 	private class Animator implements Runnable {
 		Thread thread;
+		boolean loop;
 		long pt = 0;
 		long ct = 0;
 		
@@ -579,6 +580,7 @@ public class PhysicsPanel extends JPanel {
 		 */
 		public void start() throws InterruptedException {
 			stop();
+			loop = true;
 			thread = new Thread(this);
 			thread.start();
 		}
@@ -589,6 +591,7 @@ public class PhysicsPanel extends JPanel {
 		 */
 		public void stop() throws InterruptedException {
 			if (thread != null) {
+				loop = false;
 				thread.interrupt();
 				thread.join();
 			}
@@ -602,7 +605,7 @@ public class PhysicsPanel extends JPanel {
 			
 			try {
 				pt = System.nanoTime();
-				while (!thread.isInterrupted()) {
+				while (loop) {
 					ct = System.nanoTime();
 					timeSpent = ct - pt;
 					if (render()) {
