@@ -2,12 +2,10 @@ package gui;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -15,15 +13,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
 
 import org.jbox2d.callbacks.ContactListener;
 import org.jbox2d.collision.Manifold;
 import org.jbox2d.collision.shapes.EdgeShape;
 import org.jbox2d.collision.shapes.PolygonShape;
+import org.jbox2d.collision.shapes.Shape;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.BodyDef;
@@ -46,7 +43,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		// 箱の名前の描画色
 		Color BoxNameColor = new Color(1.0f, 1.0f, 1.0f);
 		// ロボットの形
-		PolygonShape RobotShape = new PolygonShape() {{
+		Shape RobotShape = new PolygonShape() {{
 			setAsBox(BoxSize.x/2 + 0.5f, 0.2f);
 		}};
 		// ロボットの速度
@@ -230,7 +227,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		
 		holdingBox = boxMap.get(target);
 		if (holdingBox != null) {
-			final Vec2 pos = holdingBox.body.getWorldCenter();
+			final Vec2 pos = holdingBox.body.getWorldCenter().addLocal(0, -Settings.BoxSize.y/2);
 			final Vec2 posTo = new Vec2(pos);
 			posTo.y = Settings.HomePosition.y;
 			robot.moveTo(posTo);
@@ -254,7 +251,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			Box boxOn = boxMap.get(to);
 			if (boxOn != null) {
 				Vec2 posOn = boxOn.body.getWorldCenter();
-				pos.set(posOn).subLocal(new Vec2(0, Settings.BoxSize.y*1.5f));
+				pos.set(posOn).addLocal(0, Settings.BoxSize.y*1.5f);
 			}
 		}
 		
