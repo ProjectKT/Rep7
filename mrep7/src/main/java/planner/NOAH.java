@@ -158,7 +158,7 @@ public class NOAH {
 	 */
 	private ArrayList<String> initGoalState() {
 		ArrayList<String> goalList = new ArrayList<String>();
-
+/*
 		goalList.add("clear 2");
 		goalList.add("clear 1");
 
@@ -167,9 +167,35 @@ public class NOAH {
 		goalList.add("1 on 4");
 		goalList.add("4 on 3");
 		goalList.add("3 on 6");
+*/
 
+		goalList.add("clear A");
+		goalList.add("A on 1");
+		goalList.add("1 on 2");
+		goalList.add("2 on 3");
+		
+		goalList.add("clear B");
+		goalList.add("B on C");
 
+		
 
+		goalList.add("clear 4");
+		goalList.add("4 on 5");
+		goalList.add("5 on 6");
+		
+		goalList.add("clear 8");
+		goalList.add("8 on 7");
+		
+		goalList.add("clear 9");
+		goalList.add("ontable 9");
+
+		goalList.add("clear 13");
+		goalList.add("13 on 10");
+		goalList.add("10 on 11");
+		goalList.add("11 on 12");
+		goalList.add("12 on 14");
+		goalList.add("14 on 15");
+		goalList.add("15 on 16");
 		return goalList;
 	}
 
@@ -187,7 +213,7 @@ public class NOAH {
 		 * initialState.add("A on B"); initialState.add("B on C");
 		 * initialState.add("D on E");
 		 */
-
+/*
 		initialState.add("clear 1");
 		initialState.add("clear 4");
 
@@ -196,7 +222,30 @@ public class NOAH {
 		initialState.add("4 on 5");
 		initialState.add("5 on 6");
 
-
+		*/
+		initialState.add("clear 1");
+		initialState.add("1 on 2");
+		initialState.add("2 on 3");
+		
+		initialState.add("clear A");
+		initialState.add("A on B");
+		initialState.add("B on 4");
+		initialState.add("4 on 5");
+		initialState.add("5 on 6");
+		
+		initialState.add("clear C");
+		initialState.add("C on 7");
+		initialState.add("7 on 8");
+		initialState.add("8 on 9");
+		
+		initialState.add("clear 13");
+		initialState.add("13 on 10");
+		initialState.add("10 on 11");
+		initialState.add("11 on 12");
+		initialState.add("12 on 14");
+		initialState.add("14 on 15");
+		initialState.add("15 on 16");
+		 
 		return initialState;
 	}
 
