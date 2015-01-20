@@ -150,7 +150,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 						states.add(box.name+" on "+boxOn.name);
 					}
 					if (boxAbove == null) {
-						states.add("clear"+box.name);
+						states.add("clear "+box.name);
 					}
 				}
 			}
@@ -546,9 +546,11 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		}).start();
 		
 		try { 
+			p.stop();
 			p.putBox("1", null);
 			p.putBox("2", "1");
 			p.putBox("3", null);
+			p.start();
 			
 			Thread.sleep(500);
 			p.pickup("2");
