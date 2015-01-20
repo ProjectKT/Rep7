@@ -153,6 +153,11 @@ public class PhysicsPanel extends JPanel {
 		// 地面の定義
 		BodyDef bd = new BodyDef();
 		groundBody = world.createBody(bd);
+		
+		// 描画スレッド開始
+		try {
+			start();
+		} catch (InterruptedException e) { }
 	}
 	
 	/**
@@ -616,7 +621,7 @@ public class PhysicsPanel extends JPanel {
 					beforeTime = System.nanoTime();
 				}
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				System.out.println("Animator thread interrupted. Stopped animating.");
 			}
 		}
 	}

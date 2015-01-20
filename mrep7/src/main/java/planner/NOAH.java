@@ -156,8 +156,6 @@ public class NOAH {
 	private ArrayList<String> initGoalState() {
 		ArrayList<String> goalList = new ArrayList<String>();
 
-		goalList.add("clear X");
-		goalList.add("X on A");
 		
 		//goalList.add("clear A");
 		goalList.add("A on 1");
@@ -207,8 +205,11 @@ public class NOAH {
 		// initialState.add("4 on 5");
 		// initialState.add("5 on 6");
 
+		initialState.add("clear X");
+		initialState.add("X on A");
+
 		// initialState.add("clear 1");
-		initialState.add("clear A");
+		// initialState.add("clear A");
 		initialState.add("A on 1");
 		// initialState.add("clear 4");
 		initialState.add("clear B");
