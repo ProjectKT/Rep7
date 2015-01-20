@@ -61,6 +61,8 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 	
 	// テーブルのボディ
 	private Body table;
+	// テーブルポインタ
+	private int tablePtr;
 	// 操作用ロボット
 	private Robot robot;
 	// 箱とその名前の対応
@@ -108,6 +110,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			shape.set(new Vec2(-Settings.GroundLength/2, 0.0f), new Vec2(Settings.GroundLength/2, 0.0f));
 			table.createFixture(fd);
 		}
+		tablePtr = 0;
 
 		// Robot を作る
 		robot = new Robot();
@@ -193,21 +196,23 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		}
 	}
 	
+	private int nextTable() {
+		return ++tablePtr;
+	}
+	
 	// --- interface implementation ---
 
 	@Override
 	public void putBox(final String name, String on) {
-		final int i = boxMap.size();
-		final Vec2 pos = new Vec2(Settings.BoxSize.x * 1.5f * i, -Settings.BoxSize.y/2);
+		final Vec2 pos = new Vec2();
+		final Box onBox = (on != null && !on.isEmpty()) ? boxMap.get(on) : null;
 		
-		// 下敷きのオブジェクトを取得
-		if (on != null && !on.isEmpty()) {
-			// 箱の上に置く
-			Box onBox = boxMap.get(on);
-			if (onBox != null) {
-				pos.set(onBox.body.getWorldCenter());
-				pos.addLocal(0, -Settings.BoxSize.y);
-			}
+		if (onBox == null) {
+			final int n = nextTable();
+			pos.set(Settings.BoxSize.x * 2.5f * n, -Settings.BoxSize.y/2);
+		} else {
+			pos.set(onBox.body.getWorldCenter());
+			pos.addLocal(0, -Settings.BoxSize.y);
 		}
 		
 		Box box = boxMap.get(name);
@@ -272,13 +277,15 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			return;
 		}
 		
-		final Vec2 pos = new Vec2(Settings.HomePosition);
-		if (to != null && !to.isEmpty()) {
-			Box boxOn = boxMap.get(to);
-			if (boxOn != null) {
-				Vec2 posOn = boxOn.body.getWorldCenter();
-				pos.set(posOn).addLocal(0, -Settings.BoxSize.y*1.5f);
-			}
+		final Vec2 pos = new Vec2();
+		final Box onBox = (to != null && !to.isEmpty()) ? boxMap.get(to) : null;
+		
+		if (onBox == null) {
+			final int n = nextTable();
+			pos.set(Settings.BoxSize.x * 2.5f * n, -Settings.BoxSize.y);
+		} else {
+			pos.set(onBox.body.getWorldCenter());
+			pos.addLocal(0, -Settings.BoxSize.y*1.5f);
 		}
 		
 		final Vec2 posTo = new Vec2(pos);
@@ -453,7 +460,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			{
 				BodyDef bd = new BodyDef();
 				bd.type = BodyType.KINEMATIC;
-				bd.position.set(0, -8.0f);
+				bd.position.set(Settings.HomePosition);
 				
 				FixtureDef fd = new FixtureDef();
 				fd.shape = Settings.RobotArmShape;
