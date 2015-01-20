@@ -87,7 +87,18 @@ table.table thead tr:last-child th {
 
 <h2>ソースファイル</h2>
 <ul>
-  <li><a href="../../rep1/src/.java">.java</a>
+  <li><a href="../../mrep7/src/main/java/gui/PhysicsDebugDraw.java">PhysicsDebugDraw.java</a>
+  <li><a href="../../mrep7/src/main/java/gui/PhysicsPanel.java">PhysicsPanel.java</a>
+  <li><a href="../../mrep7/src/main/java/gui/PlannerController.java">PlannerController.java</a>
+  <li><a href="../../mrep7/src/main/java/gui/PlannerPanel.java">PlannerPanel.java</a>
+  <li><a href="../../mrep7/src/main/java/gui/SampleGUI.java">SampleGUI.java</a>
+  <li><a href="../../mrep7/src/main/java/gui/Camera.java">Camera.java</a>
+  <li><a href="../../mrep7/src/main/java/planner/NOAH.java">NOAH.java</a>
+  <li><a href="../../mrep7/src/main/java/planner/NOAHParameters.java">NOAHParameters.java</a>
+  <li><a href="../../mrep7/src/main/java/planner/Operator.java">Operator.java</a>
+  <li><a href="../../mrep7/src/main/java/planner/Node.java">Node.java</a>
+  <li><a href="../../mrep7/src/main/java/planner/JointJ.java">JointJ.java</a>
+  <li><a href="../../mrep7/src/main/java/planner/JointS.java">JointS.java</a>
     <!-- 実装・変更したソースファイルへのリンク．修正する． -->
     <!-- ※ リンクは絶対パスに変更せず，上記のような相対パスのままで！ -->
 </ul>
@@ -138,32 +149,29 @@ NOAH プランナーの大まかなプログラムの構造は次の通りです
 	<tbody>
 		<tr>
 			<td>Node</td>
-			<td>ここに説明を記述</td>
+			<td>状態、命令、結合状態などを表すNodeのクラス</td>
 		</tr>
 		<tr>
 			<td>JointJ</td>
-			<td>ここに説明を記述</td>
+			<td>NodeとNodeとを結合するクラス</td>
 		</tr>
 		<tr>
 			<td>JointS</td>
-			<td>ここに説明を記述</td>
+			<td>始まりとNodeとを結合するクラス</td>
 		</tr>
 		<tr>
 			<td>Operator</td>
-			<td>ここに説明を記述</td>
+			<td>動作を表すクラス</td>
 		</tr>
 		<tr>
 			<td>NOAHParameters</td>
-			<td>ここに説明を記述</td>
+			<td>初期状態、目標状態を表すクラス</td>
 		</tr>
 		<tr>
 			<td>NOAH</td>
-			<td>ここに説明を記述</td>
+			<td>実際にプランニングするクラス</td>
 		</tr>
-		<tr>
-			<td>Unifier</td>
-			<td>ここに説明を記述</td>
-		</tr>
+
 	</tbody>
 </table>
 
@@ -247,7 +255,6 @@ NOAH プランナーの大まかなプログラムの構造は次の通りです
 </p>
 
 <pre class="brush: java">
-			// 元からある山の処理を消す
 			for (JointJ j : jList) {
 				Matcher stackMap = p2.matcher(j.getBack().getNodeName());
 				Matcher unMap;
