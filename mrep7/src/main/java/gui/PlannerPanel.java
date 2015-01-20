@@ -257,10 +257,15 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			return;
 		}
 		
+		// ピックアップする箱を取得する
 		holdingBox = boxMap.get(target);
 		if (holdingBox != null) {
+			// 箱の中心位置
 			final Vec2 pos = holdingBox.body.getWorldCenter();
+			// ロボット手のひらの移動先
 			final Vec2 posTo = new Vec2(pos).addLocal(0, -Settings.BoxSize.y/2);
+			
+			// 他の箱にぶつけないように手のひらを移動する
 			posTo.y = Settings.HomePosition.y;
 			robot.moveTo(posTo);
 			robot.moveTo(pos);
@@ -289,6 +294,8 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		}
 		
 		final Vec2 posTo = new Vec2(pos);
+		
+		// 他の箱にぶつけないように手のひらを移動する
 		posTo.y = Settings.HomePosition.y;
 		robot.moveTo(posTo);
 		posTo.y = pos.y;
