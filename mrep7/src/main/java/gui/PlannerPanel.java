@@ -6,6 +6,7 @@ import java.awt.Graphics2D;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -172,6 +173,21 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		Collections.sort(states);
 	}
 	
+	private void updateHighestBox(Box box) {
+		if (highestBox == null) {
+			highestBox = box;
+		} else {
+			if (box.body.getWorldCenter().y < highestBox.body.getWorldCenter().y) {
+				highestBox = box;
+			}
+		}
+		
+		if (highestBox == box) {
+			// 少し余裕を持ってホームポジションを highestBox より上の位置に変える
+			Settings.HomePosition.y = highestBox.body.getWorldCenter().y-Settings.BoxSize.y*2.0f;
+		}
+	}
+	
 	// --- interface implementation ---
 
 	@Override
@@ -206,18 +222,21 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		}
 	}
 	
-	private void updateHighestBox(Box box) {
-		if (highestBox == null) {
-			highestBox = box;
-		} else {
-			if (box.body.getWorldCenter().y < highestBox.body.getWorldCenter().y) {
-				highestBox = box;
-			}
+	@Override
+	public void clear() throws InterruptedException {
+		clearAll();
+		
+		final boolean animate = isAnimating();
+		stopAnimating();
+		
+		synchronized (boxMap) {
+			boxMap.clear();
 		}
 		
-		if (highestBox == box) {
-			// 少し余裕を持ってホームポジションを highestBox より上の位置に変える
-			Settings.HomePosition.y = highestBox.body.getWorldCenter().y-Settings.BoxSize.y*2.0f;
+		initialize();
+		
+		if (animate) {
+			startAnimating();
 		}
 	}
 	
@@ -563,11 +582,11 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		}).start();
 		
 		try { 
-			p.stop();
+			p.stopAnimating();
 			p.putBox("1", null);
 			p.putBox("2", "1");
 			p.putBox("3", null);
-			p.start();
+			p.startAnimating();
 			
 //			Thread.sleep(2000);
 //			p.putBox("1", "2");
@@ -580,6 +599,13 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			p.pickup("1");
 			Thread.sleep(500);
 			p.place("2");
+			
+			Thread.sleep(1000);
+			p.clear();
+			
+			p.stopAnimating();
+			p.putBox("a", null);
+			p.startAnimating();
 			
 		} catch (Exception e) {
 			e.printStackTrace();

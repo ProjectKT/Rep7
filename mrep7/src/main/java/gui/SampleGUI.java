@@ -125,8 +125,8 @@ public class SampleGUI extends JFrame implements ActionListener{
 			@Override
 			public void componentShown(ComponentEvent e) {
 				try {
-					startPanel.start();
-					goalPanel.start();
+					startPanel.startAnimating();
+					goalPanel.startAnimating();
 				} catch (Exception e0) {
 					e0.printStackTrace();
 				}
@@ -134,8 +134,8 @@ public class SampleGUI extends JFrame implements ActionListener{
 			@Override
 			public void componentHidden(ComponentEvent e) {
 				try {
-					startPanel.stop();
-					goalPanel.stop();
+					startPanel.stopAnimating();
+					goalPanel.stopAnimating();
 				} catch (Exception e0) {
 					e0.printStackTrace();
 				}
@@ -193,7 +193,7 @@ public class SampleGUI extends JFrame implements ActionListener{
 			@Override
 			public void componentShown(ComponentEvent e) {
 				try {
-					plannerPanel.start();
+					plannerPanel.startAnimating();
 				} catch (Exception e0) {
 					e0.printStackTrace();
 				}
@@ -201,7 +201,7 @@ public class SampleGUI extends JFrame implements ActionListener{
 			@Override
 			public void componentHidden(ComponentEvent e) {
 				try {
-					plannerPanel.stop();
+					plannerPanel.stopAnimating();
 				} catch (Exception e0) {
 					e0.printStackTrace();
 				}
@@ -209,7 +209,8 @@ public class SampleGUI extends JFrame implements ActionListener{
 		});
 
 		JPanel page2_panel = new JPanel(new BorderLayout());
-		stepLabel = new JLabel("初期状態");
+		stepLabel = new JLabel();
+		plannerStepExecutor.updateStepLabel();
 		page2_panel.add(BorderLayout.NORTH, stepLabel);
 		plannerPanel = new PlannerPanel();
 		page2_panel.add(BorderLayout.CENTER, plannerPanel);
@@ -251,8 +252,6 @@ public class SampleGUI extends JFrame implements ActionListener{
 		card2.setLayout(new GridLayout());
 		
 		EtchedBorder border = new EtchedBorder();
-		
-
 		
 		//
 
@@ -360,7 +359,8 @@ public class SampleGUI extends JFrame implements ActionListener{
 		Pattern p2 = Pattern.compile("Place (.*) on (.*)");
 		ArrayList<String> exist = new ArrayList<String>();
 		
-		try { panel.stop(); } catch (InterruptedException e) { e.printStackTrace(); }
+		try { panel.clear(); } catch (InterruptedException e) { e.printStackTrace(); }
+		try { panel.stopAnimating(); } catch (InterruptedException e) { e.printStackTrace(); }
 		for (String operator : plan) {
 			Matcher m1 = p1.matcher(operator);
 			Matcher m2 = p2.matcher(operator);
@@ -376,7 +376,7 @@ public class SampleGUI extends JFrame implements ActionListener{
 				panel.putBox(m2.group(1),m2.group(2));
 			}
 		}
-		try { panel.start(); } catch (InterruptedException e) { e.printStackTrace(); }
+		try { panel.startAnimating(); } catch (InterruptedException e) { e.printStackTrace(); }
 	}
 	
 	private void textsToStates() {
@@ -468,8 +468,8 @@ public class SampleGUI extends JFrame implements ActionListener{
 	    	}else if(cmd.equals("next")){
 	    		if (ptr < ansList.size()) {
 	    			String op = ansList.get(ptr);
-	    			try { execute(op); } catch (InterruptedException e0) { e0.printStackTrace(); }
 	    			ptr++;
+	    			try { execute(op); } catch (InterruptedException e0) { e0.printStackTrace(); }
 	    		}
 	    	}else if(cmd.equals("prev")){
 	    		if (0 < ptr) {
@@ -485,13 +485,26 @@ public class SampleGUI extends JFrame implements ActionListener{
 			ptr = 0;
 			loop = false;
 			initPlannerPanel(startList, plannerPanel);
+			updateStepLabel();
+		}
+		
+		public void updateStepLabel() {
+			if (ptr == 0) {
+				stepLabel.setText("初期状態");
+			} else if (ptr == ansList.size()) {
+				stepLabel.setText("目標状態");
+			} else {
+				stepLabel.setText(nth(ptr)+" process");
+			}
 		}
 		
 		private void execute(String op) throws InterruptedException {
 			Matcher m;
 			
+			System.out.println("executing: "+op);
+			
 			// ラベル更新
-			stepLabel.setText(nth(ptr)+" process");
+			updateStepLabel();
 			
 			// pickup (.*) from the table
 			m = p1.matcher(op);
@@ -544,9 +557,9 @@ public class SampleGUI extends JFrame implements ActionListener{
 					if (op == null) {
 						break;
 					}
-					execute(op);
-					
 					ptr++;
+					
+					execute(op);
 				}
 			} catch (InterruptedException e) {
 				System.out.println("An error occured while executing the operation: "+op);

@@ -12,6 +12,11 @@ public interface PlannerController {
 	public void putBox(String name, String on);
 	
 	/**
+	 * オブジェクトを消して最初の状態に戻す
+	 */
+	public void clear() throws InterruptedException;
+	
+	/**
 	 * target をピックアップする
 	 * @param target
 	 */

@@ -156,7 +156,7 @@ public class PhysicsPanel extends JPanel {
 		
 		// 描画スレッド開始
 		try {
-			start();
+			startAnimating();
 		} catch (InterruptedException e) { }
 	}
 	
@@ -164,15 +164,23 @@ public class PhysicsPanel extends JPanel {
 	 * 描画スレッドを開始する
 	 * @throws InterruptedException
 	 */
-	public void start() throws InterruptedException {
+	public void startAnimating() throws InterruptedException {
 		animator.start();
+	}
+	
+	/**
+	 * 描画スレッドが動いているかどうか返す
+	 * @return
+	 */
+	public boolean isAnimating() {
+		return animator.isAnimating();
 	}
 	
 	/**
 	 * 描画スレッドを停止する
 	 * @throws InterruptedException
 	 */
-	public void stop() throws InterruptedException {
+	public void stopAnimating() throws InterruptedException {
 		animator.stop();
 	}
 	
@@ -201,6 +209,27 @@ public class PhysicsPanel extends JPanel {
 			synchronized(worldLock) {
 				world.destroyJoint(j);
 			}
+		}
+	}
+	
+	public void clearAll() throws InterruptedException {
+		final boolean animate = isAnimating();
+		stopAnimating();
+		
+		Body body = world.getBodyList();
+		while (body != null) {
+			world.destroyBody(body);
+			body = body.getNext();
+		}
+		
+		Joint joint = world.getJointList();
+		while (joint != null) {
+			world.destroyJoint(joint);
+			joint = joint.getNext();
+		}
+		
+		if (animate) {
+			startAnimating();
 		}
 	}
 	
@@ -583,6 +612,10 @@ public class PhysicsPanel extends JPanel {
 			loop = true;
 			thread = new Thread(this);
 			thread.start();
+		}
+		
+		public boolean isAnimating() {
+			return loop;
 		}
 		
 		/**
