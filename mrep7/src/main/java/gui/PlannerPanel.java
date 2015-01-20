@@ -21,6 +21,7 @@ import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
 import org.jbox2d.callbacks.ContactListener;
+import org.jbox2d.collision.Manifold;
 import org.jbox2d.collision.shapes.EdgeShape;
 import org.jbox2d.collision.shapes.PolygonShape;
 import org.jbox2d.common.Vec2;
@@ -44,6 +45,10 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		}};
 		// 箱の名前の描画色
 		Color BoxNameColor = new Color(1.0f, 1.0f, 1.0f);
+		// ロボットの形
+		PolygonShape RobotShape = new PolygonShape() {{
+			setAsBox(BoxSize.x/2 + 0.5f, 0.2f);
+		}};
 		// 地面の大きさ
 		float GroundLength = 1000.0f;
 		// ホームポジション
@@ -62,6 +67,8 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 	private Box holdingBox = null;
 	// 一番高い位置にあるボックス
 	private Box highestBox = null;
+	// 現在の状態
+	private ArrayList<String> states = new ArrayList<String>();
 	// 状態の変化リスナー
 	private StatesChangeListener statesChangeListener = null;
 	
@@ -78,6 +85,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 
 	private void initialize() {
 		addKeyListener(keyAdapter);
+		addContactListener(statesWatcher);
 		
 		// ground
 		Body ground = null;
@@ -98,6 +106,59 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 
 		// Robot
 		robot = new Robot();
+	}
+	
+	private void updateStates() {
+		synchronized (states) {
+			states.clear();
+			
+			synchronized (boxMap) {
+				Iterator<Box> it = boxMap.values().iterator();
+				while (it.hasNext()) {
+					Box box = it.next();
+					Box boxOn = null;
+					Box boxAbove = null;
+					
+					ContactEdge edge = box.body.getContactList();
+					while (edge != null) {
+						final Contact contact = edge.contact;
+						// この箱のボディ
+						final Body bodyBox = (contact.getFixtureA().getBody() == box.body) ?
+								contact.getFixtureA().getBody() : contact.getFixtureB().getBody();
+						// 接触しているオブジェクトのボディ
+						final Body bodyObj = (contact.getFixtureA().getBody() == box.body) ?
+								contact.getFixtureB().getBody() : contact.getFixtureA().getBody();
+						
+						if (bodyBox.getWorldCenter().y < bodyObj.getWorldCenter().y) {
+							String boxOnName = findBox(bodyObj);
+							if (boxOnName != null) {
+								boxOn = boxMap.get(boxOnName);
+							}
+						} else if (bodyObj.getWorldCenter().y < bodyBox.getWorldCenter().y){
+							String boxAboveName = findBox(bodyObj);
+							if (boxAboveName != null) {
+								boxAbove = boxMap.get(boxAboveName);
+							}
+						}
+						
+						edge = edge.next;
+					}
+					
+					if (boxOn == null) {
+						states.add("ontable "+box.name);
+					} else {
+						states.add(box.name+" on "+boxOn.name);
+					}
+					if (boxAbove == null) {
+						states.add("clear"+box.name);
+					}
+				}
+			}
+			
+			if (!robot.isGrabbing) {
+				states.add("handEmpty");
+			}
+		}
 	}
 	
 	// --- interface implementation ---
@@ -202,66 +263,15 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 	}
 	
 	public List<String> getStates() {
-		ArrayList<String> states = new ArrayList<String>();
+		updateStates();
 		
-		synchronized (boxMap) {
-			Iterator<Box> it = boxMap.values().iterator();
-			while (it.hasNext()) {
-				Box box = it.next();
-				Box boxOn = null;
-				Box boxAbove = null;
-				
-				ContactEdge edge = box.body.getContactList();
-				while (edge != null) {
-					final Contact contact = edge.contact;
-					// この箱のボディ
-					final Body bodyBox = (contact.getFixtureA().getBody() == box.body) ?
-							contact.getFixtureA().getBody() : contact.getFixtureB().getBody();
-					// 接触しているオブジェクトのボディ
-					final Body bodyObj = (contact.getFixtureA().getBody() == box.body) ?
-							contact.getFixtureB().getBody() : contact.getFixtureA().getBody();
-					
-					if (bodyBox.getWorldCenter().y < bodyObj.getWorldCenter().y) {
-						String boxOnName = findBox(bodyObj);
-						if (boxOnName != null) {
-							boxOn = boxMap.get(boxOnName);
-						}
-					} else if (bodyObj.getWorldCenter().y < bodyBox.getWorldCenter().y){
-						String boxAboveName = findBox(bodyObj);
-						if (boxAboveName != null) {
-							boxAbove = boxMap.get(boxAboveName);
-						}
-					}
-					
-					edge = edge.next;
-				}
-				
-				if (boxOn == null) {
-					states.add("ontable "+box.name);
-				} else {
-					states.add(box.name+" on "+boxOn.name);
-				}
-				if (boxAbove == null) {
-					states.add("clear"+box.name);
-				}
-			}
-		}
-		
-		if (!robot.isGrabbing) {
-			states.add("handEmpty");
-		}
-	
-		return states;
+		ArrayList<String> out = new ArrayList<String>(states);
+		return out;
 	}
 	
 	@Override
 	public void setStatesChangeListener(StatesChangeListener l) {
 		statesChangeListener = l;
-		if (l != null) {
-			addContactListener(statesWatcher);
-		} else {
-			removeContactListener(statesWatcher);
-		}
 	}
 	
 	private final ContactAdapter statesWatcher = new ContactAdapter() {
@@ -271,8 +281,9 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		public void endContact(Contact contact) { fire(); }
 		
 		private void fire() {
+			updateStates();
 			if (statesChangeListener != null) {
-				statesChangeListener.onChangeStates(getStates());
+				statesChangeListener.onChangeStates((List<String>) states.clone());
 			}
 		}
 	};
@@ -312,7 +323,12 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 	protected void drawDebugData(Graphics2D g) {
 		super.drawDebugData(g);
 		
-		Font origFont = g.getFont();
+		drawBoxNames(g);
+		drawStates(g);
+	}
+	
+	private void drawBoxNames(Graphics2D g) {
+		final Font origFont = g.getFont();
 		
 		// box の名前を表示する
 		synchronized (boxMap) {
@@ -330,8 +346,19 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 				g.drawString(box.name, screenCenter.x - w/2.0f, screenCenter.y + screenSize.y/2);
 			}
 		}
-		
+
 		g.setFont(origFont);
+	}
+	
+	private void drawStates(Graphics2D g) {
+		int size = g.getFont().getSize();
+		synchronized (states) {
+			int i = 0;
+			for (Iterator<String> it = states.iterator(); it.hasNext(); i++) {
+				String state = it.next();
+				g.drawString(state, 0, i*size);
+			}
+		}
 	}
 
 	private final KeyAdapter keyAdapter = new KeyAdapter() {
@@ -394,14 +421,11 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 				bd.type = BodyType.KINEMATIC;
 				bd.position.set(0, -8.0f);
 				
-				EdgeShape shape = new EdgeShape();
-				
 				FixtureDef fd = new FixtureDef();
-				fd.shape = shape;
+				fd.shape = Settings.RobotShape;
 				fd.density = 0.2f;
 				fd.friction = 0.5f;
 
-				shape.set(new Vec2(-PALM_WIDTH/2, 0), new Vec2(PALM_WIDTH/2, 0));
 				palm = createBody(bd);
 				palm.createFixture(fd);
 			}
@@ -418,9 +442,10 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 					if (bodyA == palm || bodyB == palm) {
 						Body hand = (bodyA == palm) ? bodyA : bodyB;
 						Body obj = (bodyA == hand) ? bodyB : bodyA;
+						Manifold manifold = contact.getManifold();
 						
 						final RevoluteJointDef jd = new RevoluteJointDef();
-						jd.initialize(hand, obj, hand.getWorldCenter());
+						jd.initialize(hand, obj, hand.getWorldPoint(manifold.localPoint));
 						jd.collideConnected = true;
 						
 						final Object commandLock = new Object();
