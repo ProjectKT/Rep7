@@ -25,8 +25,8 @@ public class PhysicsDebugDraw extends DebugDraw {
 
 	private final Vec2 saxis = new Vec2();
 	private final Vec2 temp = new Vec2();
-	private final static IntArray xIntsPool = new IntArray();
-	private final static IntArray yIntsPool = new IntArray();
+	private final IntArray xIntsPool = new IntArray();
+	private final IntArray yIntsPool = new IntArray();
 
 	public PhysicsDebugDraw(PhysicsPanel panel) {
 		super(panel.camera.transform);
