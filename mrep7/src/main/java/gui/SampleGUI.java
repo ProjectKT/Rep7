@@ -450,7 +450,8 @@ public class SampleGUI extends JFrame implements ActionListener{
 	private class PlannerStepExecutor implements ActionListener, Runnable {
 		final Pattern p1 = Pattern.compile("pick up (.*) from the table");
 		final Pattern p2 = Pattern.compile("remove (.*) from (.*)");
-		final Pattern p3 = Pattern.compile("Place (.*) on (.*)");
+		final Pattern p3 = Pattern.compile("put (.*) down on the table");
+		final Pattern p4 = Pattern.compile("Place (.*) on (.*)");
 		
 		int ptr = 0;
 		boolean loop = false;
@@ -526,13 +527,22 @@ public class SampleGUI extends JFrame implements ActionListener{
 				return;
 			}
 			
-			// Place (.*) on (.*)
+			// put (.*) down on the table
 			m = p3.matcher(op);
+			if (m.find()) {
+				plannerPanel.place(null);
+				return;
+			}
+			
+			// Place (.*) on (.*)
+			m = p4.matcher(op);
 			if (m.find()) {
 				String name = m.group(2);
 				plannerPanel.place(name);
 				return;
 			}
+			
+			
 		}
 		
 		private void start() {
