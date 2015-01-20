@@ -49,7 +49,8 @@ public class SampleGUI extends JFrame implements ActionListener{
 	ArrayList<String> goalList = new ArrayList<String>();
 	ArrayList<String> objects = new ArrayList<String>();
 	ArrayList<String> ansList = new ArrayList<String>();
-	
+
+	JTabbedPane tab2 = new JTabbedPane();
 	JTextArea txtStart = new JTextArea("");//初期状態のエリア
 	JTextArea txtGoal = new JTextArea("");//目標状態のエリア
 	JTextArea txtAnswer = new JTextArea("");//解答のエリア
@@ -203,7 +204,7 @@ public class SampleGUI extends JFrame implements ActionListener{
 
 		
 		//
-		JTabbedPane tab2 = new JTabbedPane();
+
 		JPanel sPanel = new JPanel();//初期状態等の変更ページ
 		sPanel.setLayout(new GridLayout());
 		JPanel aPanel = new JPanel();//解答ページ
@@ -406,6 +407,7 @@ public class SampleGUI extends JFrame implements ActionListener{
     		ansList = noah.getResult();
     		for(int i=0;i < ansList.size();i++)
     		txtAnswer.append(ansList.get(i)+"\n");
+    		tab2.setSelectedIndex(1);
     		
     	}else if(cmd.equals("RESET")){
     		txtStart.setText("");
