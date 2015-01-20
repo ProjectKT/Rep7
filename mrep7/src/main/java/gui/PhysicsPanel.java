@@ -657,7 +657,7 @@ public class PhysicsPanel extends JPanel {
 					beforeTime = System.nanoTime();
 				}
 			} catch (InterruptedException e) {
-				System.out.println("Animator thread interrupted. Stopped animating.");
+				
 			}
 		}
 	}

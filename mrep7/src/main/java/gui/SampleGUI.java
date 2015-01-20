@@ -417,6 +417,10 @@ public class SampleGUI extends JFrame implements ActionListener{
     		plan();
     		plannerStepExecutor.initialize();
     		tab1.setSelectedIndex(1);
+    		
+    		for (String op : ansList) {
+    			System.out.println("ans --- "+op);
+    		}
     	}else if(cmd.equals("OK")){
     		textsToStates();
     		plan();
