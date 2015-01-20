@@ -24,6 +24,12 @@ public interface PlannerController {
 	public void place(String to) throws InterruptedException;
 	
 	/**
+	 * 状態を画面上に表示するかどうかを設定する
+	 * @param show true: 表示する, false: 表示しない
+	 */
+	public void showStates(boolean show);
+	
+	/**
 	 * 現在の状態を出力する
 	 * @return
 	 */

@@ -70,6 +70,8 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 	private ArrayList<String> states = new ArrayList<String>();
 	// 状態の変化リスナー
 	private StatesChangeListener statesChangeListener = null;
+	// 状態の表示フラグ
+	private boolean showStates = false;
 	
 
 	public PlannerPanel() {
@@ -270,6 +272,10 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		holdingBox = null;
 	}
 	
+	public void showStates(boolean show) {
+		showStates = show;
+	}
+	
 	public List<String> getStates() {
 		updateStates();
 		
@@ -332,7 +338,10 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		super.drawDebugData(g);
 		
 		drawBoxNames(g);
-		drawStates(g);
+		
+		if (showStates) {
+			drawStates(g);
+		}
 	}
 	
 	private void drawBoxNames(Graphics2D g) {

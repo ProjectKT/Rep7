@@ -12,6 +12,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,7 +23,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
@@ -328,9 +328,11 @@ public class SampleGUI extends JFrame implements ActionListener{
 		for (String start : noah.getCurrentState()) {
 			startList.add(start);
 		}
+		Collections.sort(startList);
 		for (String goal : noah.getGoalState()) {
 			goalList.add(goal);
 		}
+		Collections.sort(goalList);
 		
 		System.out.println("startList"+startList);
 		System.out.println("goalList"+goalList);
