@@ -213,6 +213,7 @@ public class SampleGUI extends JFrame implements ActionListener{
 		plannerStepExecutor.updateStepLabel();
 		page2_panel.add(BorderLayout.NORTH, stepLabel);
 		plannerPanel = new PlannerPanel();
+		plannerPanel.showStates(true);
 		page2_panel.add(BorderLayout.CENTER, plannerPanel);
 		page2.add(BorderLayout.CENTER, page2_panel);
 

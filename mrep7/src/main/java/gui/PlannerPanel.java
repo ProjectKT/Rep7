@@ -57,6 +57,8 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		Vec2 PilePosition = new Vec2(-BoxSize.x, -BoxSize.y/2);
 	}
 	
+	// テーブルのボディ
+	private Body table;
 	// 操作用ロボット
 	private Robot robot;
 	// 描画前に world に対して行う操作のキュー
@@ -89,11 +91,11 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		addKeyListener(keyAdapter);
 		addContactListener(statesWatcher);
 		
-		// ground
-		Body ground = null;
+		// table
+		table = null;
 		{
 			BodyDef bd = new BodyDef();
-			ground = createBody(bd);
+			table = createBody(bd);
 
 			EdgeShape shape = new EdgeShape();
 
@@ -103,7 +105,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			fd.friction = 0.6f;
 
 			shape.set(new Vec2(-Settings.GroundLength/2, 0.0f), new Vec2(Settings.GroundLength/2, 0.0f));
-			ground.createFixture(fd);
+			table.createFixture(fd);
 		}
 
 		// Robot
@@ -120,6 +122,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 					Box box = it.next();
 					Box boxOn = null;
 					Box boxAbove = null;
+					boolean onTable = false;
 					
 					ContactEdge edge = box.body.getContactList();
 					while (edge != null) {
@@ -138,10 +141,16 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 						}
 						
 						if (contact.isTouching()) {
+							onTable = false;
+							
 							if (bodyBox.getWorldCenter().y < bodyObj.getWorldCenter().y) {
-								String boxOnName = findBox(bodyObj);
-								if (boxOnName != null) {
-									boxOn = boxMap.get(boxOnName);
+								if (bodyObj == table) {
+									onTable = true;
+								} else {
+									String boxOnName = findBox(bodyObj);
+									if (boxOnName != null) {
+											boxOn = boxMap.get(boxOnName);
+									}
 								}
 							} else if (bodyObj.getWorldCenter().y < bodyBox.getWorldCenter().y){
 								String boxAboveName = findBox(bodyObj);
@@ -154,13 +163,14 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 						edge = edge.next;
 					}
 					
-					if (boxOn == null) {
-						states.add("ontable "+box.name);
-					} else {
+					if (boxOn != null) {
 						states.add(box.name+" on "+boxOn.name);
 					}
 					if (boxAbove == null) {
 						states.add("clear "+box.name);
+					}
+					if (onTable) {
+						states.add("ontable "+box.name);
 					}
 				}
 			}
@@ -574,6 +584,8 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 				}
 			}
 		}).start();
+		
+		p.showStates(true);
 		
 		try { 
 			p.stopAnimating();

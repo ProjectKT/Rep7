@@ -139,8 +139,8 @@ public class PhysicsPanel extends JPanel {
 		
 		// パネル初期化
 		setFocusable(true);
-//	    setBackground(Color.black);
-	    setPreferredSize(new Dimension(INIT_WIDTH, INIT_HEIGHT));
+		setBackground(Color.black);
+		setPreferredSize(new Dimension(INIT_WIDTH, INIT_HEIGHT));
 		updateSize(getWidth(), getHeight());
 		textLine = 0;
 		
@@ -600,8 +600,6 @@ public class PhysicsPanel extends JPanel {
 	private class Animator implements Runnable {
 		Thread thread;
 		boolean loop;
-		long pt = 0;
-		long ct = 0;
 		
 		/**
 		 * 描画ループを開始する
@@ -632,20 +630,16 @@ public class PhysicsPanel extends JPanel {
 		
 		@Override
 		public void run() {
-			long beforeTime, afterTime, timeSpent, sleepTime;
+			long beforeTime, afterTime, sleepTime;
 			beforeTime = System.nanoTime();
 			sleepTime = 0;
 			
 			try {
-				pt = System.nanoTime();
 				while (loop) {
-					ct = System.nanoTime();
-					timeSpent = ct - pt;
 					if (render()) {
 						step(FPS, 8, 8);
 						paintScreen();
 					}
-					pt = ct;
 					
 					afterTime = System.nanoTime();
 					
@@ -666,7 +660,7 @@ public class PhysicsPanel extends JPanel {
 	public static void main(String[] args) {
 		JFrame f = new JFrame();
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		f.setBounds(0, 0, 1500, 1000);
+		f.setBounds(0, 0, 500, 300);
 		PhysicsPanel p = new PhysicsPanel();
 		f.getContentPane().add(p);
 		f.setVisible(true);
