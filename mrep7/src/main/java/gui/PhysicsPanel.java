@@ -327,6 +327,15 @@ public class PhysicsPanel extends JPanel {
 		world.drawDebugData();
 		drawDebugData(debugDraw.getGraphics());
 
+		if (mouseJoint != null) {
+			mouseJoint.getAnchorB(p1);
+			Vec2 p2 = mouseJoint.getTarget();
+
+			debugDraw.drawSegment(p1, p2, Color3f.BLUE);
+		}
+	}
+	
+	protected void drawDebugData(Graphics2D g) {
 		if (settings.drawStats) {
 			// Vec2.watchCreations = true;
 			debugDraw.drawString(5, textLine, "Engine Info", Color3f.GREEN);
@@ -363,54 +372,6 @@ public class PhysicsPanel extends JPanel {
 			}
 			textList.clear();
 		}
-
-		if (mouseJoint != null) {
-			mouseJoint.getAnchorB(p1);
-			Vec2 p2 = mouseJoint.getTarget();
-
-			debugDraw.drawSegment(p1, p2, Color3f.BLUE);
-		}
-
-//		if (settings.getSetting(TestbedSettings.DrawContactPoints).enabled) {
-//			final float k_impulseScale = 0.1f;
-//			final float axisScale = 0.3f;
-//
-//			for (int i = 0; i < pointCount; i++) {
-//
-//				ContactPoint point = points[i];
-//
-//				if (point.state == PointState.ADD_STATE) {
-//					debugDraw.drawPoint(point.position, 10f, color1);
-//				} else if (point.state == PointState.PERSIST_STATE) {
-//					debugDraw.drawPoint(point.position, 5f, color2);
-//				}
-//
-//				if (settings.getSetting(TestbedSettings.DrawContactNormals).enabled) {
-//					p1.set(point.position);
-//					p2.set(point.normal).mulLocal(axisScale).addLocal(p1);
-//					debugDraw.drawSegment(p1, p2, color3);
-//
-//				} else if (settings
-//						.getSetting(TestbedSettings.DrawContactImpulses).enabled) {
-//					p1.set(point.position);
-//					p2.set(point.normal).mulLocal(k_impulseScale)
-//							.mulLocal(point.normalImpulse).addLocal(p1);
-//					debugDraw.drawSegment(p1, p2, color5);
-//				}
-//
-//				if (settings.getSetting(TestbedSettings.DrawFrictionImpulses).enabled) {
-//					Vec2.crossToOutUnsafe(point.normal, 1, tangent);
-//					p1.set(point.position);
-//					p2.set(tangent).mulLocal(k_impulseScale)
-//							.mulLocal(point.tangentImpulse).addLocal(p1);
-//					debugDraw.drawSegment(p1, p2, color5);
-//				}
-//			}
-//		}
-	}
-	
-	protected void drawDebugData(Graphics2D g) {
-		
 	}
 
 	// --------------
