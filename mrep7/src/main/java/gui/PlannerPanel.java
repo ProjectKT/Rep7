@@ -88,7 +88,6 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 	}
 
 	private void initialize() {
-		addKeyListener(keyAdapter);
 		addContactListener(statesWatcher);
 		
 		// table
@@ -253,12 +252,11 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		
 		holdingBox = boxMap.get(target);
 		if (holdingBox != null) {
-			final Vec2 pos = holdingBox.body.getWorldCenter().addLocal(0, -Settings.BoxSize.y/2);
-			final Vec2 posTo = new Vec2(pos);
+			final Vec2 pos = holdingBox.body.getWorldCenter();
+			final Vec2 posTo = new Vec2(pos).addLocal(0, -Settings.BoxSize.y/2);
 			posTo.y = Settings.HomePosition.y;
 			robot.moveTo(posTo);
-			posTo.y = pos.y;
-			robot.moveTo(posTo);
+			robot.moveTo(pos);
 			robot.grab();
 			posTo.y = Settings.HomePosition.y;
 			robot.moveTo(posTo);
@@ -400,14 +398,6 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			}
 		}
 	}
-
-	private final KeyAdapter keyAdapter = new KeyAdapter() {
-		@Override
-		public void keyPressed(KeyEvent e) {
-			switch (e.getKeyCode()) {
-			}
-		}
-	};
 	
 	private class Box {
 		String name;
@@ -530,7 +520,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		}
 		
 		public void moveTo(final Vec2 to) throws InterruptedException {
-			Thread t = new Thread(new Runnable() {
+			final Thread t = new Thread(new Runnable() {
 				@Override
 				public void run() {
 					try {
@@ -547,24 +537,26 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 					}
 				}
 			});
+			
+			// 接触したら止まるための ContactListener
+			final ContactListener stopper = new ContactAdapter() {
+				@Override
+				public void beginContact(Contact contact) {
+					if (contact.getFixtureA().getBody() == palm ||
+						contact.getFixtureB().getBody() == palm) {
+						// 停止する
+						t.interrupt();
+					}
+				}
+			};
+			
+			addContactListener(stopper);
+			
 			t.start();
 			t.join();
+
+			removeContactListener(stopper);
 		}
-		
-		private ContactListener stopOnContactAdapter = new ContactAdapter() {
-			@Override
-			public void beginContact(Contact contact) {
-				final Body bodyA = contact.getFixtureA().getBody();
-				final Body bodyB = contact.getFixtureB().getBody();
-				
-				if (bodyA == palm || bodyB == palm) {
-					Body hand = (bodyA == palm) ? bodyA : bodyB;
-					Body obj = (bodyA == hand) ? bodyB : bodyA;
-					
-					// TODO 停止する
-				}
-			}
-		};
 	}
 
 	public static void main(String[] args) {
