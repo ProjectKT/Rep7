@@ -9,6 +9,8 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -117,11 +119,30 @@ public class SampleGUI extends JFrame implements ActionListener{
 		JPanel card1 = new JPanel();
 		card1.setLayout(new BorderLayout());
 		
-		// - Page 1
-		JPanel page1_panels = new JPanel(new GridLayout(2,1));
-		
-		//初期状態と目標状態を決めるページ
+		// - Page 1: 初期状態と目標状態を決めるページ
 		JPanel page1 = new JPanel(new BorderLayout());
+		page1.addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentShown(ComponentEvent e) {
+				try {
+					startPanel.start();
+					goalPanel.start();
+				} catch (Exception e0) {
+					e0.printStackTrace();
+				}
+			}
+			@Override
+			public void componentHidden(ComponentEvent e) {
+				try {
+					startPanel.stop();
+					goalPanel.stop();
+				} catch (Exception e0) {
+					e0.printStackTrace();
+				}
+			}
+		});
+		
+		JPanel page1_panels = new JPanel(new GridLayout(2,1));
 		page1.add(BorderLayout.CENTER, page1_panels);
 
 		startPanel = new PlannerPanel();
@@ -168,6 +189,24 @@ public class SampleGUI extends JFrame implements ActionListener{
 		
 		// - Page 2: 実行結果を表示するページ
 		JPanel page2 = new JPanel(new BorderLayout());
+		page2.addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentShown(ComponentEvent e) {
+				try {
+					plannerPanel.start();
+				} catch (Exception e0) {
+					e0.printStackTrace();
+				}
+			}
+			@Override
+			public void componentHidden(ComponentEvent e) {
+				try {
+					plannerPanel.stop();
+				} catch (Exception e0) {
+					e0.printStackTrace();
+				}
+			}
+		});
 
 		JPanel page2_panel = new JPanel(new BorderLayout());
 		stepLabel = new JLabel("初期状態");
