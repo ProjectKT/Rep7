@@ -156,43 +156,32 @@ public class NOAH {
 	private ArrayList<String> initGoalState() {
 		ArrayList<String> goalList = new ArrayList<String>();
 
-//		goalList.add("clear X");
-	//	goalList.add("X on A");
+		// goalList.add("clear X");
+		// goalList.add("X on A");
 		/*
-		goalList.add("clear A");
-		goalList.add("A on 1");
-		goalList.add("clear B");
-		goalList.add("B on 4");
-		goalList.add("clear C");
-		goalList.add("C on 7");
-
-		goalList.add("clear 13");
-
-		goalList.add("1 on 2");
-		goalList.add("2 on 3");
-		goalList.add("4 on 5");
-		goalList.add("5 on 6");
-		goalList.add("7 on 8");
-		goalList.add("8 on 9");
-		goalList.add("13 on 10");
-		goalList.add("10 on 11");
-		goalList.add("11 on 12");
-		goalList.add("12 on 14");
-		goalList.add("14 on 15");
-		goalList.add("15 on 16");
-*/
+		 * goalList.add("clear A"); goalList.add("A on 1");
+		 * goalList.add("clear B"); goalList.add("B on 4");
+		 * goalList.add("clear C"); goalList.add("C on 7");
+		 * 
+		 * goalList.add("clear 13");
+		 * 
+		 * goalList.add("1 on 2"); goalList.add("2 on 3");
+		 * goalList.add("4 on 5"); goalList.add("5 on 6");
+		 * goalList.add("7 on 8"); goalList.add("8 on 9");
+		 * goalList.add("13 on 10"); goalList.add("10 on 11");
+		 * goalList.add("11 on 12"); goalList.add("12 on 14");
+		 * goalList.add("14 on 15"); goalList.add("15 on 16");
+		 */
 		goalList.add("clear A");
 
 		goalList.add("A on B");
 		goalList.add("B on C");
-
 
 		goalList.add("clear 1");
 		goalList.add("clear 4");
 		goalList.add("clear 7");
 		goalList.add("clear 13");
 
-		
 		goalList.add("1 on 2");
 		goalList.add("2 on 3");
 		goalList.add("4 on 5");
@@ -231,14 +220,14 @@ public class NOAH {
 		// initialState.add("4 on 5");
 		// initialState.add("5 on 6");
 
-		//initialState.add("clear X");
-		//initialState.add("X on A");
+		// initialState.add("clear X");
+		// initialState.add("X on A");
 
-		 initialState.add("clear 1");
-		 initialState.add("clear A");
+		initialState.add("clear 1");
+		initialState.add("clear A");
 		initialState.add("A on B");
 		// initialState.add("clear 4");
-		initialState.add("clear B");
+		// initialState.add("clear B");
 		initialState.add("B on 4");
 		// initialState.add("clear 7");
 		initialState.add("clear C");
@@ -967,13 +956,17 @@ public class NOAH {
 					next = (Node) next.getBack();
 					count++;
 				} else {
+					System.out.println("node " + node + ", count " + count);
 					if (NodeMap.containsKey(node.getNodeName())) {
+						System.out.println("!!");
 						if (LengthMap.get(node.getNodeName()) < count) {
 							delList.add(NodeMap.get(node.getNodeName()));
 							delList2.add(NextMap.get(NodeMap.get(node
 									.getNodeName())));
 							NodeMap.remove(node.getNodeName());
 							LengthMap.remove(node.getNodeName());
+							NextMap.remove(node);
+
 							NodeMap.put(node.getNodeName(), node);
 							LengthMap.put(node.getNodeName(), count);
 							NextMap.put(node, next);
@@ -990,15 +983,43 @@ public class NOAH {
 				}
 			}
 		}
+		System.out.println("pre :" + preList);
+
+		System.out.println("delList1 : " + delList);
 
 		for (Node node : delList) {
 			ss.get(0).removeBack(node);
-			preList.remove(node);
-		}
+			if (node.getBack() instanceof Node) {
+				preList.remove(node.getBack());
+			} else {
+				System.out.println("node.getBack :" + node.getBack());
+				JointJ j = ((JointJ) node.getBack());
+				if (j.getForward().size() == 1) {
+					if (!preList.contains(j.getBack())) {
+						preList.add(j.getBack());
+					}
+				} else {
+					j.removeForward(node);
+				}
+			}
 
+		}
+		System.out.println("delList2 : " + delList2);
 		for (Node node : delList2) {
-			((JointJ) node.getBack()).removeForward(node);
-			;
+			JointJ j = (JointJ) node.getBack();
+			if (j.getForward().size() == 1) {
+				if (!preList.contains(j.getBack())) {
+					preList.add(j.getBack());
+				}
+
+				//
+				// ここでは不要になったJがでるが消すかどうか審議中
+				//
+				//j.removeForward(node);
+			} else {
+				j.removeForward(node);
+			}
+
 		}
 
 		// 残っているJを探す
@@ -1006,6 +1027,9 @@ public class NOAH {
 			ArrayList<JointJ> jList = new ArrayList<JointJ>();
 
 			for (Node node : preList) {
+				Matcher unSt = p3.matcher(node.getNodeName());
+				
+				if(unSt.find()){
 				Object z = node.getBack();
 				while (true) {
 					if (!(z instanceof JointJ)) {
@@ -1018,19 +1042,20 @@ public class NOAH {
 					}
 
 				}
+				}
 			}
 
-			
-			System.out.println("bug 前  :"+ preList);
+			System.out.println("bug 前　pre  :" + preList);
+			System.out.println("orderList :" + orderList);
 			// 元からある山の処理を消す
-		
+
 			//
 			//
-			//　　バグ？　　あり
+			// 　　バグ？　　あり
 			//
-			//	消える物がきえない
+			// 消える物がきえない
 			//
-			//　
+			// 　
 			//
 			//
 			//
@@ -1050,38 +1075,41 @@ public class NOAH {
 							}
 						}
 					}
-					System.out.println("Stack = ? :"+j.getBack());
-					System.out.println("change = ?  :"+change);
+					System.out.println("Stack = ? :" + j.getBack());
+					System.out.println("change = ?  :" + change);
 					if (change != null) {
 						System.out.println("success?");
 						while (true) {
 							Boolean onlyStack = false;
-							//スタックだけが残る場合を考えて、Unstack側が空になったとき、フラグを立てておく
-							System.out.println("change  消すUN  :"+change);
-							System.out.println("change  消すST  :"+j.getBack());
-							System.out.println("消すUNの前のもの :"+change.getForward());
+							// スタックだけが残る場合を考えて、Unstack側が空になったとき、フラグを立てておく
+							System.out.println("change  消すUN  :" + change);
+							System.out.println("change  消すST  :" + j.getBack());
+							System.out.println("消すUNの前のもの :"
+									+ change.getForward());
 
-							System.out.println("change  消すST 後  :"+j.getBack().getBack());
+							System.out.println("change  消すST 後  :"
+									+ j.getBack().getBack());
 							Node last = change;
 							j.removeForward(change);
-				// bug
+							// bug
 							if (!(change.getForward() instanceof JointS)) {
 								change = (Node) change.getForward();
 								if (orderString.contains(change.getNodeName())) {
 									preList.remove(last);
 									onlyStack = true;
 								} else {
-									Matcher clearMat = p1.matcher(change.getNodeName());
-									
-									if(clearMat.find()){
+									Matcher clearMat = p1.matcher(change
+											.getNodeName());
+
+									if (clearMat.find()) {
 										preList.remove(last);
 										onlyStack = true;
-									}else{
+									} else {
 										j.addForward(change);
 									}
 								}
 
-							}else{
+							} else {
 								onlyStack = true;
 								preList.remove(last);
 							}
@@ -1089,36 +1117,35 @@ public class NOAH {
 							Object obj = j.getBack().getBack();
 							System.out.println(obj.getClass().toString());
 							if (obj instanceof Node) {
-								//System.out.println("success");
-								if(onlyStack){
+								// System.out.println("success");
+								if (onlyStack) {
 									preList.add((Node) obj);
 									break;
-								}else{
+								} else {
 									j.changeBack((Node) obj);
 								}
 							} else {
 								if (obj instanceof JointJ) {
-									//ここのifにて、stackだけが残る場合を考えなければならない
-									
+									// ここのifにて、stackだけが残る場合を考えなければならない
+
 									JointJ tail = (JointJ) obj;
-									
 
 									tail.removeForward(j.getBack());
-									Matcher mat = p3.matcher(change.getNodeName());
-									if(mat.find()){
-										System.out.println("UNSTACKのみ残る"+change);
-										for(Node node : j.getForward()){
+									Matcher mat = p3.matcher(change
+											.getNodeName());
+									if (mat.find()) {
+										System.out.println("UNSTACKのみ残る"
+												+ change);
+										for (Node node : j.getForward()) {
 											tail.addForward(node);
 											node.changeBack(tail);
-											
+
 											delJ.add(j);
 										}
-									}else{
+									} else {
 										delJ.add(j);
 									}
-									
 
-									
 									break;
 								}
 							}
@@ -1135,18 +1162,19 @@ public class NOAH {
 								}
 							}
 						}
-					}else{
-						//stackは見つかったけどunstackが見つかってない時
-						System.out.println("if no-unstack  then add :"+j.getBack());
+					} else {
+						// stackは見つかったけどunstackが見つかってない時
+						System.out.println("if no-unstack  then add :"
+								+ j.getBack());
 						boolean exist = false;
-						for(Node node: preList){
+						for (Node node : preList) {
 							String pre = node.getNodeName();
-							if(pre.equals(j.getBack().getNodeName())){
-								exist =true;
+							if (pre.equals(j.getBack().getNodeName())) {
+								exist = true;
 							}
 						}
-						if(!exist){
-							System.out.println("    add preList"+j.getBack());
+						if (!exist) {
+							System.out.println("    add preList" + j.getBack());
 							preList.add(j.getBack());
 						}
 
@@ -1154,23 +1182,25 @@ public class NOAH {
 
 				}
 			}
-			
-			System.out.println("jList before remove"+jList);
-			
-			for(JointJ del:delJ){
-				System.out.println("消すJの後 :"+ del.getBack().getNodeName());
+
+			System.out.println("jList before remove" + jList);
+
+			for (JointJ del : delJ) {
+				System.out.println("消すJの後 :" + del.getBack().getNodeName());
 				jList.remove(del);
 			}
-			
+
 			System.out.println("check");
-			System.out.println("pre  :"+preList);
+			System.out.println("pre  :" + preList);
 			System.out.println("orderStr" + orderString);
 
-			System.out.println("jList :"+jList);
-			
+			System.out.println("jList :" + jList);
+
 			// 残ったものの順序決定
 			ArrayList<ArrayList<Node>> tList = new ArrayList<ArrayList<Node>>();
+			System.out.println("jlistsize" + jList.size());
 			for (JointJ j : jList) {
+				System.out.println("j forward: "+j.getForward());
 				ArrayList<Node> temp = new ArrayList<Node>();
 				Node next = j.getBack();
 				while (true) {
@@ -1236,37 +1266,58 @@ public class NOAH {
 						if (!preList.contains(unStack)) {
 							if (unStack.getForward() instanceof JointS) {
 								preList.remove(unStack);
+								System.out.println("remove 1 "+unStack);
 								break;
 							} else {
 								unStack = ((Node) unStack.getForward());
 							}
 						} else {
+							Matcher unSt = p3.matcher(unStack.getNodeName());
+							if(unSt.find()){
 							preList.remove(unStack);
+							}
+							System.out.println("remove 2 "+unStack);
 							break;
 						}
 
 					}
 
-					tList.add(temp);
+					System.out.println("add temp " + temp);
 
+					tList.add(temp);
 					System.out.println("temp" + temp);
 				}
 
+
 			}
-			if(preList.size() > 0){
-				for(Node node : preList){
+
+			System.out.println("preList" + preList);
+			if (preList.size() > 0) {
+				for (Node node : preList) {
 					ArrayList<Node> temp = new ArrayList<Node>();
 					temp.add(node);
+
+					Node next = node;
 					
-					System.out.println("temp at 1 :"+temp);
+					while(true){
+						if(next.getBack() instanceof Node){
+							next = ((Node) next.getBack());
+							temp.add(next);
+							
+						}else{
+							break;
+						}
+						
+					}
+					
+					System.out.println("temp at 1 :" + temp);
 					tList.add(temp);
 				}
 			}
-			
-			System.out.println("tList :"+tList);
 
+			System.out.println("tList :" + tList);
+			System.out.println("orderList :" + orderList);
 
-			
 			ArrayList<Node> nodes = new ArrayList<Node>();
 			ArrayList<String> words = new ArrayList<String>();
 
@@ -1287,8 +1338,8 @@ public class NOAH {
 				for (ArrayList<Node> list : tList) {
 					// System.out.println(list);
 				}
-				//System.out.println("pre"+preList);
-				 //System.out.println("words"+words);
+				// System.out.println("pre"+preList);
+				// System.out.println("words"+words);
 				// System.out.println("nodes"+nodes);
 				ArrayList<String> over = new ArrayList<String>();
 				ArrayList<String> under = new ArrayList<String>();
@@ -1326,6 +1377,7 @@ public class NOAH {
 
 				// clearがあった時
 				if (clearflag) {
+					System.out.println("clear   "+stacks.get(clearNodeIndex));
 					boolean flag1 = true;
 					for (Node node : unstacks) {
 						Matcher unstack = p3.matcher(node.getNodeName());
@@ -1333,6 +1385,8 @@ public class NOAH {
 						if (unstack.find()) {
 							if (unstack.group(1).equals(
 									over.get(clearNodeIndex))) {
+								System.out.println("clear   type1");
+								System.out.println("clear   "+node);
 								orderList.add(node);
 								orderString.add(node.getNodeName());
 								// unstackの下をclearにする
@@ -1349,6 +1403,7 @@ public class NOAH {
 					}
 					// 床においてあるものを載せるとき
 					if (flag1) {
+						System.out.println("clear   type2");
 						orderList.add(stacks.get(clearNodeIndex));
 						orderString.add(stacks.get(clearNodeIndex)
 								.getNodeName());
@@ -1407,6 +1462,20 @@ public class NOAH {
 											} else {
 												break;
 											}
+										}
+									}
+								}
+							}else{
+								//すでにクリアで何かの上にあるとき
+								for(Node unstack : unstacks){
+									Matcher unSt = p3.matcher(unstack.getNodeName());
+									if(unSt.find()){
+										if(unSt.group(1).equals(underS)){
+											orderList.add(unstack);
+											orderString.add(unstack.getNodeName());
+											okflag1 = true;
+											words.add(unSt.group(2));
+											break;
 										}
 									}
 								}
@@ -1579,7 +1648,7 @@ public class NOAH {
 					break;
 				}
 			}
-			
+
 		}
 		System.out.println("lastOrder" + orderList);
 		System.out.println(orderString);
