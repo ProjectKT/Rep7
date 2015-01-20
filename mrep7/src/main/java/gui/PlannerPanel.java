@@ -123,21 +123,29 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 					while (edge != null) {
 						final Contact contact = edge.contact;
 						// この箱のボディ
-						final Body bodyBox = (contact.getFixtureA().getBody() == box.body) ?
-								contact.getFixtureA().getBody() : contact.getFixtureB().getBody();
+						final Body bodyBox;
 						// 接触しているオブジェクトのボディ
-						final Body bodyObj = (contact.getFixtureA().getBody() == box.body) ?
-								contact.getFixtureB().getBody() : contact.getFixtureA().getBody();
+						final Body bodyObj;
 						
-						if (bodyBox.getWorldCenter().y < bodyObj.getWorldCenter().y) {
-							String boxOnName = findBox(bodyObj);
-							if (boxOnName != null) {
-								boxOn = boxMap.get(boxOnName);
-							}
-						} else if (bodyObj.getWorldCenter().y < bodyBox.getWorldCenter().y){
-							String boxAboveName = findBox(bodyObj);
-							if (boxAboveName != null) {
-								boxAbove = boxMap.get(boxAboveName);
+						if (contact.getFixtureA().getBody() == box.body) {
+							bodyBox = contact.getFixtureA().getBody();
+							bodyObj = contact.getFixtureB().getBody();
+						} else {
+							bodyBox = contact.getFixtureB().getBody();
+							bodyObj = contact.getFixtureA().getBody();
+						}
+						
+						if (contact.isTouching()) {
+							if (bodyBox.getWorldCenter().y < bodyObj.getWorldCenter().y) {
+								String boxOnName = findBox(bodyObj);
+								if (boxOnName != null) {
+									boxOn = boxMap.get(boxOnName);
+								}
+							} else if (bodyObj.getWorldCenter().y < bodyBox.getWorldCenter().y){
+								String boxAboveName = findBox(bodyObj);
+								if (boxAboveName != null) {
+									boxAbove = boxMap.get(boxAboveName);
+								}
 							}
 						}
 						
@@ -159,6 +167,8 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 				states.add("handEmpty");
 			}
 		}
+		
+		Collections.sort(states);
 	}
 	
 	// --- interface implementation ---
@@ -181,6 +191,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		if (box == null) {
 			box = new Box(name, pos);
 			boxMap.put(name, box);
+			updateStates();
 			updateHighestBox(box);
 		} else {
 			final Box fbox = box;
@@ -191,6 +202,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 					boxMap.remove(fbox);
 					Box box = new Box(name, pos);
 					boxMap.put(name, box);
+					updateStates();
 					updateHighestBox(box);
 				}
 			});
@@ -490,7 +502,6 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		}
 		
 		public void moveTo(final Vec2 to) throws InterruptedException {
-			System.out.println("robot is moving to "+to);
 			Thread t = new Thread(new Runnable() {
 				@Override
 				public void run() {
