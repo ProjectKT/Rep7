@@ -54,6 +54,7 @@ public class SampleGUI extends JFrame implements ActionListener{
 	ArrayList<String> objects = new ArrayList<String>();
 	ArrayList<String> ansList = new ArrayList<String>();
 
+	JTabbedPane tab1 = new JTabbedPane();
 	JTabbedPane tab2 = new JTabbedPane();
 	JTextArea txtStart = new JTextArea("");//初期状態のエリア
 	JTextArea txtGoal = new JTextArea("");//目標状態のエリア
@@ -117,8 +118,6 @@ public class SampleGUI extends JFrame implements ActionListener{
 		card1.setLayout(new BorderLayout());
 		
 		// - Page 1
-		JTabbedPane tab = new JTabbedPane();
-		
 		JPanel page1_panels = new JPanel(new GridLayout(2,1));
 		
 		//初期状態と目標状態を決めるページ
@@ -162,10 +161,10 @@ public class SampleGUI extends JFrame implements ActionListener{
 		
 		JButton okButton = new JButton("plan");
 		okButton.addActionListener(this);
-		okButton.setActionCommand("ok");
+		okButton.setActionCommand("plan");
 		ctrl.add(okButton);
 		
-		tab.add("select", page1);
+		tab1.add("select", page1);
 		
 		// - Page 2: 実行結果を表示するページ
 		JPanel page2 = new JPanel(new BorderLayout());
@@ -204,9 +203,9 @@ public class SampleGUI extends JFrame implements ActionListener{
 		btnPanel.add(goalButton);
 		
 		page2.add(BorderLayout.SOUTH, btnPanel);
-		tab.add("answer", page2);
+		tab1.add("answer", page2);
 		
-		card1.add(tab);
+		card1.add(tab1);
 		
 		// --- Card2: テキストで表示する
 		JPanel card2 = new JPanel();
@@ -339,13 +338,6 @@ public class SampleGUI extends JFrame implements ActionListener{
 		try { panel.start(); } catch (InterruptedException e) { e.printStackTrace(); }
 	}
 	
-	/**
-	 * Grpahics Display の方のプランを作成する
-	 */
-	private void prepareGraphicalPlan() {
-		plannerStepExecutor.initialize();
-	}
-	
 	private void textsToStates() {
 		startList.clear();
 		String strs1[] = txtStart.getText().split("\n");
@@ -382,7 +374,8 @@ public class SampleGUI extends JFrame implements ActionListener{
     		layout.first(panel);
     	}else if(cmd.equals("plan")){
     		plan();
-    		prepareGraphicalPlan();
+    		plannerStepExecutor.initialize();
+    		tab1.setSelectedIndex(1);
     	}else if(cmd.equals("OK")){
     		textsToStates();
     		plan();
