@@ -158,7 +158,7 @@ public class NOAH {
 
 //		goalList.add("clear X");
 	//	goalList.add("X on A");
-		
+		/*
 		goalList.add("clear A");
 		goalList.add("A on 1");
 		goalList.add("clear B");
@@ -180,7 +180,31 @@ public class NOAH {
 		goalList.add("12 on 14");
 		goalList.add("14 on 15");
 		goalList.add("15 on 16");
+*/
+		goalList.add("clear A");
 
+		goalList.add("A on B");
+		goalList.add("B on C");
+
+
+		goalList.add("clear 1");
+		goalList.add("clear 4");
+		goalList.add("clear 7");
+		goalList.add("clear 13");
+
+		
+		goalList.add("1 on 2");
+		goalList.add("2 on 3");
+		goalList.add("4 on 5");
+		goalList.add("5 on 6");
+		goalList.add("7 on 8");
+		goalList.add("8 on 9");
+		goalList.add("13 on 10");
+		goalList.add("10 on 11");
+		goalList.add("11 on 12");
+		goalList.add("12 on 14");
+		goalList.add("14 on 15");
+		goalList.add("15 on 16");
 		return goalList;
 	}
 
@@ -214,7 +238,7 @@ public class NOAH {
 		 initialState.add("clear A");
 		initialState.add("A on B");
 		// initialState.add("clear 4");
-		//initialState.add("clear B");
+		initialState.add("clear B");
 		initialState.add("B on 4");
 		// initialState.add("clear 7");
 		initialState.add("clear C");
@@ -1114,7 +1138,18 @@ public class NOAH {
 					}else{
 						//stackは見つかったけどunstackが見つかってない時
 						System.out.println("if no-unstack  then add :"+j.getBack());
-						preList.add(j.getBack());
+						boolean exist = false;
+						for(Node node: preList){
+							String pre = node.getNodeName();
+							if(pre.equals(j.getBack().getNodeName())){
+								exist =true;
+							}
+						}
+						if(!exist){
+							System.out.println("    add preList"+j.getBack());
+							preList.add(j.getBack());
+						}
+
 					}
 
 				}
