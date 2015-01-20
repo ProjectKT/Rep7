@@ -994,7 +994,23 @@ public class NOAH {
 			}
 
 			// 元からある山の処理を消す
+		
 			
+			
+			
+			
+			
+			//
+			//
+			//　　バグ？　　あり
+			//
+			//	消える物がきえない
+			//
+			//　
+			//
+			//
+			//
+			//
 			ArrayList<JointJ> delJ = new ArrayList<JointJ>();
 			for (JointJ j : jList) {
 				Matcher stackMap = p2.matcher(j.getBack().getNodeName());
@@ -1079,6 +1095,7 @@ public class NOAH {
 			}
 			
 			System.out.println("check");
+			System.out.println("pre  :"+preList);
 			System.out.println("orderStr" + orderString);
 
 			// 残ったものの順序決定
