@@ -565,6 +565,7 @@ public class SampleGUI extends JFrame implements ActionListener{
 				System.out.println("An error occured while executing the operation: "+op);
 				e.printStackTrace();
 			}
+			th = null;
 		}
 	};
 	
