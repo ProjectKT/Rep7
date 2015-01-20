@@ -20,6 +20,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
@@ -160,6 +161,7 @@ public class SampleGUI extends JFrame implements ActionListener{
 		
 		JButton okButton = new JButton("plan");
 		okButton.addActionListener(this);
+		okButton.setActionCommand("ok");
 		ctrl.add(okButton);
 		
 		tab.add("select", page1);
