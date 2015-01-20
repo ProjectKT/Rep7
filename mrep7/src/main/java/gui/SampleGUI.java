@@ -386,7 +386,10 @@ public class SampleGUI extends JFrame implements ActionListener{
     	}else if(cmd.equals("prev")){
     		gra_layout.previous(graphics);
     	}else if(cmd.equals("ok")){
-    		
+    		//初期状態のグラフィックから状態を読み取る
+    		//目標状態のグラフィックから状態を読み取る
+    		//NOAHに入れて実行
+    		//結果を受け取って操作をリストに入れる
     	}else if(cmd.equals("OK")){
     		startList.clear();
     		String strs1[] = txtStart.getText().split("\n");
