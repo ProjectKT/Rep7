@@ -82,8 +82,6 @@ public class PhysicsPanel extends JPanel {
 	private Body groundBody;
 	// カメラ
 	protected final Camera camera = new Camera(0, 0, getInitialZoom());
-	// 
-	private Random random = new Random();
 	// 描画用 Graphics2D
 	private Graphics2D dbg = null;
 	// 描画用 Image

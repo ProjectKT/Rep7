@@ -217,29 +217,25 @@ public class SampleGUI extends JFrame implements ActionListener{
 		page2_panel.add(BorderLayout.CENTER, plannerPanel);
 		page2.add(BorderLayout.CENTER, page2_panel);
 
-		JButton playButton = new JButton("play");//初期状態を表示するボタン
+		JButton playButton = new JButton("Play");//初期状態を表示するボタン
 		playButton.addActionListener(plannerStepExecutor);
 		playButton.setActionCommand("play");
-		JButton pauseButton = new JButton("pause");//初期状態を表示するボタン
+		JButton pauseButton = new JButton("Pause");//初期状態を表示するボタン
 		pauseButton.addActionListener(plannerStepExecutor);
 		pauseButton.setActionCommand("pause");
-		JButton startButton = new JButton("start");//初期状態を表示するボタン
+		JButton startButton = new JButton("初期状態へ");//初期状態を表示するボタン
 		startButton.addActionListener(plannerStepExecutor);
 		startButton.setActionCommand("start");
-		JButton prevButton = new JButton("prev");//前の状態に戻るボタン
-		prevButton.addActionListener(plannerStepExecutor);
-		prevButton.setActionCommand("prev");
-		JButton nextButton = new JButton("next");//次の状態に進むボタン
+		JButton nextButton = new JButton("次へ");//次の状態に進むボタン
 		nextButton.addActionListener(plannerStepExecutor);
 		nextButton.setActionCommand("next");
-		JButton goalButton = new JButton("goal");//目標状態を表示するボタン
+		JButton goalButton = new JButton("目標状態へ");//目標状態を表示するボタン
 		goalButton.addActionListener(plannerStepExecutor);
 		goalButton.setActionCommand("goal");
 		JPanel btnPanel = new JPanel();
 		btnPanel.add(playButton);
 		btnPanel.add(pauseButton);
 		btnPanel.add(startButton);
-		btnPanel.add(prevButton);
 		btnPanel.add(nextButton);
 		btnPanel.add(goalButton);
 		
@@ -475,12 +471,6 @@ public class SampleGUI extends JFrame implements ActionListener{
 	    		if (ptr < ansList.size()) {
 	    			String op = ansList.get(ptr);
 	    			ptr++;
-	    			try { execute(op); } catch (InterruptedException e0) { e0.printStackTrace(); }
-	    		}
-	    	}else if(cmd.equals("prev")){
-	    		if (0 < ptr) {
-	    			ptr--;
-	    			String op = ansList.get(ptr);
 	    			try { execute(op); } catch (InterruptedException e0) { e0.printStackTrace(); }
 	    		}
 	    	}
