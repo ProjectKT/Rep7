@@ -251,9 +251,9 @@ public class SampleGUI extends JFrame implements ActionListener{
 		GtoS.addActionListener(this);
 		GtoS.setActionCommand("GtoS");
 		
-		buttonPanel.add(OK);
 		buttonPanel.add(RESET);
 		buttonPanel.add(GtoS);
+		buttonPanel.add(OK);
 		buttonPanel.setBorder(border);
 
 		JPanel answerPanel = new JPanel();//目標状態エリア用のパネル

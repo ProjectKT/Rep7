@@ -123,21 +123,29 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 					while (edge != null) {
 						final Contact contact = edge.contact;
 						// この箱のボディ
-						final Body bodyBox = (contact.getFixtureA().getBody() == box.body) ?
-								contact.getFixtureA().getBody() : contact.getFixtureB().getBody();
+						final Body bodyBox;
 						// 接触しているオブジェクトのボディ
-						final Body bodyObj = (contact.getFixtureA().getBody() == box.body) ?
-								contact.getFixtureB().getBody() : contact.getFixtureA().getBody();
+						final Body bodyObj;
 						
-						if (bodyBox.getWorldCenter().y < bodyObj.getWorldCenter().y) {
-							String boxOnName = findBox(bodyObj);
-							if (boxOnName != null) {
-								boxOn = boxMap.get(boxOnName);
-							}
-						} else if (bodyObj.getWorldCenter().y < bodyBox.getWorldCenter().y){
-							String boxAboveName = findBox(bodyObj);
-							if (boxAboveName != null) {
-								boxAbove = boxMap.get(boxAboveName);
+						if (contact.getFixtureA().getBody() == box.body) {
+							bodyBox = contact.getFixtureA().getBody();
+							bodyObj = contact.getFixtureB().getBody();
+						} else {
+							bodyBox = contact.getFixtureB().getBody();
+							bodyObj = contact.getFixtureA().getBody();
+						}
+						
+						if (contact.isTouching()) {
+							if (bodyBox.getWorldCenter().y < bodyObj.getWorldCenter().y) {
+								String boxOnName = findBox(bodyObj);
+								if (boxOnName != null) {
+									boxOn = boxMap.get(boxOnName);
+								}
+							} else if (bodyObj.getWorldCenter().y < bodyBox.getWorldCenter().y){
+								String boxAboveName = findBox(bodyObj);
+								if (boxAboveName != null) {
+									boxAbove = boxMap.get(boxAboveName);
+								}
 							}
 						}
 						
@@ -150,7 +158,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 						states.add(box.name+" on "+boxOn.name);
 					}
 					if (boxAbove == null) {
-						states.add("clear"+box.name);
+						states.add("clear "+box.name);
 					}
 				}
 			}
@@ -159,6 +167,8 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 				states.add("handEmpty");
 			}
 		}
+		
+		Collections.sort(states);
 	}
 	
 	// --- interface implementation ---
@@ -490,7 +500,6 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		}
 		
 		public void moveTo(final Vec2 to) throws InterruptedException {
-			System.out.println("robot is moving to "+to);
 			Thread t = new Thread(new Runnable() {
 				@Override
 				public void run() {
@@ -546,9 +555,11 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		}).start();
 		
 		try { 
+			p.stop();
 			p.putBox("1", null);
 			p.putBox("2", "1");
 			p.putBox("3", null);
+			p.start();
 			
 			Thread.sleep(500);
 			p.pickup("2");
