@@ -345,20 +345,35 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			pos.addLocal(0, -Settings.Box.size.y);
 		}
 		
-		Box box = boxMap.get(name);
+		final Box box = boxMap.get(name);
 		if (box == null) {
-			box = new Box(name, pos);
-			boxMap.put(name, box);
-			updateHighestBoxY(box);
+			final Runnable r = new Runnable() {
+				@Override
+				public void run() {
+					final Box b = new Box(name, pos);
+					boxMap.put(name, b);
+					updateHighestBoxY(b);
+				}
+			};
+			if (isAnimating()) {
+				manipulations.add(r);
+			} else {
+				r.run();
+			}
 		} else {
 			final Box fbox = box;
-			manipulations.add(new Runnable() {
+			final Runnable r = new Runnable() {
 				@Override
 				public void run() {
 					fbox.body.setTransform(pos, 0);
 					updateHighestBoxY(fbox);
 				}
-			});
+			};
+			if (isAnimating()) {
+				manipulations.add(r);
+			} else {
+				r.run();
+			}
 		}
 	}
 	
