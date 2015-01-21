@@ -1437,13 +1437,26 @@ public class NOAH {
 
 				// clearがあった時
 				if (clearflag) {
+					Boolean addcheck = false;
 					for (Integer clearNodeIndex : clearNodeIndexList) {
 						
 						boolean noUseclearNode = false;
 						for(Node noUseNode : noUse){
-							Matcher stackMat = p2.matcher(noUseNode)
+							Matcher stackMat = p2.matcher(noUseNode.getNodeName());
+							Matcher unMat = p3.matcher(stacks.get(clearNodeIndex).getNodeName());
 							
-							
+							if(stackMat.find()){
+								if(unMat.find()){
+									if(stackMat.group(1).equals(unMat.group(1))){
+										noUseclearNode = true;
+										break;
+									}
+								}
+							}							
+						}
+						
+						if(noUseclearNode){
+							continue;
 						}
 						
 						
@@ -1460,6 +1473,7 @@ public class NOAH {
 									orderList.add(node);
 									orderString.add(node.getNodeName());
 									words.add(unstack.group(2));
+									addcheck = true;
 									break;
 								}
 							}
@@ -1483,6 +1497,7 @@ public class NOAH {
 											.getNodeName());
 									// 下側のモノのclearは消す
 									words.remove(under.get(clearNodeIndex));
+									addcheck = true;
 									flag1 = false;
 									break;
 								}
@@ -1496,6 +1511,11 @@ public class NOAH {
 									.getNodeName());
 							// 下側のモノのclearは消す
 							words.remove(under.get(clearNodeIndex));
+							addcheck = true;
+							break;
+						}
+						
+						if(addcheck){
 							break;
 						}
 					}
