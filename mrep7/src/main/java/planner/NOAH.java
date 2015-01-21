@@ -159,6 +159,7 @@ public class NOAH {
 	private ArrayList<String> initGoalState() {
 		ArrayList<String> goalList = new ArrayList<String>();
 
+		/*
 		goalList.add("clear 2");
 		goalList.add("clear 1");
 
@@ -167,8 +168,9 @@ public class NOAH {
 		goalList.add("1 on 4");
 		goalList.add("4 on 3");
 		goalList.add("3 on 6");
+		*/
 
-/*
+
 		goalList.add("clear A");
 		goalList.add("A on 1");
 		goalList.add("1 on 2");
@@ -196,7 +198,7 @@ public class NOAH {
 		goalList.add("12 on 14");
 		goalList.add("14 on 15");
 		goalList.add("15 on 16");
-		*/
+		
 		return goalList;
 	}
 
@@ -215,7 +217,7 @@ public class NOAH {
 		 * initialState.add("D on E");
 		 */
 
-		
+		/*
 		initialState.add("clear 1");
 		initialState.add("clear 4");
 
@@ -223,8 +225,9 @@ public class NOAH {
 		initialState.add("2 on 3");
 		initialState.add("4 on 5");
 		initialState.add("5 on 6");
+		*/
 
-		/*
+		
 		initialState.add("clear 1");
 		initialState.add("1 on 2");
 		initialState.add("2 on 3");
@@ -247,7 +250,7 @@ public class NOAH {
 		initialState.add("12 on 14");
 		initialState.add("14 on 15");
 		initialState.add("15 on 16");
-		 */
+		 
 		return initialState;
 	}
 
@@ -1255,9 +1258,13 @@ public class NOAH {
 			// 残ったものの順序決定
 			ArrayList<ArrayList<Node>> tList = new ArrayList<ArrayList<Node>>();
 			System.out.println("jlistsize" + jList.size());
+			
+			//仕様変更部で使うフラグ
+			Boolean noflag = true;
 			for (JointJ j : jList) {
 				System.out.println("j forward: " + j.getForward());
 				ArrayList<Node> temp = new ArrayList<Node>();
+				
 				Node next = j.getBack();
 				while (true) {
 					temp.add(next);
@@ -1269,6 +1276,8 @@ public class NOAH {
 					}
 				}
 				for (int k = 0; k < j.getForward().size(); k++) { // jの前の数
+					noflag = true;
+					ArrayList<Node> temp2 = new ArrayList<Node>();
 					Node unStack = j.getForward().get(k);
 					while (true) {
 
@@ -1277,6 +1286,10 @@ public class NOAH {
 						if (unMat.find()) {
 							int t;
 							for (t = 0; t < temp.size(); t++) {
+								if(!noflag){
+									temp2.add(0,unStack);
+									break;
+								}
 								Matcher stackMat = p2.matcher(temp.get(t)
 										.getNodeName());
 
@@ -1298,7 +1311,11 @@ public class NOAH {
 
 										// tugi
 									} else {
+										temp2.add(0,unStack);
+										noflag = false;
+										/*
 										temp.add(0, unStack);
+										*/
 										break;
 									}
 								} else {
@@ -1314,7 +1331,11 @@ public class NOAH {
 
 							// 何ともマッチしなかった
 							if (t == temp.size()) {
+								temp2.add(0,unStack);
+								noflag = false;
+								/*
 								temp.add(0, unStack);
+								*/
 							}
 
 						}
@@ -1337,8 +1358,10 @@ public class NOAH {
 						}
 
 					}
-
-
+					if(temp2.size()>0){
+						System.out.println("add temp2"+temp2);
+					tList.add(temp2);
+					}
 				}
 				System.out.println("add temp " + temp);
 
@@ -1400,7 +1423,7 @@ public class NOAH {
 				nodes.add(list.get(0));
 			}
 			while (true) {
-				// System.out.println("orderList"+orderList);
+				 System.out.println("orderList"+orderList);
 				// System.out.println("orderString"+orderString);
 				ArrayList<Node> noUse = new ArrayList<Node>();
 				//先頭でないノードのリスト
@@ -1409,9 +1432,10 @@ public class NOAH {
 					noUse.remove(list.get(0));
 					// System.out.println(list);
 				}
+				System.out.println(noUse);
 				// System.out.println("pre"+preList);
-				// System.out.println("words"+words);
-				// System.out.println("nodes"+nodes);
+				 System.out.println("words"+words);
+				 System.out.println("nodes"+nodes);
 				ArrayList<String> over = new ArrayList<String>();
 				ArrayList<String> under = new ArrayList<String>();
 				ArrayList<Node> stacks = new ArrayList<Node>();
@@ -1440,12 +1464,16 @@ public class NOAH {
 				for (int k = 0; k < stacks.size(); k++) {
 					if (words.contains(over.get(k))
 							&& words.contains(under.get(k))) {
+						System.out.println("clear"+stacks.get(k));
 						clearNodeIndexList.add(k);
 						clearflag = true;
 					}
 				}
 				// ここまでで下準備
 
+				//後付
+				Boolean clearflag2 = true;
+				
 				// clearがあった時
 				if (clearflag) {
 					Boolean addcheck = false;
@@ -1453,11 +1481,12 @@ public class NOAH {
 						
 						boolean noUseclearNode = false;
 						for(Node noUseNode : noUse){
-							Matcher stackMat = p2.matcher(noUseNode.getNodeName());
-							Matcher unMat = p3.matcher(stacks.get(clearNodeIndex).getNodeName());
-							
+							Matcher stackMat = p2.matcher(stacks.get(clearNodeIndex).getNodeName());
+							Matcher unMat = p3.matcher(noUseNode.getNodeName());
+							System.out.println("check st 1 un 1"+noUseNode+" " +stacks.get(clearNodeIndex));
 							if(stackMat.find()){
 								if(unMat.find()){
+									
 									if(stackMat.group(1).equals(unMat.group(1))){
 										noUseclearNode = true;
 										break;
@@ -1475,6 +1504,8 @@ public class NOAH {
 								+ stacks.get(clearNodeIndex));
 						boolean flag1 = true;
 
+						
+						
 						// 下のものが何かの上にあるとき
 						for (Node node : unstacks) {
 							Matcher unstack = p3.matcher(node.getNodeName());
@@ -1485,11 +1516,14 @@ public class NOAH {
 									orderString.add(node.getNodeName());
 									words.add(unstack.group(2));
 									addcheck = true;
+									//clearflag2 = false;
 									break;
 								}
 							}
 
 						}
+						
+						
 						for (Node node : unstacks) {
 							Matcher unstack = p3.matcher(node.getNodeName());
 
@@ -1510,6 +1544,7 @@ public class NOAH {
 									words.remove(under.get(clearNodeIndex));
 									addcheck = true;
 									flag1 = false;
+									clearflag2 =false;
 									break;
 								}
 							}
@@ -1523,6 +1558,7 @@ public class NOAH {
 							// 下側のモノのclearは消す
 							words.remove(under.get(clearNodeIndex));
 							addcheck = true;
+							clearflag2 =false;
 							break;
 						}
 						
@@ -1530,7 +1566,8 @@ public class NOAH {
 							break;
 						}
 					}
-				} else {
+				} 
+				if(clearflag2){
 					// クリアがなかったとき
 
 					if (stacks.size() > 0 && unstacks.size() > 0) {
