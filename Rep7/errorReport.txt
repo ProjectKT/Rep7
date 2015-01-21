@@ -1,0 +1,77 @@
+add temp [Place 12 on 7, remove 11 from on top 10, Place 11 on 12, remove 10 from on top 13, Place 13 on 11]
+temp[Place 12 on 7, remove 11 from on top 10, Place 11 on 12, remove 10 from on top 13, Place 13 on 11]
+j forward: []
+add temp [Place A on 1]
+temp[Place A on 1]
+j forward: [remove 8 from on top 9]
+remove 2 remove C from on top 7
+add temp [remove C from on top 7, remove 7 from on top 8, remove 8 from on top 9, Place 4 on 9]
+temp[remove C from on top 7, remove 7 from on top 8, remove 8 from on top 9, Place 4 on 9]
+j forward: [remove 4 from on top 5]
+remove 2 remove A from on top B
+add temp [remove A from on top B, remove B from on top 4, remove 4 from on top 5, Place 8 on 5]
+temp[remove A from on top B, remove B from on top 4, remove 4 from on top 5, Place 8 on 5]
+preList[remove 12 from on top 14, Place B on C, Place A on 1]
+temp at 1 :[remove 12 from on top 14, remove 14 from on top 15]
+temp at 1 :[Place B on C, Place 10 on B, Place 14 on 10]
+temp at 1 :[Place A on 1]
+tList :[[Place 12 on 7, remove 11 from on top 10, Place 11 on 12, remove 10 from on top 13, Place 13 on 11], [Place A on 1], [remove C from on top 7, remove 7 from on top 8, remove 8 from on top 9, Place 4 on 9], [remove A from on top B, remove B from on top 4, remove 4 from on top 5, Place 8 on 5], [remove 12 from on top 14, remove 14 from on top 15], [Place B on C, Place 10 on B, Place 14 on 10], [Place A on 1]]
+orderList :[]
+clear   Place A on 1
+clear   type1
+clear   remove A from on top B
+clear   Place B on C
+clear   type1
+clear   remove B from on top 4
+clear   Place 12 on 7
+clear   type1
+clear   remove 12 from on top 14
+in5
+clear   Place 10 on B
+clear   type2
+clear   Place 14 on 10
+clear   type1
+clear   remove 14 from on top 15
+clear   Place 11 on 12
+clear   type2
+clear   Place 8 on 5
+clear   type2
+clear   Place 4 on 9
+clear   type2
+clear   Place 13 on 11
+clear   type2
+lastOrder[remove A from on top B, Place A on 1, remove C from on top 7, remove B from on top 4, Place B on C, remove 7 from on top 8, remove 12 from on top 14, Place 12 on 7, remove 11 from on top 10, Place 10 on B, remove 14 from on top 15, Place 14 on 10, Place 11 on 12, remove 10 from on top 13, remove 8 from on top 9, remove 4 from on top 5, Place 8 on 5, Place 4 on 9, Place 13 on 11]
+[remove A from on top B, Place A on 1, remove C from on top 7, remove B from on top 4, Place B on C, remove 7 from on top 8, remove 12 from on top 14, Place 12 on 7, remove 11 from on top 10, Place 10 on B, remove 14 from on top 15, Place 14 on 10, Place 11 on 12, remove 10 from on top 13, remove 8 from on top 9, remove 4 from on top 5, Place 8 on 5, Place 4 on 9, Place 13 on 11]
+lastOrder終了
+[remove A from on top B, Place A on 1, remove C from on top 7, remove B from on top 4, Place B on C, remove 7 from on top 8, remove 12 from on top 14, Place 12 on 7, remove 11 from on top 10, Place 10 on B, remove 14 from on top 15, Place 14 on 10, Place 11 on 12, remove 10 from on top 13, remove 8 from on top 9, remove 4 from on top 5, Place 8 on 5, Place 4 on 9, Place 13 on 11]
+finalPlan!!!
+count 0 : remove A from on top B
+count 1 : Place A on 1
+count 2 : remove C from on top 7
+count 3 : put C down on the table
+count 4 : remove B from on top 4
+count 5 : Place B on C
+count 6 : remove 7 from on top 8
+count 7 : put 7 down on the table
+count 8 : remove 12 from on top 14
+count 9 : Place 12 on 7
+count 10 : remove 11 from on top 10
+count 11 : put 11 down on the table
+count 12 : pick up 10 from the table
+count 13 : Place 10 on B
+count 14 : remove 14 from on top 15
+count 15 : Place 14 on 10
+count 16 : pick up 11 from the table
+count 17 : Place 11 on 12
+count 18 : remove 10 from on top 13
+count 19 : put 10 down on the table
+count 20 : remove 8 from on top 9
+count 21 : put 8 down on the table
+count 22 : remove 4 from on top 5
+count 23 : put 4 down on the table
+count 24 : pick up 8 from the table
+count 25 : Place 8 on 5
+count 26 : pick up 4 from the table
+count 27 : Place 4 on 9
+count 28 : pick up 13 from the table
+count 29 : Place 13 on 11
