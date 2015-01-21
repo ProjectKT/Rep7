@@ -1391,7 +1391,11 @@ public class NOAH {
 			while (true) {
 				// System.out.println("orderList"+orderList);
 				// System.out.println("orderString"+orderString);
+				ArrayList<Node> noUse = new ArrayList<Node>();
+				//先頭でないノードのリスト
 				for (ArrayList<Node> list : tList) {
+					noUse.addAll(list);
+					noUse.remove(list.get(0));
 					// System.out.println(list);
 				}
 				// System.out.println("pre"+preList);
@@ -1402,7 +1406,7 @@ public class NOAH {
 				ArrayList<Node> stacks = new ArrayList<Node>();
 				ArrayList<Node> unstacks = new ArrayList<Node>();
 
-				Integer clearNodeIndex = null;
+				ArrayList<Integer> clearNodeIndexList = new ArrayList<Integer>();
 				// clearNodeが一個でもあるかのフラグ
 				boolean clearflag = false;
 				// over,under
@@ -1425,7 +1429,7 @@ public class NOAH {
 				for (int k = 0; k < stacks.size(); k++) {
 					if (words.contains(over.get(k))
 							&& words.contains(under.get(k))) {
-						clearNodeIndex = k;
+						clearNodeIndexList.add(k);
 						clearflag = true;
 					}
 				}
@@ -1433,52 +1437,67 @@ public class NOAH {
 
 				// clearがあった時
 				if (clearflag) {
-					System.out.println("clear   " + stacks.get(clearNodeIndex));
-					boolean flag1 = true;
-					
-					//下のものが何かの上にあるとき
-					for(Node node : unstacks){
-						Matcher unstack = p3.matcher(node.getNodeName());
-						if (unstack.find()) {
-							if(unstack.group(1).equals(under.get(clearNodeIndex))){
-								orderList.add(node);
-								orderString.add(node.getNodeName());
-								words.add(unstack.group(2));
-							}
+					for (Integer clearNodeIndex : clearNodeIndexList) {
+						
+						boolean noUseclearNode = false;
+						for(Node noUseNode : noUse){
+							Matcher stackMat = p2.matcher(noUseNode)
+							
+							
 						}
 						
-					}
-					for (Node node : unstacks) {
-						Matcher unstack = p3.matcher(node.getNodeName());
+						
+						System.out.println("clear   "
+								+ stacks.get(clearNodeIndex));
+						boolean flag1 = true;
 
-						if (unstack.find()) {
-							if (unstack.group(1).equals(
-									over.get(clearNodeIndex))) {
-								
-								System.out.println("clear   type1");
-								System.out.println("clear   " + node);
-								orderList.add(node);
-								orderString.add(node.getNodeName());
-								// unstackの下をclearにする
-								words.add(unstack.group(2));
-								orderList.add(stacks.get(clearNodeIndex));
-								orderString.add(stacks.get(clearNodeIndex)
-										.getNodeName());
-								// 下側のモノのclearは消す
-								words.remove(under.get(clearNodeIndex));
-								flag1 = false;
-								break;
+						// 下のものが何かの上にあるとき
+						for (Node node : unstacks) {
+							Matcher unstack = p3.matcher(node.getNodeName());
+							if (unstack.find()) {
+								if (unstack.group(1).equals(
+										under.get(clearNodeIndex))) {
+									orderList.add(node);
+									orderString.add(node.getNodeName());
+									words.add(unstack.group(2));
+									break;
+								}
+							}
+
+						}
+						for (Node node : unstacks) {
+							Matcher unstack = p3.matcher(node.getNodeName());
+
+							if (unstack.find()) {
+								if (unstack.group(1).equals(
+										over.get(clearNodeIndex))) {
+
+									System.out.println("clear   type1");
+									System.out.println("clear   " + node);
+									orderList.add(node);
+									orderString.add(node.getNodeName());
+									// unstackの下をclearにする
+									words.add(unstack.group(2));
+									orderList.add(stacks.get(clearNodeIndex));
+									orderString.add(stacks.get(clearNodeIndex)
+											.getNodeName());
+									// 下側のモノのclearは消す
+									words.remove(under.get(clearNodeIndex));
+									flag1 = false;
+									break;
+								}
 							}
 						}
-					}
-					// 床においてあるものを載せるとき
-					if (flag1) {
-						System.out.println("clear   type2");
-						orderList.add(stacks.get(clearNodeIndex));
-						orderString.add(stacks.get(clearNodeIndex)
-								.getNodeName());
-						// 下側のモノのclearは消す
-						words.remove(under.get(clearNodeIndex));
+						// 床においてあるものを載せるとき
+						if (flag1) {
+							System.out.println("clear   type2");
+							orderList.add(stacks.get(clearNodeIndex));
+							orderString.add(stacks.get(clearNodeIndex)
+									.getNodeName());
+							// 下側のモノのclearは消す
+							words.remove(under.get(clearNodeIndex));
+							break;
+						}
 					}
 				} else {
 					// クリアがなかったとき
