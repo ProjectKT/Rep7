@@ -273,7 +273,7 @@ public class SampleGUI extends JFrame implements ActionListener{
 		goalPanel.setBorder(border);
 		
 		JPanel buttonPanel = new JPanel();//ボタン用のパネル
-		buttonPanel.setLayout(new FlowLayout());
+		//buttonPanel.setLayout(new FlowLayout());
 		JButton OK = new JButton("ok");
 		OK.addActionListener(this);
 		OK.setActionCommand("OK");
@@ -284,10 +284,34 @@ public class SampleGUI extends JFrame implements ActionListener{
 		GtoS.addActionListener(this);
 		GtoS.setActionCommand("GtoS");
 		
-		buttonPanel.add(RESET);
-		buttonPanel.add(GtoS);
-		buttonPanel.add(OK);
-		buttonPanel.setBorder(border);
+		//---
+		JPanel bP1 = new JPanel();
+		JPanel bP2 = new JPanel();
+		JPanel bP3 = new JPanel();
+		JPanel bP4 = new JPanel();
+		JPanel bP5 = new JPanel();
+		JPanel bP6 = new JPanel();
+		
+		bP3.add(RESET);
+		bP4.add(GtoS);
+		bP5.add(OK);
+		
+		bP1.setLayout(new GridLayout(3,1));
+		bP1.add(bP3);
+		bP1.add(bP4);
+		bP1.add(bP5);
+		bP1.setBorder(border);
+		
+		buttonPanel.add(bP1);
+		buttonPanel.add(bP2);
+		buttonPanel.add(bP6);
+		buttonPanel.setLayout(new GridLayout(3,1));
+		//---
+		
+		//buttonPanel.add(RESET);
+		//buttonPanel.add(GtoS);
+		//buttonPanel.add(OK);
+		//buttonPanel.setBorder(border);
 
 		JPanel answerPanel = new JPanel();//目標状態エリア用のパネル
 		JScrollPane scroll3 = new JScrollPane(txtAnswer);
