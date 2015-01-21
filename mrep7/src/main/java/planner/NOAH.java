@@ -158,7 +158,7 @@ public class NOAH {
 	 */
 	private ArrayList<String> initGoalState() {
 		ArrayList<String> goalList = new ArrayList<String>();
-/*
+
 		goalList.add("clear 2");
 		goalList.add("clear 1");
 
@@ -167,8 +167,8 @@ public class NOAH {
 		goalList.add("1 on 4");
 		goalList.add("4 on 3");
 		goalList.add("3 on 6");
-*/
 
+/*
 		goalList.add("clear A");
 		goalList.add("A on 1");
 		goalList.add("1 on 2");
@@ -196,7 +196,7 @@ public class NOAH {
 		goalList.add("12 on 14");
 		goalList.add("14 on 15");
 		goalList.add("15 on 16");
-		
+		*/
 		return goalList;
 	}
 
@@ -215,7 +215,7 @@ public class NOAH {
 		 * initialState.add("D on E");
 		 */
 
-		/*
+		
 		initialState.add("clear 1");
 		initialState.add("clear 4");
 
@@ -224,7 +224,7 @@ public class NOAH {
 		initialState.add("4 on 5");
 		initialState.add("5 on 6");
 
-		*/
+		/*
 		initialState.add("clear 1");
 		initialState.add("1 on 2");
 		initialState.add("2 on 3");
@@ -247,7 +247,7 @@ public class NOAH {
 		initialState.add("12 on 14");
 		initialState.add("14 on 15");
 		initialState.add("15 on 16");
-		 
+		 */
 		return initialState;
 	}
 
@@ -1350,6 +1350,17 @@ public class NOAH {
 			System.out.println("preList" + preList);
 			if (preList.size() > 0) {
 				for (Node node : preList) {
+					
+					Boolean checkt = false;
+					for(ArrayList<Node> t:tList){
+						if(t.contains(node)){
+							checkt = true;
+						}
+					}
+					if(checkt){
+						continue;
+					}
+					
 					ArrayList<Node> temp = new ArrayList<Node>();
 					temp.add(node);
 
