@@ -595,7 +595,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			
 			FixtureDef fd = new FixtureDef();
 			fd.shape = Settings.Box.shape;
-			fd.density = 0.00000000000001f; // これを付けると回転するようになる
+//			fd.density = 0.00000000000001f; // これを付けると回転するようになる
 			fd.friction = .1f;
 			
 			body.createFixture(fd);
