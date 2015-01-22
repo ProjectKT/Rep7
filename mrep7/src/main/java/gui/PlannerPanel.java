@@ -31,6 +31,7 @@ import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.BodyDef;
 import org.jbox2d.dynamics.BodyType;
+import org.jbox2d.dynamics.Fixture;
 import org.jbox2d.dynamics.FixtureDef;
 import org.jbox2d.dynamics.contacts.Contact;
 import org.jbox2d.dynamics.contacts.ContactEdge;
@@ -123,7 +124,8 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			shape.set(new Vec2(-500.0f, 0), new Vec2(500.0f, 0));
 			
 			Body ground = createBody(bd);
-			ground.createFixture(shape, 0);
+			Fixture surface = ground.createFixture(shape, 0);
+			surface.setFriction(1.0f);
 		}
 		
 		// table を作る
@@ -139,7 +141,8 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			PolygonShape surfaceShape = new PolygonShape();
 			surfaceShape.setAsBox(Settings.Table.surfaceSize.x/2, Settings.Table.surfaceSize.y/2);
 
-			table.createFixture(surfaceShape, Settings.Table.density);
+			Fixture surface = table.createFixture(surfaceShape, Settings.Table.density);
+			surface.setFriction(1.0f);
 			
 			// --- 足
 			Transform xfLeft = new Transform();
@@ -154,7 +157,8 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			PolygonShape legLeftShape = new PolygonShape();
 			legLeftShape.set(vertices, 4);
 			
-			table.createFixture(legLeftShape, Settings.Table.density);
+			Fixture legLeft = table.createFixture(legLeftShape, Settings.Table.density);
+			legLeft.setFriction(1.0f);
 
 			Transform xfRight = new Transform();
 			xfRight.p.x = Settings.Table.surfaceSize.x*(0.8f)/2;
@@ -167,7 +171,8 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			PolygonShape legRightShape = new PolygonShape();
 			legRightShape.set(vertices, 4);
 			
-			table.createFixture(legRightShape, Settings.Table.density);
+			Fixture legRight = table.createFixture(legRightShape, Settings.Table.density);
+			legRight.setFriction(1.0f);
 		}
 		tablePtr = 0;
 
@@ -590,8 +595,8 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			
 			FixtureDef fd = new FixtureDef();
 			fd.shape = Settings.Box.shape;
-//			fd.density = 0.5f; // これを付けると回転するようになる
-			fd.friction = 1.0f;
+			fd.density = 0.00000000000001f; // これを付けると回転するようになる
+			fd.friction = .1f;
 			
 			body.createFixture(fd);
 		}
