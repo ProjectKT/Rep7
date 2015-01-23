@@ -559,7 +559,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		final int height = panelHeight;
 		int maxStringWidth = 0;
 		synchronized (states) {
-			int x = 0, y = 0;
+			int x = 0, y = size;
 			for (Iterator<String> it = states.iterator(); it.hasNext();) {
 				String state = it.next();
 				final int stringWidth = metrics.stringWidth(state);
@@ -568,7 +568,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 				y += size;
 				if (height < y) {
 					x += maxStringWidth+20;
-					y = 0;
+					y = size;
 					maxStringWidth = 0;
 				}
 			}
@@ -595,7 +595,7 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 			
 			FixtureDef fd = new FixtureDef();
 			fd.shape = Settings.Box.shape;
-			fd.density = 0.00000000000001f; // これを付けると回転するようになる
+//			fd.density = 0.00000000000001f; // これを付けると回転するようになる
 			fd.friction = .1f;
 			
 			body.createFixture(fd);
@@ -802,34 +802,21 @@ public class PlannerPanel extends PhysicsPanel implements PlannerController {
 		f.getContentPane().add(p);
 		f.setVisible(true);
 		
-//		new Thread(new Runnable() {
-//			@Override
-//			public void run() {
-//				while (true) {
-//					try { Thread.sleep(1000); } catch (Exception e) {}
-//					System.out.println(p.getStates());
-//				}
-//			}
-//		}).start();
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				while (true) {
+					try { Thread.sleep(1000); } catch (Exception e) {}
+					System.out.println(p.getStates());
+				}
+			}
+		}).start();
 		
 		p.showStates(true);
 		
 		List<String> states = Arrays.asList(new String[] {
 				"1 on 2",
 				"2 on 3",
-				"A on B",
-				"B on 4",
-				"4 on 5",
-				"5 on 6",
-				"C on 7",
-				"7 on 8",
-				"8 on 9",
-				"13 on 10",
-				"10 on 11",
-				"11 on 12",
-				"12 on 14",
-				"14 on 15",
-				"15 on 16"
 		});
 		
 		try {
